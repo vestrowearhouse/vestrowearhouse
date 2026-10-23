@@ -1,62 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  TrendingUp, 
-  TrendingDown,
-  DollarSign,
-  ShoppingCart,
-  Users,
-  Target,
-  Mail,
-  Share2,
-  Megaphone,
-  BarChart3,
-  PieChart,
-  Calendar,
-  Filter,
-  Download,
-  RefreshCw,
-  Eye,
-  MousePointer,
-  ArrowUp,
-  ArrowDown
+  TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Target, Mail, Share2, Megaphone,
+  BarChart3, PieChart, Calendar, Filter, Download, RefreshCw, Eye, MousePointer, ArrowUp, ArrowDown
 } from 'lucide-react';
 
 export default function MarketingIntelPage() {
   const [timeRange, setTimeRange] = useState('30');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    kpiData: {
+      revenue: { value: 0, change: 0, trend: 'up' },
+      orders: { value: 0, change: 0, trend: 'up' },
+      conversionRate: { value: 0, change: 0, trend: 'up' },
+      avgOrderValue: { value: 0, change: 0, trend: 'up' },
+    },
+    campaigns: [],
+    channels: [],
+    topProducts: []
+  });
 
-  const kpiData = {
-    revenue: { value: 125000, change: 12.5, trend: 'up' },
-    orders: { value: 456, change: 8.2, trend: 'up' },
-    conversionRate: { value: 3.2, change: -0.5, trend: 'down' },
-    avgOrderValue: { value: 274, change: 4.1, trend: 'up' },
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/intelligence/marketing');
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (error) {
+        console.error('Failed to fetch marketing intel data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [timeRange]);
 
-  const campaigns = [
-    { id: 1, name: 'Summer Sale 2024', status: 'active', budget: 5000, spent: 3200, conversions: 156, roi: 215 },
-    { id: 2, name: 'New Product Launch', status: 'active', budget: 3000, spent: 2100, conversions: 89, roi: 180 },
-    { id: 3, name: 'Email Newsletter', status: 'completed', budget: 500, spent: 450, conversions: 234, roi: 320 },
-    { id: 4, name: 'Social Media Ads', status: 'paused', budget: 2000, spent: 1800, conversions: 67, roi: 95 },
-  ];
+  const { kpiData, campaigns, channels, topProducts } = data;
 
-  const channels = [
-    { channel: 'Organic Search', visitors: 4500, conversions: 180, revenue: 45000, percentage: 35 },
-    { channel: 'Social Media', visitors: 3200, conversions: 145, revenue: 36250, percentage: 25 },
-    { channel: 'Email', visitors: 2100, conversions: 168, revenue: 42000, percentage: 16 },
-    { channel: 'Direct', visitors: 1800, conversions: 72, revenue: 18000, percentage: 14 },
-    { channel: 'Referral', visitors: 900, conversions: 36, revenue: 9000, percentage: 7 },
-    { channel: 'Paid Ads', visitors: 600, conversions: 45, revenue: 11250, percentage: 5 },
-  ];
-
-  const topProducts = [
-    { id: 1, name: 'Wireless Headphones', sales: 156, revenue: 23400, growth: 25 },
-    { id: 2, name: 'Smart Watch Pro', sales: 98, revenue: 19600, growth: 18 },
-    { id: 3, name: 'Bluetooth Speaker', sales: 87, revenue: 13050, growth: 12 },
-    { id: 4, name: 'Laptop Stand', sales: 76, revenue: 7600, growth: -5 },
-    { id: 5, name: 'USB-C Hub', sales: 65, revenue: 6500, growth: 8 },
-  ];
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-6"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-64 bg-gray-200 rounded-xl"></div>
+          <div className="h-64 bg-gray-200 rounded-xl"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

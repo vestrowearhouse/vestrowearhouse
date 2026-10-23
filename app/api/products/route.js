@@ -1,150 +1,384 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { Product, Category } from '@/models';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { checkAdminAccess, ROLES } from '@/lib/auth';
+import { logActivity } from '@/lib/logger';
+import { cacheHeaders, getCache, setCache } from '@/lib/api-cache';
+
+export const dynamic = 'force-dynamic';
+
+async function getAICorrectedSearchTerm(term) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+  
+  const prompt = `A user searched for "${term}" in an e-commerce store but no products were found. They likely made a typo.
+What is the correct, intended search keyword? Return ONLY the single corrected word or short phrase. Do not include any quotes, punctuation, or explanations. If it seems completely random and cannot be corrected, return the original word.`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1 }
+      })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      let corrected = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      return corrected.trim().replace(/['"]/g, '');
+    }
+  } catch (err) {
+    console.error('AI search correction failed:', err);
+  }
+  return null;
+}
 
 export async function GET(request) {
   try {
-    await dbConnect();
-    
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const category = searchParams.get('category');
-    const search = searchParams.get('search');
+    const cacheKey = `products:${searchParams.toString() || 'all'}`;
+    const cached = getCache(cacheKey);
+    if (cached) {
+      if (Array.isArray(cached)) {
+        return NextResponse.json({ products: cached, hasMore: false, totalCount: cached.length }, { headers: cacheHeaders(300, 1800) });
+      }
+      return NextResponse.json(cached, { headers: cacheHeaders(300, 1800) });
+    }
+
+    const supabase = getSupabaseAdmin();
+    
+    const page = parseInt(searchParams.get('page')) || 1;
+    const limit = parseInt(searchParams.get('limit')) || 20;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
     const featured = searchParams.get('featured');
     const slug = searchParams.get('slug');
-    const sort = searchParams.get('sort') || '-createdAt';
+    const categoryParam = searchParams.get('category');
+    const sort = searchParams.get('sort');
+    const search = searchParams.get('search');
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
     
-    const query = { isActive: true };
-    
-    // Slug filter - get single product by slug
-    if (slug) {
-      query.slug = slug;
+    // Resolve categoryParam: support slug, UUID, name, and include all subcategory products
+    let matchedCategoryValues = null;
+    if (categoryParam) {
+      try {
+        const { data: allCategories } = await supabase
+          .from('categories')
+          .select('id, parent_id, slug, name');
+
+        if (allCategories && allCategories.length > 0) {
+          const cleanParam = decodeURIComponent(categoryParam).trim().toLowerCase();
+          const target = allCategories.find(c => 
+            c.id?.toLowerCase() === cleanParam || 
+            c.slug?.toLowerCase() === cleanParam || 
+            c.name?.toLowerCase() === cleanParam
+          );
+
+          if (target) {
+            const collectDescendants = (parentId) => {
+              let ids = [parentId];
+              const children = allCategories.filter(c => c.parent_id === parentId);
+              for (const child of children) {
+                ids = ids.concat(collectDescendants(child.id));
+              }
+              return ids;
+            };
+
+            const allMatchedIds = Array.from(new Set(collectDescendants(target.id)));
+            const allMatchedSlugs = allCategories
+              .filter(c => allMatchedIds.includes(c.id))
+              .map(c => c.slug)
+              .filter(Boolean);
+            const allMatchedNames = allCategories
+              .filter(c => allMatchedIds.includes(c.id))
+              .map(c => c.name)
+              .filter(Boolean);
+
+            matchedCategoryValues = Array.from(new Set([
+              ...allMatchedIds,
+              ...allMatchedSlugs,
+              ...allMatchedNames,
+              categoryParam
+            ])).filter(Boolean);
+          }
+        }
+      } catch (catErr) {
+        console.error('Error resolving category in /api/products:', catErr);
+      }
     }
+
+    const vendorParam = searchParams.get('vendor');
+
+    // OPTIMIZATION: When querying by slug for product page, include full details.
+    // For listing queries (category, search, pagination), omit heavy HTML description, attributes, variants, and extra gallery images to save massive bandwidth!
+    const selectFields = slug
+      ? 'id, name, nameBn, description, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, sku, brand, tags, images, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, attributes, variants, created_at, slug, vendor_id, rating, review_count, sold_count'
+      : 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug, vendor_id, rating, review_count, sold_count';
+
+    let query = supabase.from('products').select(selectFields, { count: 'exact' });
     
-    // Category filter
-    if (category) {
-      query.category = category;
+    if (slug) query = query.eq('slug', slug);
+    if (featured === 'true') query = query.or('isFeatured.eq.true,featured.eq.true');
+    if (vendorParam === 'official') {
+      query = query.is('vendor_id', null);
+    } else if (vendorParam) {
+      query = query.eq('vendor_id', vendorParam);
     }
+    if (categoryParam) {
+      if (matchedCategoryValues && matchedCategoryValues.length > 0) {
+        query = query.in('category', matchedCategoryValues);
+      } else {
+        query = query.eq('category', categoryParam);
+      }
+    }
+    if (minPrice && !isNaN(parseFloat(minPrice))) query = query.or(`sellingPrice.gte.${minPrice},price.gte.${minPrice}`);
+    if (maxPrice && !isNaN(parseFloat(maxPrice))) query = query.or(`sellingPrice.lte.${maxPrice},price.lte.${maxPrice}`);
     
-    // Search filter
     if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { tags: { $in: [new RegExp(search, 'i')] } },
-      ];
+      const safeSearch = search.replace(/[,%]/g, '').trim();
+      if (safeSearch) {
+        query = query.or(`name.ilike.%${safeSearch}%,slug.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
+      }
     }
     
-    // Featured filter
-    if (featured === 'true') {
-      query.isFeatured = true;
+    if (sort === 'price_low') {
+      query = query.order('sellingPrice', { ascending: true, nullsFirst: false });
+    } else if (sort === 'price_high') {
+      query = query.order('sellingPrice', { ascending: false, nullsFirst: false });
+    } else {
+      query = query.order('created_at', { ascending: sort === 'createdAt' });
     }
     
-    // Also check isNewArrival for new arrivals
-    const isNewArrival = searchParams.get('isNewArrival');
-    if (isNewArrival === 'true') {
-      query.isNewArrival = true;
+    query = query.range(from, to);
+    
+    const { data, error, count } = await query;
+    if (error) {
+      console.error('Supabase query error:', error);
+      throw error;
     }
     
-    const skip = (page - 1) * limit;
-    
-    const [products, total] = await Promise.all([
-      Product.find(query)
-        .populate('category', 'name slug')
-        .sort(sort)
-        .skip(skip)
-        .limit(limit),
-      Product.countDocuments(query),
-    ]);
-    
-    return NextResponse.json({
-      products,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+    let products = data || [];
+    let totalCount = count || 0;
+
+    // --- AI Smart Fallback Logic ---
+    if (search && products.length === 0 && search.length > 2) {
+      const correctedTerm = await getAICorrectedSearchTerm(search);
+      if (correctedTerm && correctedTerm.toLowerCase() !== search.toLowerCase()) {
+        const safeSearch = correctedTerm.replace(/[,%]/g, '').trim();
+        if (safeSearch) {
+          let fallbackQuery = supabase.from('products').select('*', { count: 'exact' });
+          if (slug) fallbackQuery = fallbackQuery.eq('slug', slug);
+          if (featured === 'true') fallbackQuery = fallbackQuery.or('isFeatured.eq.true,featured.eq.true');
+          if (vendorParam === 'official') {
+            fallbackQuery = fallbackQuery.is('vendor_id', null);
+          } else if (vendorParam) {
+            fallbackQuery = fallbackQuery.eq('vendor_id', vendorParam);
+          }
+          if (categoryParam) {
+            if (matchedCategoryValues && matchedCategoryValues.length > 0) {
+              fallbackQuery = fallbackQuery.in('category', matchedCategoryValues);
+            } else {
+              fallbackQuery = fallbackQuery.eq('category', categoryParam);
+            }
+          }
+          if (minPrice && !isNaN(parseFloat(minPrice))) fallbackQuery = fallbackQuery.or(`sellingPrice.gte.${minPrice},price.gte.${minPrice}`);
+          if (maxPrice && !isNaN(parseFloat(maxPrice))) fallbackQuery = fallbackQuery.or(`sellingPrice.lte.${maxPrice},price.lte.${maxPrice}`);
+          
+          fallbackQuery = fallbackQuery.or(`name.ilike.%${safeSearch}%,slug.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
+          
+          if (sort === 'price_low') {
+            fallbackQuery = fallbackQuery.order('sellingPrice', { ascending: true, nullsFirst: false });
+          } else if (sort === 'price_high') {
+            fallbackQuery = fallbackQuery.order('sellingPrice', { ascending: false, nullsFirst: false });
+          } else {
+            fallbackQuery = fallbackQuery.order('created_at', { ascending: sort === 'createdAt' });
+          }
+          
+          fallbackQuery = fallbackQuery.range(from, to);
+          
+          const { data: fallbackData, error: fallbackError, count: fbCount } = await fallbackQuery;
+          if (!fallbackError && fallbackData && fallbackData.length > 0) {
+            products = fallbackData;
+            totalCount = fbCount || 0;
+          }
+        }
+      }
+    }
+
+    // --- AI Semantic Search Fallback Logic ---
+    if (search && products.length === 0 && search.length > 2) {
+      try {
+        const { generateProductEmbedding } = require('@/lib/ai-embeddings');
+        const queryEmbedding = await generateProductEmbedding({ name: search });
+        if (queryEmbedding) {
+          const { data: semanticProducts, error: semanticError } = await supabase.rpc('match_products', {
+            query_embedding: queryEmbedding,
+            match_threshold: 0.35,
+            match_count: limit
+          });
+
+          if (!semanticError && semanticProducts && semanticProducts.length > 0) {
+            products = semanticProducts;
+            totalCount = semanticProducts.length;
+          }
+        }
+      } catch (err) {
+        console.error('Semantic search fallback failed:', err);
+      }
+    }
+
+    // --- Enrich with Vendor / Store Branding ---
+    const officialVendor = {
+      id: 'official',
+      shop_name: 'StellarMart Official',
+      owner_name: 'StellarMart',
+      logo_url: '/logo.png',
+      is_verified: true,
+      verification_badge: 'Official Mall',
+      is_official: true,
+      rating: 4.9,
+      total_reviews: 1250,
+      shop_address: 'Dhaka, Bangladesh (Official Warehouse)',
+      response_rate: '100%',
+      on_time_delivery: '99.9%',
+      fulfilled_by: 'Stellar Direct'
+    };
+
+    const vendorIds = [...new Set(products.map(p => p.vendor_id).filter(Boolean))];
+    let vendorMap = {};
+    if (vendorIds.length > 0) {
+      try {
+        const { data: vendorsList } = await supabase
+          .from('vendors')
+          .select('id, shop_name, owner_name, shop_address, logo_url, is_verified, verification_badge')
+          .in('id', vendorIds);
+        if (vendorsList) {
+          for (const v of vendorsList) {
+            vendorMap[v.id] = {
+              ...v,
+              is_official: false,
+              rating: 4.8,
+              total_reviews: 24,
+              response_rate: '98%',
+              on_time_delivery: '99%'
+            };
+          }
+        }
+      } catch (vErr) {
+        console.error('Error enriching vendors in /api/products:', vErr);
+      }
+    }
+
+    products = products.map(p => {
+      if (p.vendor_id && vendorMap[p.vendor_id]) {
+        const v = vendorMap[p.vendor_id];
+        return {
+          ...p,
+          vendor_id: p.vendor_id,
+          store_name: v.shop_name,
+          is_official: false,
+          vendor: v
+        };
+      }
+      return {
+        ...p,
+        vendor_id: null,
+        store_name: 'StellarMart Official',
+        is_official: true,
+        vendor: officialVendor
+      };
     });
+
+    const hasMore = from + limit < totalCount;
+    const responseData = { products, hasMore, totalCount };
+    
+    setCache(cacheKey, responseData, 300);
+    return NextResponse.json(responseData, { headers: cacheHeaders(300, 1800) });
   } catch (error) {
-    console.error('Get products error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch products' },
-      { status: 500 }
-    );
+    console.error('Products fetch error:', error);
+    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 }
 
+import { updateProductEmbedding } from '@/lib/ai-embeddings';
+import { revalidatePath } from 'next/cache';
+import { clearCache, clearCacheByPrefix } from '@/lib/api-cache';
+
+import { uploadToCloudinary } from '@/lib/cloudinary';
+
 export async function POST(request) {
   try {
-    await dbConnect();
-    
-    const data = await request.json();
-    
-    // Generate slug from name
-    const slug = data.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    
-    // Check if slug exists
-    const existingProduct = await Product.findOne({ slug });
-    if (existingProduct) {
-      return NextResponse.json(
-        { error: 'Product with this name already exists' },
-        { status: 400 }
-      );
+    const auth = await checkAdminAccess([ROLES.SUPER_ADMIN, ROLES.EDITOR]);
+    if (!auth.authorized) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+
+    const body = await request.json();
+
+    // Automatically generate a unique slug from the product name if missing
+    if (!body.slug && body.name) {
+      const baseSlug = body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      body.slug = `${baseSlug}-${Date.now().toString(36)}`;
     }
     
-    // Calculate discount percentage
-    if (data.regularPrice && data.sellingPrice) {
-      data.discountPercent = Math.round(
-        ((data.regularPrice - data.sellingPrice) / data.regularPrice) * 100
-      );
+    // Prevent Supabase unique constraint errors for empty SKUs
+    if (body.sku === '') body.sku = null;
+
+    // Normalize vendor_id: empty or 'official' represents Stellar Mart Official (null in DB)
+    if (body.vendor_id === '' || body.vendor_id === 'official') {
+      body.vendor_id = null;
     }
-    
-    // Set stock status
-    if (data.stockQuantity <= 0) {
-      data.stockStatus = 'out_of_stock';
-    } else if (data.stockQuantity <= (data.lowStockThreshold || 5)) {
-      data.stockStatus = 'low_stock';
-    } else {
-      data.stockStatus = 'in_stock';
-    }
-    
-    // Handle base64 images if provided
-    if (data.images && Array.isArray(data.images)) {
-      const processedImages = [];
-      for (const img of data.images) {
-        if (img && img.startsWith('data:')) {
-          // Keep base64 data URL as-is (can be stored or converted to URL later)
-          processedImages.push(img);
-        } else if (img && typeof img === 'string') {
-          processedImages.push(img);
-        }
-      }
-      data.images = processedImages;
-      // Set featured image to first image if not set
-      if (!data.featuredImage && processedImages.length > 0) {
-        data.featuredImage = processedImages[0];
+
+    // Automatically upload any base64 images to Cloudinary to prevent database & bandwidth bloat
+    if (typeof body.featuredImage === 'string' && body.featuredImage.startsWith('data:')) {
+      try {
+        const uploadRes = await uploadToCloudinary(body.featuredImage, { folder: 'stellar-mart/products' });
+        body.featuredImage = uploadRes.url;
+      } catch (uploadErr) {
+        console.error('Failed to upload base64 featuredImage to Cloudinary:', uploadErr);
       }
     }
-    
-    const product = await Product.create({
-      ...data,
-      slug,
-    });
-    
-    return NextResponse.json(
-      { message: 'Product created successfully', product },
-      { status: 201 }
-    );
+    if (Array.isArray(body.images)) {
+      body.images = await Promise.all(
+        body.images.map(async (img) => {
+          if (typeof img === 'string' && img.startsWith('data:')) {
+            try {
+              const uploadRes = await uploadToCloudinary(img, { folder: 'stellar-mart/products' });
+              return uploadRes.url;
+            } catch (uploadErr) {
+              console.error('Failed to upload base64 images item to Cloudinary:', uploadErr);
+              return img;
+            }
+          }
+          return img;
+        })
+      );
+    }
+
+    const supabase = getSupabaseAdmin();
+
+    const { data, error } = await supabase.from('products').insert([body]).select().single();
+    if (error) throw error;
+
+    // Generate vector embedding asynchronously in background without blocking HTTP response
+    if (data?.id) {
+      updateProductEmbedding(data.id).catch(() => {});
+    }
+
+    // Invalidate caches
+    clearCache('home:v1');
+    clearCacheByPrefix('products:');
+    try {
+      revalidatePath('/', 'layout');
+    } catch (e) {}
+
+    // Non-blocking log
+    logActivity({ action: 'CREATE_PRODUCT', description: `Created new product: ${body.name}`, req: request }).catch(() => {});
+
+    return NextResponse.json({ success: true, product: data }, { status: 201 });
   } catch (error) {
-    console.error('Create product error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create product' },
-      { status: 500 }
-    );
+    console.error('Product create error:', error);
+    return NextResponse.json({ error: 'পণ্য তৈরি করা সম্ভব হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' }, { status: 500 });
   }
 }

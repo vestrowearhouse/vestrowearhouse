@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.stellarmartbd.www.twa",
+        "sha256_cert_fingerprints": ["84:09:E7:C6:4E:C3:85:DA:16:DD:FE:FB:85:E5:80:6E:26:0F:70:CE:D3:70:B8:32:71:4B:74:AE:56:31:C4:04"]
+      }
+    }]

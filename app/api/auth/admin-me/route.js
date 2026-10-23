@@ -1,26 +1,20 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { verifyAdminToken } from '@/lib/secureJwt';
 
 // Force dynamic rendering - this route uses cookies
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
-    const token = request.cookies.get('adminToken')?.value;
-    
-    if (!token) {
+    const decoded = await verifyAdminToken(request);
+
+    if (!decoded) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
-    
-    // Verify token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'stellarmartbd_secret_key_2024'
-    );
-    
+
     // Return admin user info
     return NextResponse.json({
       user: {

@@ -1,65 +1,57 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  Users, 
-  TrendingUp, 
-  TrendingDown,
-  Eye,
-  MousePointer,
-  Clock,
-  MapPin,
-  Smartphone,
-  Search,
-  Filter,
-  Download,
-  RefreshCw,
-  UserCheck,
-  UserX,
-  AlertCircle
+  Users, TrendingUp, TrendingDown, Eye, MousePointer, Clock, MapPin, Smartphone,
+  Search, Filter, Download, RefreshCw, UserCheck, UserX, AlertCircle
 } from 'lucide-react';
 
 export default function UserIntelligencePage() {
   const [timeRange, setTimeRange] = useState('30');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    stats: { totalUsers: 0, newUsers: 0, activeUsers: 0, bounceRate: 0, avgSessionDuration: '0' },
+    topUsers: [],
+    userLocations: [],
+    userDevices: [],
+    userBehavior: []
+  });
 
-  const stats = {
-    totalUsers: 1250,
-    newUsers: 156,
-    activeUsers: 890,
-    returningUsers: 340,
-    bounceRate: 32.5,
-    avgSessionDuration: '4m 32s',
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/intelligence/users');
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user intelligence data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [timeRange]);
 
-  const topUsers = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', visits: 45, lastActive: '2 hours ago', status: 'active' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', visits: 38, lastActive: '5 hours ago', status: 'active' },
-    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', visits: 32, lastActive: '1 day ago', status: 'active' },
-    { id: 4, name: 'Sarah Wilson', email: 'sarah@example.com', visits: 28, lastActive: '2 days ago', status: 'inactive' },
-    { id: 5, name: 'Tom Brown', email: 'tom@example.com', visits: 25, lastActive: '3 days ago', status: 'inactive' },
-  ];
+  const { stats, topUsers, userLocations, userDevices, userBehavior } = data;
 
-  const userLocations = [
-    { country: 'Bangladesh', users: 650, percentage: 52 },
-    { country: 'India', users: 280, percentage: 22 },
-    { country: 'United States', users: 150, percentage: 12 },
-    { country: 'United Kingdom', users: 85, percentage: 7 },
-    { country: 'Other', users: 85, percentage: 7 },
-  ];
-
-  const userDevices = [
-    { device: 'Mobile', users: 780, percentage: 62 },
-    { device: 'Desktop', users: 350, percentage: 28 },
-    { device: 'Tablet', users: 120, percentage: 10 },
-  ];
-
-  const userBehavior = [
-    { action: 'Viewed Product', count: 4500, percentage: 85 },
-    { action: 'Added to Cart', count: 1200, percentage: 23 },
-    { action: 'Started Checkout', count: 680, percentage: 13 },
-    { action: 'Completed Purchase', count: 340, percentage: 6.5 },
-  ];
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-6"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-64 bg-gray-200 rounded-xl"></div>
+          <div className="h-64 bg-gray-200 rounded-xl"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

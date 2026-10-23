@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const BannerSection = ({ 
   title, 
@@ -31,10 +32,12 @@ const BannerSection = ({
           {/* Image */}
           <div className={`${reverse ? 'md:order-1' : 'md:order-2'} relative h-64 md:h-auto md:w-1/2`}>
             {image && (
-              <img
+              <Image
                 src={image}
                 alt={title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             )}
           </div>

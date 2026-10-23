@@ -33,8 +33,10 @@ export default function ContactPage() {
                   <Phone className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Phone</h3>
-                  <p className="text-gray-600">+880 1234 567890</p>
+                  <h3 className="font-semibold text-gray-900">Phone & WhatsApp</h3>
+                  <a href="https://wa.me/8801345447500" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-green-600 font-medium transition-colors">
+                    +880 1345-447500
+                  </a>
                 </div>
               </div>
               <div className="flex items-start gap-4">

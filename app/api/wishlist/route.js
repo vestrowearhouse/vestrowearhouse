@@ -1,29 +1,16 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { User, Product } from '@/models';
-import jwt from 'jsonwebtoken';
+import { verifyUserToken } from '@/lib/secureJwt';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
-// Helper function to verify token
-const verifyToken = (request) => {
-  const token = request.cookies.get('token')?.value;
-  if (!token) return null;
-  
-  try {
-    return jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'stellarmartbd_secret_key_2024'
-    );
-  } catch (error) {
-    return null;
-  }
+const getSupabaseClient = () => {
+  return getSupabaseAdmin();
 };
+
 
 // GET - Get user's wishlist
 export async function GET(request) {
   try {
-    await dbConnect();
-    
-    const decoded = verifyToken(request);
+    const decoded = verifyUserToken(request);
     if (!decoded) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -31,28 +18,42 @@ export async function GET(request) {
       );
     }
     
-    // Get user with wishlist populated
-    const user = await User.findById(decoded.id).populate({
-      path: 'wishlist',
-      select: 'name slug images price salePrice stock status category'
-    }).lean();
+    const supabase = getSupabaseClient();
     
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+    // Get user with wishlist
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('wishlist')
+      .eq('id', decoded.id)
+      .single();
+      
+    if (userError || !user) {
+      return NextResponse.json({ wishlist: [] });
     }
     
+    const wishlistIds = user.wishlist || [];
+    
+    if (wishlistIds.length === 0) {
+      return NextResponse.json({ wishlist: [] });
+    }
+    
+    // Fetch products
+    const { data: products, error: productsError } = await supabase
+      .from('products')
+      .select('id, name, slug, images, featuredImage, price, sellingPrice, stockQuantity, stock, stockStatus, category')
+      .in('id', wishlistIds);
+      
+    if (productsError) throw productsError;
+    
     // Transform wishlist items
-    const wishlist = user.wishlist.map(item => ({
-      _id: item._id,
+    const wishlist = (products || []).map(item => ({
+      _id: item.id,
       name: item.name,
       slug: item.slug,
-      image: item.images?.[0] || '/placeholder.jpg',
-      price: item.price,
-      salePrice: item.salePrice,
-      inStock: item.stock > 0,
+      image: item.featuredImage || item.images?.[0] || '/placeholder.jpg',
+      price: item.price || item.sellingPrice,
+      salePrice: item.sellingPrice || item.price,
+      inStock: (item.stockQuantity > 0 || item.stock > 0) || item.stockStatus !== 'out_of_stock',
       category: item.category
     }));
     
@@ -71,9 +72,7 @@ export async function GET(request) {
 // POST - Add item to wishlist
 export async function POST(request) {
   try {
-    await dbConnect();
-    
-    const decoded = verifyToken(request);
+    const decoded = verifyUserToken(request);
     if (!decoded) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -90,34 +89,46 @@ export async function POST(request) {
       );
     }
     
+    const supabase = getSupabaseClient();
+    
     // Check if product exists
-    const product = await Product.findById(productId);
-    if (!product) {
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('id')
+      .eq('id', productId)
+      .single();
+      
+    if (productError || !product) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
     
-    // Add to wishlist (push only if not already in wishlist)
-    const user = await User.findByIdAndUpdate(
-      decoded.id,
-      { $addToSet: { wishlist: productId } },
-      { new: true }
-    ).populate({
-      path: 'wishlist',
-      select: 'name slug images price salePrice stock status'
-    });
+    // Get current wishlist
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('wishlist')
+      .eq('id', decoded.id)
+      .single();
+      
+    if (userError || !user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
     
-    const wishlist = user.wishlist.map(item => ({
-      _id: item._id,
-      name: item.name,
-      slug: item.slug,
-      image: item.images?.[0] || '/placeholder.jpg',
-      price: item.price,
-      salePrice: item.salePrice,
-      inStock: item.stock > 0
-    }));
+    let wishlist = user.wishlist || [];
+    
+    // Add to wishlist if not already present
+    if (!wishlist.includes(productId)) {
+      wishlist.push(productId);
+      
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ wishlist })
+        .eq('id', decoded.id);
+        
+      if (updateError) throw updateError;
+    }
     
     return NextResponse.json({
       message: 'Product added to wishlist',
@@ -135,9 +146,7 @@ export async function POST(request) {
 // DELETE - Remove item from wishlist
 export async function DELETE(request) {
   try {
-    await dbConnect();
-    
-    const decoded = verifyToken(request);
+    const decoded = verifyUserToken(request);
     if (!decoded) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -154,25 +163,30 @@ export async function DELETE(request) {
       );
     }
     
-    // Remove from wishlist
-    const user = await User.findByIdAndUpdate(
-      decoded.id,
-      { $pull: { wishlist: productId } },
-      { new: true }
-    ).populate({
-      path: 'wishlist',
-      select: 'name slug images price salePrice stock status'
-    });
+    const supabase = getSupabaseClient();
     
-    const wishlist = user.wishlist.map(item => ({
-      _id: item._id,
-      name: item.name,
-      slug: item.slug,
-      image: item.images?.[0] || '/placeholder.jpg',
-      price: item.price,
-      salePrice: item.salePrice,
-      inStock: item.stock > 0
-    }));
+    // Get current wishlist
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('wishlist')
+      .eq('id', decoded.id)
+      .single();
+      
+    if (userError || !user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    let wishlist = user.wishlist || [];
+    
+    // Remove from wishlist
+    wishlist = wishlist.filter(id => id !== productId);
+    
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ wishlist })
+      .eq('id', decoded.id);
+      
+    if (updateError) throw updateError;
     
     return NextResponse.json({
       message: 'Product removed from wishlist',

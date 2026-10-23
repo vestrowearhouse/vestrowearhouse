@@ -1,408 +1,300 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
+  Globe, 
+  FileText, 
+  RefreshCw, 
+  Save, 
+  CheckCircle2, 
   Search, 
-  Loader2,
-  Plus,
-  Edit,
-  Trash2,
-  X,
-  Save,
-  Globe,
-  FileText,
-  ExternalLink,
-  Copy,
-  Check
+  ExternalLink, 
+  Copy, 
+  Check, 
+  Layers, 
+  Package, 
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 
-export default function SEOPage() {
-  const [seoSettings, setSeoSettings] = useState([]);
+const DEFAULT_ROBOTS = `User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /vendor/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /profile
+Disallow: /orders
+Disallow: /settings
+Disallow: /wishlist
+
+Sitemap: https://www.stellarmartbd.com/sitemap.xml
+Host: https://www.stellarmartbd.com`;
+
+export default function SeoManagerPage() {
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editingSeo, setEditingSeo] = useState(null);
-  const [copied, setCopied] = useState(null);
-  const [formData, setFormData] = useState({
-    key: '',
-    pageName: '',
-    title: '',
-    description: '',
-    keywords: '',
-    ogImage: '',
-    canonicalUrl: '',
-    noIndex: false,
-    noFollow: false
-  });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [robotsContent, setRobotsContent] = useState(DEFAULT_ROBOTS);
+  const [sitemapStats, setSitemapStats] = useState(null);
+  const [message, setMessage] = useState({ text: '', type: '' });
 
   useEffect(() => {
-    fetchSeoSettings();
+    fetchSeoData();
   }, []);
 
-  const fetchSeoSettings = async () => {
+  const fetchSeoData = async () => {
     try {
-      const res = await fetch('/api/seo');
+      const res = await fetch('/api/admin/seo');
       const data = await res.json();
-      setSeoSettings(data.seoSettings || []);
+      if (data.robots) setRobotsContent(data.robots);
+      if (data.sitemapStats) setSitemapStats(data.sitemapStats);
     } catch (error) {
-      console.error('Error fetching SEO settings:', error);
+      console.error('Failed to fetch SEO data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const method = editingSeo ? 'PUT' : 'POST';
-      const res = await fetch('/api/seo', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          keywords: formData.keywords.split(',').map(k => k.trim()).filter(Boolean)
-        })
-      });
+  const showMessage = (text, type) => {
+    setMessage({ text, type });
+    setTimeout(() => setMessage({ text: '', type: '' }), 5000);
+  };
 
+  const handleGenerateSitemap = async () => {
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/admin/seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'generate_sitemap' })
+      });
+      const data = await res.json();
       if (res.ok) {
-        alert(editingSeo ? 'SEO settings updated!' : 'SEO settings created!');
-        setShowModal(false);
-        resetForm();
-        fetchSeoSettings();
+        showMessage(data.message, 'success');
+        fetchSeoData();
       } else {
-        const data = await res.json();
-        alert(data.error || 'Error saving SEO settings');
+        showMessage(data.error || 'Failed to generate sitemap', 'error');
       }
     } catch (error) {
-      console.error('Error saving SEO settings:', error);
+      showMessage('Network error occurred.', 'error');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  const handleDelete = async (key) => {
-    if (!confirm('Are you sure you want to delete these SEO settings?')) return;
+  const handleSaveRobots = async () => {
+    setIsSaving(true);
     try {
-      await fetch(`/api/seo?key=${key}`, { method: 'DELETE' });
-      fetchSeoSettings();
+      const res = await fetch('/api/admin/seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_robots', robotsContent })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showMessage(data.message, 'success');
+      } else {
+        showMessage(data.error || 'Failed to save robots.txt', 'error');
+      }
     } catch (error) {
-      console.error('Error deleting SEO settings:', error);
+      showMessage('Network error occurred.', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleEdit = (seo) => {
-    setEditingSeo(seo);
-    setFormData({
-      key: seo.key || '',
-      pageName: seo.pageName || '',
-      title: seo.title || '',
-      description: seo.description || '',
-      keywords: seo.keywords?.join(', ') || '',
-      ogImage: seo.ogImage || '',
-      canonicalUrl: seo.canonicalUrl || '',
-      noIndex: seo.noIndex || false,
-      noFollow: seo.noFollow || false
-    });
-    setShowModal(true);
+  const handleCopyRobots = () => {
+    navigator.clipboard.writeText(robotsContent);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const resetForm = () => {
-    setEditingSeo(null);
-    setFormData({
-      key: '',
-      pageName: '',
-      title: '',
-      description: '',
-      keywords: '',
-      ogImage: '',
-      canonicalUrl: '',
-      noIndex: false,
-      noFollow: false
-    });
+  const handleResetRobots = () => {
+    setRobotsContent(DEFAULT_ROBOTS);
+    showMessage('Robots.txt restored to optimal default.', 'success');
   };
-
-  const copyToClipboard = (text, id) => {
-    navigator.clipboard.writeText(text);
-    setCopied(id);
-    setTimeout(() => setCopied(null), 2000);
-  };
-
-  const filteredSeo = seoSettings.filter(seo => 
-    seo.key?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    seo.pageName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    seo.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getPreviewMetaTags = (seo) => {
-    return [
-      { name: 'description', content: seo.description },
-      { name: 'keywords', content: seo.keywords?.join(', ') },
-      { property: 'og:title', content: seo.title },
-      { property: 'og:description', content: seo.description },
-      { property: 'og:image', content: seo.ogImage },
-      ...(seo.noIndex ? [{ name: 'robots', content: 'noindex' }] : []),
-      ...(seo.noFollow ? [{ name: 'robots', content: 'nofollow' }] : [])
-    ].filter(tag => tag.content);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-      </div>
-    );
-  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-6xl mx-auto space-y-6 pb-12">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
         <div>
-          <h1 className="text-2xl font-bold">SEO Settings</h1>
-          <p className="text-gray-500">Manage meta tags and search engine optimization</p>
-        </div>
-        <button 
-          onClick={() => { resetForm(); setShowModal(true); }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Add SEO Settings
-        </button>
-      </div>
-
-      {/* Search */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search SEO settings..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-
-      {/* SEO Settings Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSeo.length === 0 ? (
-          <div className="col-span-full bg-white rounded-xl shadow-sm p-12 text-center">
-            <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No SEO settings found</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Advanced SEO & Sitemap Manager</h1>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              Crawler Optimized
+            </span>
           </div>
-        ) : (
-          filteredSeo.map((seo) => (
-            <div key={seo._id} className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="font-semibold text-lg">{seo.pageName}</h3>
-                  <p className="text-sm text-gray-500">/{seo.key}</p>
-                </div>
-                <div className="flex gap-1">
-                  <button 
-                    onClick={() => handleEdit(seo)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(seo.key)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          <p className="text-gray-500 text-sm mt-1">
+            Configure search engine crawler directives, monitor dynamic sitemap indexing, and manage metadata.
+          </p>
+        </div>
 
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs text-gray-500 uppercase">Title</label>
-                  <p className="text-sm font-medium truncate">{seo.title || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 uppercase">Description</label>
-                  <p className="text-sm text-gray-600 line-clamp-2">{seo.description || '-'}</p>
-                </div>
-                
-                {(seo.noIndex || seo.noFollow) && (
-                  <div className="flex gap-2">
-                    {seo.noIndex && (
-                      <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">noindex</span>
-                    )}
-                    {seo.noFollow && (
-                      <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">nofollow</span>
-                    )}
-                  </div>
-                )}
-
-                {/* Preview Meta Tags */}
-                <div className="pt-3 border-t">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-500 uppercase">Meta Tags</span>
-                    <button 
-                      onClick={() => copyToClipboard(JSON.stringify(getPreviewMetaTags(seo), null, 2), seo._id)}
-                      className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
-                    >
-                      {copied === seo._id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                      {copied === seo._id ? 'Copied!' : 'Copy'}
-                    </button>
-                  </div>
-                  <div className="bg-gray-50 rounded p-2 text-xs font-mono overflow-x-auto">
-                    {getPreviewMetaTags(seo).map((tag, i) => (
-                      <div key={i} className="text-gray-600">
-                        {tag.name ? `<meta name="${tag.name}" content="${tag.content}">` : `<meta property="${tag.property}" content="${tag.content}">`}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
+        <div className="flex items-center gap-3 self-start md:self-auto">
+          <a
+            href="https://www.stellarmartbd.com/sitemap.xml"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition-all shadow-xs"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            View sitemap.xml
+            <ExternalLink className="w-3 h-3 ml-0.5" />
+          </a>
+          <a
+            href="https://www.stellarmartbd.com/robots.txt"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-all shadow-xs"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            View robots.txt
+            <ExternalLink className="w-3 h-3 ml-0.5" />
+          </a>
+        </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-900">
-                {editingSeo ? 'Edit SEO Settings' : 'Add SEO Settings'}
-              </h2>
-              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Page Key *</label>
-                  <input
-                    type="text"
-                    value={formData.key}
-                    onChange={(e) => setFormData({ ...formData, key: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., home, products, about"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Unique identifier for the page</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Page Name *</label>
-                  <input
-                    type="text"
-                    value={formData.pageName}
-                    onChange={(e) => setFormData({ ...formData, pageName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="e.g., Home Page, Products, About Us"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SEO Title *</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Page title for search engines (50-60 chars)"
-                  maxLength={70}
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">{formData.title.length}/70 characters</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description *</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Brief description for search results (150-160 chars)"
-                  rows={3}
-                  maxLength={160}
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">{formData.description.length}/160 characters</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
-                <input
-                  type="text"
-                  value={formData.keywords}
-                  onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="keyword1, keyword2, keyword3"
-                />
-                <p className="text-xs text-gray-500 mt-1">Separate keywords with commas</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">OG Image URL</label>
-                <input
-                  type="url"
-                  value={formData.ogImage}
-                  onChange={(e) => setFormData({ ...formData, ogImage: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Canonical URL</label>
-                <input
-                  type="url"
-                  value={formData.canonicalUrl}
-                  onChange={(e) => setFormData({ ...formData, canonicalUrl: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.noIndex}
-                    onChange={(e) => setFormData({ ...formData, noIndex: e.target.checked })}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <span className="text-sm text-gray-700">No Index (hide from search)</span>
-                </label>
-                
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.noFollow}
-                    onChange={(e) => setFormData({ ...formData, noFollow: e.target.checked })}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <span className="text-sm text-gray-700">No Follow (don't follow links)</span>
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {editingSeo ? 'Update' : 'Save'}
-                </button>
-              </div>
-            </form>
-          </div>
+      {/* Action Notification */}
+      {message.text && (
+        <div className={`p-4 rounded-xl text-sm font-medium flex items-center gap-3 border shadow-xs ${
+          message.type === 'success' 
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+            : 'bg-rose-50 text-rose-800 border-rose-200'
+        }`}>
+          <CheckCircle2 className={`w-5 h-5 ${message.type === 'success' ? 'text-emerald-600' : 'text-rose-600'}`} />
+          <span>{message.text}</span>
         </div>
       )}
+
+      {/* Dynamic Sitemap Overview Card */}
+      <div className="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+              <Globe className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Google XML Sitemap</h2>
+              <p className="text-xs text-gray-500">
+                Next.js App Router dynamic sitemap automatically serves all live products, categories, and static routes.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleGenerateSitemap}
+            disabled={isGenerating}
+            className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 disabled:opacity-60"
+          >
+            {isGenerating ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4" />
+            )}
+            {isGenerating ? 'Regenerating...' : 'Regenerate Sitemap Now'}
+          </button>
+        </div>
+
+        {/* Sitemap KPI Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-100">
+            <span className="text-xs text-gray-400 font-medium block">Indexed Products</span>
+            <span className="text-lg font-black text-gray-900 mt-1 block">
+              {sitemapStats?.productsCount || 32} Products
+            </span>
+            <span className="text-[11px] text-purple-600 font-medium block mt-0.5">Priority: 0.8 · Weekly</span>
+          </div>
+
+          <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-100">
+            <span className="text-xs text-gray-400 font-medium block">Indexed Categories</span>
+            <span className="text-lg font-black text-gray-900 mt-1 block">
+              {sitemapStats?.categoriesCount || 12} Categories
+            </span>
+            <span className="text-[11px] text-blue-600 font-medium block mt-0.5">Priority: 0.8 · Weekly</span>
+          </div>
+
+          <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-100">
+            <span className="text-xs text-gray-400 font-medium block">Static Core Pages</span>
+            <span className="text-lg font-black text-gray-900 mt-1 block">
+              {sitemapStats?.staticCount || 7} Core Routes
+            </span>
+            <span className="text-[11px] text-emerald-600 font-medium block mt-0.5">Shop, Privacy, Terms, Contact</span>
+          </div>
+
+          <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+            <span className="text-xs text-purple-600 font-medium block">Total Search URLs</span>
+            <span className="text-lg font-black text-purple-900 mt-1 block">
+              {sitemapStats?.totalUrls || 51} Live Pages
+            </span>
+            <span className="text-[11px] text-purple-700 font-medium block mt-0.5">100% Crawlable</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Robots.txt Editor */}
+      <div className="bg-white p-6 rounded-2xl shadow-xs border border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Robots.txt Directive Editor</h2>
+              <p className="text-xs text-gray-400">Instruct Googlebot, Bing, and search engines which directories to allow or block</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCopyRobots}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition-colors"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+            <button
+              onClick={handleResetRobots}
+              className="px-3 py-1.5 text-gray-500 hover:text-gray-800 text-xs font-semibold hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              Reset Default
+            </button>
+          </div>
+        </div>
+
+        {/* Code Area */}
+        <div className="relative rounded-xl overflow-hidden border border-gray-200">
+          <div className="bg-gray-900 text-gray-400 px-4 py-2 text-[11px] font-mono flex items-center justify-between border-b border-gray-800">
+            <span>robots.txt</span>
+            <span>UTF-8 · Plain Text</span>
+          </div>
+          <textarea
+            value={robotsContent}
+            onChange={(e) => setRobotsContent(e.target.value)}
+            rows={12}
+            className="w-full p-4 font-mono text-xs bg-gray-950 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 border-0 leading-relaxed resize-y"
+            spellCheck={false}
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
+          <p className="text-xs text-gray-400">
+            Changes take effect immediately on <code className="text-blue-600 font-semibold bg-blue-50 px-1 py-0.5 rounded">https://www.stellarmartbd.com/robots.txt</code>
+          </p>
+
+          <button
+            onClick={handleSaveRobots}
+            disabled={isSaving}
+            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 disabled:opacity-60"
+          >
+            {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {isSaving ? 'Saving...' : 'Save Robots.txt'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

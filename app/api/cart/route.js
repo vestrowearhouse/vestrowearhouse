@@ -1,30 +1,62 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { Cart } from '@/models';
-import mongoose from 'mongoose';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { verifyUserToken } from '@/lib/secureJwt';
+
+const getSupabaseClient = () => {
+  return getSupabaseAdmin();
+};
+
+// Helper to resolve the database cart session key (always prefixed with user_ for accounts)
+const resolveCartSessionKey = async (request, explicitUserId, explicitSessionId) => {
+  if (explicitUserId) {
+    return explicitUserId.startsWith('user_') ? explicitUserId : `user_${explicitUserId}`;
+  }
+
+  // Check auth cookie token
+  try {
+    const decoded = await verifyUserToken(request);
+    if (decoded && decoded.id) {
+      return `user_${decoded.id}`;
+    }
+  } catch (err) {
+    // Ignore invalid token
+  }
+
+  if (explicitSessionId) {
+    return explicitSessionId;
+  }
+
+  return null;
+};
 
 export async function GET(request) {
   try {
-    await dbConnect();
-    
     const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
     const sessionId = searchParams.get('sessionId');
-    
-    if (!sessionId) {
+
+    const cartKey = await resolveCartSessionKey(request, userId, sessionId);
+
+    if (!cartKey) {
       return NextResponse.json({ cart: { items: [] } });
     }
-    
-    let cart = await Cart.findOne({ sessionId }).populate('items.product');
-    
-    if (!cart) {
-      cart = await Cart.create({ sessionId, items: [] });
-      cart = await cart.populate('items.product');
+
+    const supabase = getSupabaseClient();
+    const { data: cart, error } = await supabase
+      .from('carts')
+      .select('*')
+      .eq('session_id', cartKey)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 is Supabase's "Not Found" code
+      console.error('Supabase GET error:', error);
     }
     
-    return NextResponse.json({ cart });
+    return NextResponse.json({ cart: cart || { items: [] } });
   } catch (error) {
+    console.error('Cart GET Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch cart' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -32,43 +64,70 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    await dbConnect();
-    
     const data = await request.json();
-    const { productId, quantity = 1, sessionId } = data;
-    
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return NextResponse.json(
-        { error: 'Invalid product ID' },
-        { status: 400 }
-      );
+    const { product, quantity = 1, sessionId, userId, variantData } = data;
+
+    const cartKey = await resolveCartSessionKey(request, userId, sessionId);
+
+    if (!product || !cartKey) {
+      return NextResponse.json({ error: `Missing fields: Product is ${!!product}, CartKey is ${!!cartKey}` }, { status: 400 });
     }
-    
-    let cart = await Cart.findOne({ sessionId });
-    
-    if (!cart) {
-      cart = await Cart.create({ sessionId, items: [] });
+
+    const productId = product._id || product.id || (typeof product === 'string' ? product : null);
+
+    if (!productId) {
+      return NextResponse.json({ error: 'Invalid product format. Product ID is missing.' }, { status: 400 });
     }
-    
-    const objectId = new mongoose.Types.ObjectId(productId);
-    
-    const existingItem = cart.items.find(
-      item => item.product.toString() === productId
-    );
-    
-    if (existingItem) {
-      existingItem.quantity += quantity;
+
+    const supabase = getSupabaseClient();
+    let { data: cart } = await supabase
+      .from('carts')
+      .select('*')
+      .eq('session_id', cartKey)
+      .single();
+
+    let items = cart?.items || [];
+    const variantSku = variantData?.variantSku || null;
+
+    const existingIndex = items.findIndex((item) => {
+      const itemId = item.product?._id || item.product?.id;
+      if (itemId !== productId) return false;
+      if (variantSku || item.variantSku || item.variantData?.variantSku) {
+        return (item.variantSku || item.variantData?.variantSku) === variantSku;
+      }
+      return true;
+    });
+
+    if (existingIndex >= 0) {
+      items[existingIndex].quantity += quantity;
+      if (variantData) {
+        items[existingIndex].variantData = variantData;
+        items[existingIndex].variantPrice = variantData.variantPrice || items[existingIndex].variantPrice;
+        items[existingIndex].variantSku = variantSku;
+      }
     } else {
-      cart.items.push({ product: objectId, quantity });
+      items.push({
+        product,
+        quantity,
+        variantData: variantData || null,
+        variantPrice: variantData?.variantPrice || product.sellingPrice || product.price || 0,
+        variantSku: variantSku || null,
+      });
     }
-    
-    await cart.save();
-    await cart.populate('items.product');
-    
-    return NextResponse.json({ cart, message: 'Product added to cart' });
+
+    const { data: updatedCart, error } = await supabase
+      .from('carts')
+      .upsert({ session_id: cartKey, items }, { onConflict: 'session_id' })
+      .select()
+      .single();
+      
+    if (error) throw error;
+
+    return NextResponse.json({ cart: updatedCart, message: 'Product added to cart' });
   } catch (error) {
+    console.error('Cart POST Error:', error);
     return NextResponse.json(
-      { error: 'Failed to add to cart' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -76,50 +135,60 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    await dbConnect();
-    
     const data = await request.json();
-    const { productId, quantity, sessionId } = data;
-    
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return NextResponse.json(
-        { error: 'Invalid product ID' },
-        { status: 400 }
-      );
+    const { productId, quantity, sessionId, userId, variantSku } = data;
+
+    const cartKey = await resolveCartSessionKey(request, userId, sessionId);
+
+    if (!cartKey) {
+      return NextResponse.json({ error: 'Cart session not specified' }, { status: 400 });
     }
-    
-    const cart = await Cart.findOne({ sessionId });
-    
+
+    const supabase = getSupabaseClient();
+    const { data: cart } = await supabase
+      .from('carts')
+      .select('*')
+      .eq('session_id', cartKey)
+      .single();
+
     if (!cart) {
       return NextResponse.json(
         { error: 'Cart not found' },
         { status: 404 }
       );
     }
-    
-    const objectId = new mongoose.Types.ObjectId(productId);
-    
-    const item = cart.items.find(
-      item => item.product.toString() === productId
-    );
-    
-    if (item) {
+
+    let items = cart.items || [];
+    const itemIndex = items.findIndex((item) => {
+      const itemId = item.product?._id || item.product?.id;
+      if (itemId !== productId) return false;
+      if (variantSku || item.variantSku || item.variantData?.variantSku) {
+        return (item.variantSku || item.variantData?.variantSku) === variantSku;
+      }
+      return true;
+    });
+
+    if (itemIndex >= 0) {
       if (quantity <= 0) {
-        cart.items = cart.items.filter(
-          item => item.product.toString() !== productId
-        );
+        items = items.filter((_, index) => index !== itemIndex);
       } else {
-        item.quantity = quantity;
+        items[itemIndex].quantity = quantity;
       }
     }
-    
-    await cart.save();
-    await cart.populate('items.product');
-    
-    return NextResponse.json({ cart });
+
+    const { data: updatedCart, error } = await supabase
+      .from('carts')
+      .upsert({ session_id: cartKey, items }, { onConflict: 'session_id' })
+      .select()
+      .single();
+      
+    if (error) throw error;
+
+    return NextResponse.json({ cart: updatedCart });
   } catch (error) {
+    console.error('Cart PUT Error:', error);
     return NextResponse.json(
-      { error: 'Failed to update cart' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -127,33 +196,60 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
-    await dbConnect();
-    
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
+    const variantSku = searchParams.get('variantSku');
     const sessionId = searchParams.get('sessionId');
-    
-    const cart = await Cart.findOne({ sessionId });
-    
+    const userId = searchParams.get('userId');
+    const isClear = searchParams.get('clear') === 'true';
+
+    const cartKey = await resolveCartSessionKey(request, userId, sessionId);
+
+    if (!cartKey) {
+      return NextResponse.json({ message: 'Cart session not specified' });
+    }
+
+    const supabase = getSupabaseClient();
+    const { data: cart } = await supabase
+      .from('carts')
+      .select('*')
+      .eq('session_id', cartKey)
+      .single();
+
     if (!cart) {
-      return NextResponse.json({ message: 'Cart is empty' });
+      return NextResponse.json({ message: 'Cart is empty', cart: { items: [] } });
     }
-    
-    if (productId) {
-      cart.items = cart.items.filter(
-        item => item.product.toString() !== productId
-      );
+
+    let items = cart.items || [];
+
+    if (isClear) {
+      items = [];
+    } else if (productId) {
+      items = items.filter((item) => {
+        const itemId = item.product?._id || item.product?.id;
+        if (itemId !== productId) return true;
+        if (variantSku || item.variantSku || item.variantData?.variantSku) {
+          return (item.variantSku || item.variantData?.variantSku) !== variantSku;
+        }
+        return false;
+      });
     } else {
-      cart.items = [];
+      items = [];
     }
-    
-    await cart.save();
-    await cart.populate('items.product');
-    
-    return NextResponse.json({ cart, message: 'Item removed from cart' });
+
+    const { data: updatedCart, error } = await supabase
+      .from('carts')
+      .upsert({ session_id: cartKey, items }, { onConflict: 'session_id' })
+      .select()
+      .single();
+      
+    if (error) throw error;
+
+    return NextResponse.json({ cart: updatedCart, message: 'Item removed from cart' });
   } catch (error) {
+    console.error('Cart DELETE Error:', error);
     return NextResponse.json(
-      { error: 'Failed to remove from cart' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

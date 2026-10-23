@@ -1,52 +1,72 @@
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import Vendor from '@/models/Vendor';
+﻿import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-export async function GET(request) {
-  try {
-    await dbConnect();
-    const { searchParams } = new URL(request.url);
-    const active = searchParams.get('active');
-    const verified = searchParams.get('verified');
-    
-    let query = {};
-    
-    if (active === 'true') query.isActive = true;
-    if (active === 'false') query.isActive = false;
-    if (verified === 'true') query.isVerified = true;
-    if (verified === 'false') query.isVerified = false;
-    
-    const vendors = await Vendor.find(query)
-      .populate('user', 'name email phone')
-      .sort({ createdAt: -1 });
-    
-    return NextResponse.json({ vendors });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+// Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-export async function POST(request) {
+export async function GET() {
   try {
-    await dbConnect();
-    const data = await request.json();
-    
-    // Check if email already exists
-    const existingVendor = await Vendor.findOne({ email: data.email });
-    if (existingVendor) {
-      return NextResponse.json({ error: 'Vendor with this email already exists' }, { status: 400 });
+    // Get total vendors
+    const { count: totalVendors, error: vendorsError } = await supabase
+      .from('vendors')
+      .select('*', { count: 'exact', head: true });
+
+    if (vendorsError) {
+      throw vendorsError;
     }
-    
-    // Check if slug already exists
-    const existingSlug = await Vendor.findOne({ slug: data.slug });
-    if (existingSlug) {
-      return NextResponse.json({ error: 'Vendor slug already exists' }, { status: 400 });
+
+    // Get active vendors
+    const { count: activeVendors, error: activeError } = await supabase
+      .from('vendors')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active');
+
+    if (activeError) {
+      throw activeError;
     }
-    
-    const vendor = await Vendor.create(data);
-    
-    return NextResponse.json({ vendor }, { status: 201 });
+
+    // Get verified vendors
+    const { count: verifiedVendors, error: verifiedError } = await supabase
+      .from('vendors')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_verified', true);
+
+    if (verifiedError) {
+      throw verifiedError;
+    }
+
+    // Latest vendors
+    const { data: latestVendors, error: latestError } = await supabase
+      .from('vendors')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (latestError) {
+      throw latestError;
+    }
+
+    return NextResponse.json({
+      success: true,
+      analytics: {
+        totalVendors: totalVendors || 0,
+        activeVendors: activeVendors || 0,
+        verifiedVendors: verifiedVendors || 0,
+        latestVendors: latestVendors || []
+      }
+    });
+
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Internal server error'
+      },
+      {
+        status: 500
+      }
+    );
   }
 }

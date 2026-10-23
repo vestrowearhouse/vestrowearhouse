@@ -3,14 +3,22 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
+import SessionTimer from './SessionTimer';
 
 const pageTitles = {
   '/admin': 'Dashboard',
+  '/admin/dashboard': 'Dashboard',
+  '/admin/support': 'Live Support',
   '/admin/products': 'Products Management',
+  '/admin/products/bulk': 'Bulk Add Products',
   '/admin/categories': 'Categories Management',
+  '/admin/categories/bulk': 'Bulk Add Categories',
   '/admin/banners': 'Banners Management',
+  '/admin/flash-sale': 'Flash Sale Management',
+  '/admin/quick-channels': 'Home Quick Icons',
   '/admin/users': 'Users Management',
   '/admin/orders': 'Orders Management',
+  '/admin/webmail': 'Webmail (Inbox & Send)',
   '/admin/pages': 'Pages Management',
   '/admin/settings': 'Settings',
   '/admin/contact': 'Contact Messages',
@@ -26,6 +34,13 @@ const pageTitles = {
   '/admin/coupons': 'Coupons Management',
   '/admin/shipping': 'Shipping Management',
   '/admin/vendors': 'Vendors Management',
+  '/admin/vendors/add': 'Add Vendor',
+  '/admin/vendor-product-requests': 'Vendor Product Requests',
+  '/admin/vendor-orders': 'Vendor Orders',
+  '/admin/vendor-products': 'Vendor Products',
+  '/admin/vendor-analytics': 'Vendor Analytics',
+  '/admin/vendor-revenue': 'Vendor Revenue',
+  '/admin/vendor-settings': 'Vendor Settings',
   '/admin/seo': 'SEO Settings',
   '/admin/media': 'Media Library',
   '/admin/database': 'Database Management',
@@ -36,11 +51,12 @@ const pageTitles = {
 export default function AdminNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const title = pageTitles[pathname] || 'Admin Panel';
+  const title = pageTitles[pathname] || pageTitles[`/${pathname.split('/').slice(1, 3).join('/')}`] || 'Admin Panel';
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/admin-logout', { method: 'POST' });
+      await fetch('/api/auth/admin-logout', { method: 'POST', credentials: 'include' });
+      sessionStorage.clear();
       router.push('/admin-login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -53,7 +69,8 @@ export default function AdminNavbar() {
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          <SessionTimer />
           <Link href="/" className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
             View Website
           </Link>

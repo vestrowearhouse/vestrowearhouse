@@ -1,148 +1,175 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
+import { X } from 'lucide-react';
 import Image from 'next/image';
+import { useCart } from '../context/CartContext';
+import { useDebounceQuantityUpdate } from '../hooks/useDebounceQuantityUpdate';
 
-export default function CartDrawer({ isOpen, onClose, cart, loading, updateQuantity, removeFromCart, clearCart }) {
-  if (!isOpen) return null;
+export default function CartDrawer({ isOpen, onClose }) {
+  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { updateQuantityWithDebounce, isLoading } = useDebounceQuantityUpdate(updateQuantity, 300);
+  const items = cart?.items || [];
+  const [whatsappPhone, setWhatsappPhone] = useState('8801345447500');
 
-  const handleCheckout = () => {
-    onClose();
+  useEffect(() => {
+    const cached = typeof window !== 'undefined' ? sessionStorage.getItem('stellar_wa_phone') : null;
+    if (cached) {
+      setWhatsappPhone(cached);
+      return;
+    }
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        const phone = data?.settings?.support_phone || data?.settings?.phone || '8801345447500';
+        const clean = phone.replace(/[^0-9]/g, '');
+        const normalized = clean.startsWith('01') ? `88${clean}` : clean;
+        if (typeof window !== 'undefined') sessionStorage.setItem('stellar_wa_phone', normalized);
+        setWhatsappPhone(normalized || '8801345447500');
+      })
+      .catch(() => {});
+  }, []);
+
+  const subtotal = items.reduce((acc, item) => {
+    const price = item.product?.sellingPrice || item.product?.price || 0;
+    return acc + price * item.quantity;
+  }, 0);
+  
+  const shipping = 0;
+  const total = subtotal + shipping;
+
+  const generateWhatsAppText = () => {
+    let text = "Hello, I want to order the following items:\n\n";
+    items.forEach(item => {
+      const product = item.product;
+      if (product) {
+        text += `- ${product.name} (Qty: ${item.quantity})\n`;
+      }
+    });
+    text += `\nTotal: ৳${total.toLocaleString()}`;
+    return encodeURIComponent(text);
   };
 
   return (
     <>
+      {/* Backdrop */}
       <div 
-        className={`fixed inset-0 bg-black/50 z-50 transition-all duration-300 ease-in-out ${isOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
       
-      <div className={`fixed right-0 top-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col transform transition-all duration-500 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex items-center justify-between p-4 border-b bg-blue-600 text-white">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-6 h-6" />
-            <h2 className="text-xl font-bold">Shopping Cart</h2>
-            {cart?.items?.length > 0 && (
-              <span className="bg-white text-blue-600 px-2 py-0.5 rounded-full text-sm font-bold">
-                {cart.items.length}
-              </span>
-            )}
-          </div>
+      {/* Drawer */}
+      <div className={`fixed right-0 top-0 h-full w-full max-w-md bg-[#f8fafc] z-[70] shadow-2xl flex flex-col transform transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'}`}>
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 bg-white shadow-sm z-10">
+          <h1 className="text-[22px] font-bold text-gray-800 m-0 flex items-center gap-2">
+            🛒 Your Cart
+          </h1>
+          {items.length > 0 && (
+            <button onClick={clearCart} className="text-sm font-bold text-red-500 hover:text-red-600 transition-colors mr-2 ml-auto">
+              Clear All
+            </button>
+          )}
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
+            aria-label="Close cart"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className={`flex-1 overflow-y-auto p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-          {loading ? (
-            <div className="flex flex-col items-center justify-center h-48 p-8 text-gray-500">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-              <p className="text-lg font-semibold">Loading your cart...</p>
-            </div>
-          ) : !cart?.items || cart.items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-500">
-              <ShoppingBag className="w-16 h-16 mb-4" />
+        {/* Cart Items Area */}
+        <div className="flex-1 overflow-y-auto p-5">
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <div className="text-6xl mb-4">🛒</div>
               <p className="text-lg font-semibold">Your cart is empty</p>
-              <p className="text-sm">Add some products to get started</p>
             </div>
           ) : (
-            <div className="space-y-4 [&>*]:animate-in [&>*]:fade-in-2 [&>*]:slide-in-from-right-2 [&>*]:duration-500">
-              {cart.items.map((item, index) => (
-                <div key={item.product?._id || item.productId || index} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-20 h-20 bg-white rounded-lg overflow-hidden flex-shrink-0 relative">
-                    {item.product?.featuredImage ? (
-                      <Image 
-                        src={item.product.featuredImage} 
-                        alt={item.product?.name || 'Product'}
-                        fill
-                        className="object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 hidden">
-                      <ShoppingBag className="w-8 h-8 text-gray-400" />
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-800 truncate">
-                      {item.product?.name || 'Product'}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {item.product?.category || 'Category'}
-                    </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => updateQuantity(item.product?._id || item.productId, item.quantity - 1)}
-                          className="w-8 h-8 flex items-center justify-center bg-white border rounded-lg hover:bg-gray-100"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                        <button 
-                          onClick={() => updateQuantity(item.product?._id || item.productId, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center bg-white border rounded-lg hover:bg-gray-100"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <button 
-                        onClick={() => removeFromCart(item.product?._id || item.productId)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <p className="font-bold text-blue-600">
-                      ৳{((item.product?.sellingPrice || 0) * item.quantity).toLocaleString()}
-                    </p>
-                    {item.quantity > 1 && (
-                      <p className="text-xs text-gray-500">
-                        ৳{item.product?.sellingPrice}/unit
-                      </p>
-                    )}
-                  </div>
+            items.map((item) => {
+              const product = item.product;
+              if (!product) return null;
+              
+              const price = product.sellingPrice || product.price || 0;
+              const image = product.featuredImage || (product.images && product.images[0]) || product.image || '/placeholder.png';
+
+              return (
+              <div key={product._id} className="flex items-center bg-white p-[15px] rounded-[12px] mb-[15px] shadow-[0_5px_15px_rgba(0,0,0,0.08)]">
+                <div className="w-[80px] h-[80px] relative flex-shrink-0 mr-[15px]">
+                  <Image 
+                    src={image} 
+                    alt={product.name}
+                    fill
+                    unoptimized
+                    className="object-cover rounded-[10px]"
+                  />
                 </div>
-              ))}
-            </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-800 text-[14px] leading-tight line-clamp-2 pr-2">{product.name}</h3>
+                  <p className="text-[#2ed573] font-bold mt-1">৳ {price.toLocaleString()}</p>
+                </div>
+
+                <div className="flex gap-[8px] items-center">
+                  <button 
+                    onClick={() => updateQuantityWithDebounce(product._id, item.quantity - 1)}
+                    className="px-[10px] py-[4px] bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded text-gray-700 font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={item.quantity <= 1 || isLoading(product._id)}
+                  >
+                    -
+                  </button>
+                  <span className="font-bold w-4 text-center text-sm">{item.quantity}</span>
+                  <button 
+                    onClick={() => updateQuantityWithDebounce(product._id, item.quantity + 1)}
+                    className="px-[10px] py-[4px] bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded text-gray-700 font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading(product._id)}
+                  >
+                    +
+                  </button>
+                </div>
+
+                <button 
+                  onClick={() => removeFromCart(product._id)}
+                  className="ml-[15px] text-red-500 hover:text-red-700 font-medium text-[13px] bg-transparent border-none cursor-pointer transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            )})
           )}
         </div>
 
-        {cart?.items?.length > 0 && (
-          <div className="border-t p-4 bg-gray-50 space-y-4">
-            <button 
-              onClick={clearCart}
-              className="text-sm text-red-500 hover:text-red-600 font-medium"
-            >
-              Clear Cart
-            </button>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold">Total:</span>
-              <span className="text-2xl font-bold text-blue-600">
-                ৳{cart?.total?.toLocaleString() || 0}
-              </span>
+        {/* Summary Section */}
+        {items.length > 0 && (
+          <div className="bg-white p-[20px] rounded-t-[20px] shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-10">
+            <div className="flex justify-between mb-[10px] text-gray-600 font-medium text-sm">
+              <span>Subtotal</span>
+              <span>৳ {subtotal.toLocaleString()}</span>
             </div>
             
-            <Link 
-              href="/cart"
-              onClick={onClose}
-              className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+            <div className="flex justify-between mb-[15px] font-bold text-[18px] text-gray-900 border-t border-gray-100 pt-3 mt-3">
+              <span>Total</span>
+              <span className="text-[#2ed573]">৳ {total.toLocaleString()}</span>
+            </div>
+
+            <a 
+              href={`https://wa.me/${whatsappPhone}?text=${generateWhatsAppText()}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-full p-[14px] mb-[10px] bg-[#25D366] text-white text-center border-none rounded-[10px] cursor-pointer hover:bg-[#1ebd5b] transition-colors font-bold text-[15px] shadow-md shadow-green-500/30 gap-2"
             >
-              View Cart
-              <ArrowRight className="w-5 h-5" />
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 .001 5.385.001 12.031c0 2.127.553 4.202 1.604 6.037L.055 24l6.106-1.597c1.782.955 3.774 1.458 5.868 1.458 6.645 0 12.029-5.385 12.029-12.031C24.059 5.384 18.676 0 12.031 0zm0 21.968c-1.802 0-3.535-.483-5.064-1.393l-.363-.215-3.766.984.998-3.668-.236-.375c-.997-1.583-1.523-3.411-1.523-5.27 0-5.59 4.549-10.14 10.138-10.14 5.59 0 10.14 4.549 10.14 10.14 0 5.591-4.55 10.14-10.14 10.14zm5.556-7.592c-.305-.152-1.805-.89-2.083-.992-.279-.101-.482-.152-.686.152-.204.304-.789.992-.967 1.194-.177.203-.355.228-.66.076-1.53-.761-2.617-1.39-3.634-2.684-.262-.335.263-.309.845-1.421.076-.152.038-.284-.038-.436-.076-.152-.686-1.65-.94-2.261-.247-.594-.499-.513-.686-.523-.177-.01-.38-.01-.584-.01-.203 0-.533.076-.812.381-.279.304-1.066 1.04-1.066 2.535 0 1.495 1.091 2.94 1.244 3.143.152.203 2.146 3.272 5.197 4.509 1.942.787 2.656.84 3.125.795.539-.052 1.805-.736 2.059-1.446.254-.71.254-1.319.177-1.446-.076-.127-.279-.203-.584-.355z"/></svg>
+              Order via WhatsApp
+            </a>
+            <Link 
+              href="/checkout?source=cart"
+              onClick={onClose}
+              className="block w-full p-[14px] bg-[#2ed573] text-white text-center border-none rounded-[10px] cursor-pointer hover:bg-[#20bf6b] transition-colors font-bold text-[15px] shadow-md shadow-green-500/30"
+            >
+              Proceed to Checkout
             </Link>
           </div>
         )}

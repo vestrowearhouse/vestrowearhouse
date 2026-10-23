@@ -1,174 +1,86 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  Zap, 
-  RefreshCw, 
-  Trash2, 
-  Server,
-  Clock,
-  CheckCircle,
-  AlertTriangle
-} from 'lucide-react';
+import { Trash2, Globe, Database, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 export default function CachePage() {
-  const [loading, setLoading] = useState(false);
-  const [cacheStats, setCacheStats] = useState({
-    apiCache: { enabled: true, entries: 1250, size: '45 MB' },
-    sessionCache: { enabled: true, entries: 89, size: '12 MB' },
-    viewCache: { enabled: true, entries: 456, size: '28 MB' },
-  });
+  const [loadingType, setLoadingType] = useState(null);
+  const [message, setMessage] = useState({ text: '', type: '' });
 
-  const clearCache = async (type) => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      alert(`${type} cache cleared successfully!`);
-    }, 1000);
-  };
+  const handleClearCache = async (action, path = '') => {
+    setLoadingType(action);
+    setMessage({ text: '', type: '' });
 
-  const clearAllCache = async () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      alert('All cache cleared successfully!');
-    }, 1500);
+    try {
+      const res = await fetch('/api/admin/cache', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, path }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage({ text: data.message, type: 'success' });
+      } else {
+        setMessage({ text: data.error || 'Failed to clear cache.', type: 'error' });
+      }
+    } catch (error) {
+      setMessage({ text: 'Network error occurred.', type: 'error' });
+    } finally {
+      setLoadingType(null);
+      setTimeout(() => setMessage({ text: '', type: '' }), 5000); // 5 sec পর মেসেজ গায়েব
+    }
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Cache Management</h1>
-          <p className="text-gray-500">Manage application cache</p>
-        </div>
-        <button 
-          onClick={clearAllCache}
-          disabled={loading}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2 disabled:opacity-50"
-        >
-          {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-          Clear All Cache
-        </button>
+    <div className="w-full space-y-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">Cache & Performance</h1>
+        <p className="text-gray-500">Manage your application cache to ensure users see the latest updates.</p>
       </div>
 
-      {/* Cache Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Server className="w-6 h-6 text-blue-600" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span className="text-sm text-gray-500">Active</span>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500">API Cache</p>
-          <p className="text-2xl font-bold">{cacheStats.apiCache.entries} entries</p>
-          <p className="text-sm text-gray-500">{cacheStats.apiCache.size}</p>
+      {message.text && (
+        <div className={`p-4 mb-6 rounded-lg flex items-center gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+          <CheckCircle2 className="w-5 h-5" />
+          <span className="font-medium">{message.text}</span>
         </div>
+      )}
 
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Zap className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span className="text-sm text-gray-500">Active</span>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500">Session Cache</p>
-          <p className="text-2xl font-bold">{cacheStats.sessionCache.entries} entries</p>
-          <p className="text-sm text-gray-500">{cacheStats.sessionCache.size}</p>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Clock className="w-6 h-6 text-green-600" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              <span className="text-sm text-gray-500">Active</span>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500">View Cache</p>
-          <p className="text-2xl font-bold">{cacheStats.viewCache.entries} entries</p>
-          <p className="text-sm text-gray-500">{cacheStats.viewCache.size}</p>
-        </div>
-      </div>
-
-      {/* Cache Settings */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Cache Configuration</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Clear All Cache */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg"><Trash2 className="w-6 h-6" /></div>
             <div>
-              <p className="font-medium">Enable API Cache</p>
-              <p className="text-sm text-gray-500">Cache API responses for faster loading</p>
+              <h3 className="font-semibold text-gray-800 text-lg">Clear Entire Site Cache</h3>
+              <p className="text-sm text-gray-500">Purges everything. Useful after massive product or settings updates.</p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
           </div>
-
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div>
-              <p className="font-medium">Enable Session Cache</p>
-              <p className="text-sm text-gray-500">Cache user session data</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div>
-              <p className="font-medium">Enable View Cache</p>
-              <p className="text-sm text-gray-500">Cache rendered page views</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button 
-            onClick={() => clearCache('API')}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 flex flex-col items-center gap-2"
+            onClick={() => handleClearCache('clear_all')}
+            disabled={loadingType === 'clear_all'}
+            className="w-full mt-2 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg flex justify-center items-center gap-2 disabled:opacity-70 transition-colors"
           >
-            <RefreshCw className="w-8 h-8 text-blue-600" />
-            <span className="font-medium">Clear API Cache</span>
-            <span className="text-sm text-gray-500">Clear {cacheStats.apiCache.entries} entries</span>
+            {loadingType === 'clear_all' ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Purge All Cache'}
           </button>
+        </div>
 
+        {/* Clear Products/Home Cache */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-lg"><Globe className="w-6 h-6" /></div>
+            <div>
+              <h3 className="font-semibold text-gray-800 text-lg">Clear Homepage Cache</h3>
+              <p className="text-sm text-gray-500">Clears the main homepage only. Use after changing banners or featured items.</p>
+            </div>
+          </div>
           <button 
-            onClick={() => clearCache('Session')}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 flex flex-col items-center gap-2"
+            onClick={() => handleClearCache('clear_path', '/')}
+            disabled={loadingType === 'clear_path'}
+            className="w-full mt-2 py-2.5 px-4 bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg flex justify-center items-center gap-2 disabled:opacity-70 transition-colors"
           >
-            <Zap className="w-8 h-8 text-purple-600" />
-            <span className="font-medium">Clear Session Cache</span>
-            <span className="text-sm text-gray-500">Clear {cacheStats.sessionCache.entries} entries</span>
-          </button>
-
-          <button 
-            onClick={() => clearCache('View')}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 flex flex-col items-center gap-2"
-          >
-            <Clock className="w-8 h-8 text-green-600" />
-            <span className="font-medium">Clear View Cache</span>
-            <span className="text-sm text-gray-500">Clear {cacheStats.viewCache.entries} entries</span>
+            {loadingType === 'clear_path' ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Refresh Homepage'}
           </button>
         </div>
       </div>

@@ -1,60 +1,82 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import Coupon from '@/models/Coupon';
-import Category from '@/models/Category';
-import Product from '@/models/Product';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { getCache, setCache } from '@/lib/api-cache';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
-    await dbConnect();
     const { searchParams } = new URL(request.url);
+    const code = searchParams.get('code')?.trim().toUpperCase();
     const active = searchParams.get('active');
-    const code = searchParams.get('code');
-    
-    let query = {};
-    
-    if (active === 'true') {
-      query.isActive = true;
-      query.expiresAt = { $gt: new Date() };
-      if (query.usageLimit) {
-        query.$expr = { $gt: ['$usageLimit', '$usageCount'] };
-      }
-    }
-    
-    if (code) {
-      query.code = code.toUpperCase();
-    }
-    
-    const coupons = await Coupon.find(query)
-      .populate('createdBy', 'name email')
-      .populate('applicableCategories', 'name')
-      .populate('applicableProducts', 'name')
-      .sort({ createdAt: -1 });
-    
-    return NextResponse.json({ coupons });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
 
-export async function POST(request) {
-  try {
-    await dbConnect();
-    const data = await request.json();
-    
-    // Check if coupon code already exists
-    const existingCoupon = await Coupon.findOne({ code: data.code.toUpperCase() });
-    if (existingCoupon) {
-      return NextResponse.json({ error: 'Coupon code already exists' }, { status: 400 });
+    if (!code) {
+      return NextResponse.json(
+        { error: 'Coupon code is required' },
+        { status: 400 }
+      );
     }
+
+    const cacheKey = `coupon:${code}:${active || 'all'}`;
+    const cached = getCache(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
+    const supabase = getSupabaseAdmin();
+    let query = supabase
+      .from('coupons')
+      .select('id, code, discount_type, discount_value, min_order_amount, max_discount_amount, status, start_date, end_date, usage_limit')
+      .eq('code', code);
+
+    if (active === 'true') {
+      query = query.eq('status', 'active');
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Database error fetching coupon:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch coupon' },
+        { status: 500 }
+      );
+    }
+
+    let validCoupons = data || [];
     
-    const coupon = await Coupon.create({
-      ...data,
-      code: data.code.toUpperCase()
-    });
-    
-    return NextResponse.json({ coupon }, { status: 201 });
+    if (active === 'true' && validCoupons.length > 0) {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      
+      validCoupons = validCoupons.filter(c => {
+        if (c.start_date) {
+          const start = new Date(c.start_date);
+          start.setHours(0, 0, 0, 0);
+          if (now < start) return false;
+        }
+        if (c.end_date) {
+          const end = new Date(c.end_date);
+          end.setHours(0, 0, 0, 0);
+          if (now > end) return false;
+        }
+        // Check usage limits
+        if (c.usage_limit !== null && c.usage_count >= c.usage_limit) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    const responseData = { coupons: validCoupons };
+    setCache(cacheKey, responseData, 60);
+
+    return NextResponse.json(responseData);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Coupon fetch error:', error);
+    return NextResponse.json(
+      { error: 'Server error' },
+      { status: 500 }
+    );
   }
 }

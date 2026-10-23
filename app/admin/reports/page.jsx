@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Download, 
   FileText, 
@@ -8,12 +8,22 @@ import {
   PieChart, 
   TrendingUp,
   Calendar,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export default function ReportsPage() {
-  const [reportType, setReportType] = useState('sales');
   const [dateRange, setDateRange] = useState('30');
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    averageOrderValue: 0,
+    conversionRate: 0,
+    orders: []
+  });
+  const [loading, setLoading] = useState(true);
 
   const reportTypes = [
     { id: 'sales', name: 'Sales Report', icon: TrendingUp, description: 'Track sales performance and revenue' },
@@ -22,8 +32,62 @@ export default function ReportsPage() {
     { id: 'categories', name: 'Category Report', icon: PieChart, description: 'Category-wise performance' },
   ];
 
-  const generateReport = (type) => {
-    alert(`Generating ${type} report... This feature will be available soon!`);
+  useEffect(() => {
+    fetchReportData();
+  }, [dateRange]);
+
+  const fetchReportData = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/reports?days=${dateRange === 'custom' ? 30 : dateRange}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setStats(json.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generatePDF = (type) => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.text('StellarMartBD Admin Report', 14, 22);
+    
+    doc.setFontSize(12);
+    doc.text(`Report Type: ${type.toUpperCase()}`, 14, 32);
+    doc.text(`Date Range: Last ${dateRange} days`, 14, 40);
+    doc.text(`Generated At: ${new Date().toLocaleString()}`, 14, 48);
+
+    if (type === 'sales') {
+      doc.text(`Total Revenue: Tk ${stats.totalRevenue.toFixed(2)}`, 14, 60);
+      doc.text(`Total Orders: ${stats.totalOrders}`, 14, 68);
+      doc.text(`Average Order Value: Tk ${stats.averageOrderValue.toFixed(2)}`, 14, 76);
+      doc.text(`Conversion Rate: ${stats.conversionRate}%`, 14, 84);
+
+      if (stats.orders && stats.orders.length > 0) {
+        doc.autoTable({
+          startY: 95,
+          head: [['Order ID', 'Date', 'Status', 'Amount (Tk)']],
+          body: stats.orders.slice(0, 50).map(o => [
+            o.id.substring(0, 8),
+            new Date(o.created_at).toLocaleDateString(),
+            o.status || 'Completed',
+            Number(o.total_amount || 0).toFixed(2)
+          ]),
+        });
+      }
+    } else {
+      doc.text('Detailed data for this report type is under development.', 14, 60);
+    }
+
+    doc.save(`StellarMartBD_${type}_Report.pdf`);
   };
 
   return (
@@ -49,13 +113,8 @@ export default function ReportsPage() {
               <option value="30">Last 30 days</option>
               <option value="90">Last 90 days</option>
               <option value="365">Last year</option>
-              <option value="custom">Custom range</option>
             </select>
           </div>
-          <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-            <Filter className="w-4 h-4" />
-            More Filters
-          </button>
         </div>
       </div>
 
@@ -72,18 +131,11 @@ export default function ReportsPage() {
                 <p className="text-gray-500 text-sm mb-4">{report.description}</p>
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => generateReport(report.id)}
+                    onClick={() => generatePDF(report.id)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
                   >
                     <Download className="w-4 h-4" />
                     Download PDF
-                  </button>
-                  <button 
-                    onClick={() => generateReport(report.id)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    View
                   </button>
                 </div>
               </div>
@@ -93,24 +145,29 @@ export default function ReportsPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-6 relative">
+        {loading && (
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        )}
         <h2 className="text-lg font-semibold mb-4">Quick Summary (Last {dateRange} days)</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
             <p className="text-sm text-gray-500">Total Revenue</p>
-            <p className="text-2xl font-bold">৳0</p>
+            <p className="text-2xl font-bold">৳{stats.totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
             <p className="text-sm text-gray-500">Total Orders</p>
-            <p className="text-2xl font-bold">0</p>
+            <p className="text-2xl font-bold">{stats.totalOrders}</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
             <p className="text-sm text-gray-500">Average Order Value</p>
-            <p className="text-2xl font-bold">৳0</p>
+            <p className="text-2xl font-bold">৳{stats.averageOrderValue.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
             <p className="text-sm text-gray-500">Conversion Rate</p>
-            <p className="text-2xl font-bold">0%</p>
+            <p className="text-2xl font-bold">{stats.conversionRate}%</p>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ export default function Hero() {
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-              Welcome to StellarMartBD
+              Welcome to StellarMart
             </h1>
             <p className="text-xl mb-8 opacity-95">
               Your one-stop shop for all your needs. Best products, best prices, best service in Bangladesh.

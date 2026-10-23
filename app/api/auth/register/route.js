@@ -1,63 +1,163 @@
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import sendEmail from '@/lib/email';
-import { welcomeEmailHTML } from '@/lib/emailTemplates';
-import { User } from '@/models';
+﻿/**
+ * app/api/auth/register/route.js
+ *
+ * SECURITY FIXES applied:
+ *  - Server-side password strength validation (Zod registerSchema)
+ *  - Input sanitization to prevent XSS
+ *  - Hardcoded JWT secret fallback REMOVED
+ *  - Internal error.message no longer exposed to client
+ *  - bcrypt always enforced (no try/catch that silently falls back to plaintext)
+ */
+
+
+import jwt from 'jsonwebtoken';
+import { sendWelcomeEmail } from '@/lib/authUtils';
+import { verifyAdminToken } from '@/lib/secureJwt';
+import bcrypt from 'bcryptjs';
+import { createClient } from '@supabase/supabase-js';
+import { validate, registerSchema } from '@/lib/validation';
+
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase configuration');
+  }
+  return createClient(supabaseUrl, supabaseKey);
+}
+
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error('JWT_SECRET is not configured properly');
+  }
+  return secret;
+}
 
 export async function POST(request) {
   try {
-    await dbConnect();
-    const body = await request.json();
-    const { name, email, password, phone } = body;
+    // ── 1. Parse & validate input ─────────────────────────────────────────────
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request format' }, { status: 400 });
+    }
 
-    // ১. চেক করা ইউজার অলরেডি আছে কি না
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const { success, data, error: validationError } = validate(registerSchema, body);
+    if (!success) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
+    const { name, email, password, phone } = data;
+    const supabase = getSupabaseClient();
+
+    // ── 2. Check if email already registered ──────────────────────────────────
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
     if (existingUser) {
       return NextResponse.json(
-        { error: 'এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে' },
+        { error: 'এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে' },
         { status: 400 }
       );
     }
 
-    // ২. নতুন ইউজার তৈরি 
-    const user = await User.create({
-      name,
-      email: email.toLowerCase(),
-      password,
-      phone,
-    });
+    // ── 3. Hash password (always — no fallback) ───────────────────────────────
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Send welcome email
-    try {
+    // ── 4. Create user ────────────────────────────────────────────────────────
+    const { data: rawUser, error } = await supabase
+      .from('users')
+      .insert([
+        {
+          name,
+          email,
+          password: hashedPassword,
+          phone: phone || null,
+          status: 'active',
+          email_verified: true,
+          role: 'customer',
+        },
+      ])
+      .select()
+      .single();
 
-      await sendEmail(email, 'Welcome to StellarMartBD!', welcomeEmailHTML(name));
-    } catch (emailError) {
-      console.error('Welcome email failed:', emailError);
+    if (error) {
+      if (error.code === '23505') {
+        return NextResponse.json(
+          { error: 'ফোন নম্বর বা ইমেইল ইতিমধ্যে ব্যবহার করা হয়েছে' },
+          { status: 400 }
+        );
+      }
+      // Log internally but don't expose DB error details to client
+      console.error('[Register] DB error:', error);
+      return NextResponse.json(
+        { error: 'অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json(
-      { message: 'Registration successful! Welcome email sent.' },
+    const user = {
+      ...rawUser,
+      _id: rawUser.id,
+      emailVerified: rawUser.email_verified,
+      createdAt: rawUser.created_at,
+    };
+
+    // ── 5. Send welcome email (non-blocking) ──────────────────────────────────
+    try {
+      await sendWelcomeEmail(email, name);
+    } catch (emailError) {
+      console.error('[Register] Welcome email failed:', emailError);
+    }
+
+    // ── 6. Issue JWT for immediate login ──────────────────────────────────────
+    const jwtSecret = getJwtSecret();
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role },
+      jwtSecret,
+      { expiresIn: '7d' }
+    );
+
+    const response = NextResponse.json(
+      {
+        message: 'আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!',
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          avatar: user.avatar,
+          role: user.role,
+          status: user.status,
+          emailVerified: user.email_verified,
+          address: user.address,
+          createdAt: user.created_at,
+        },
+      },
       { status: 201 }
     );
 
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
-    console.error('Registration error:', error);
-
-    // ডুপ্লিকেট ইনডেক্স এরর (যেমন: ফোন নম্বর আগে থেকে থাকলে)
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0];
-      return NextResponse.json({ error: `${field} ইতিমধ্যে ব্যবহার করা হয়েছে` }, { status: 400 });
-    }
-
-    // মঙ্গুজ ভ্যালিডেশন এরর (যেমন: কোনো ফিল্ড মিসিং বা ফরমেট ভুল)
-    if (error.name === 'ValidationError') {
-      const message = Object.values(error.errors).map(val => val.message);
-      return NextResponse.json({ error: message[0] }, { status: 400 });
-    }
-
-    // অন্য যেকোনো এরর সরাসরি মেসেজ হিসেবে দেখাবে
+    console.error('[Register] Error:', error);
     return NextResponse.json(
-      { error: error.message || 'সার্ভারে সমস্যা হয়েছে' },
+      { error: 'সার্ভারে একটি সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
       { status: 500 }
     );
   }

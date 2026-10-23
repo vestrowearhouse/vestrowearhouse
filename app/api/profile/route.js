@@ -1,190 +1,87 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { User } from '@/models';
-import jwt from 'jsonwebtoken';
-
-// Helper function to verify token
-const verifyToken = (request) => {
-  const token = request.cookies.get('token')?.value;
-  if (!token) return null;
-  
-  try {
-    return jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'stellarmartbd_secret_key_2024'
-    );
-  } catch (error) {
-    return null;
-  }
+import { createClient } from '@supabase/supabase-js';
+import { verifyAdminToken } from '@/lib/secureJwt';
+// Mark this route as dynamic since it reads request.cookies
+export const dynamic = 'force-dynamic';
+const getSupabaseAdmin = () => {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { persistSession: false } }
+  );
 };
 
-// GET - Get user profile
 export async function GET(request) {
-  try {
-    await dbConnect();
-    
-    const decoded = verifyToken(request);
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-    
-    const user = await User.findById(decoded.id);
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
-    return NextResponse.json({
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        avatar: user.avatar,
-        role: user.role,
-        status: user.status,
-        address: user.address,
-        dateOfBirth: user.dateOfBirth,
-        gender: user.gender,
-        notificationPreferences: user.notificationPreferences,
-        privacySettings: user.privacySettings,
-        createdAt: user.createdAt,
-        lastLogin: user.lastLogin,
-      }
-    });
-  } catch (error) {
-    console.error('Get profile error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get profile' },
-      { status: 500 }
-    );
+  if (!(await verifyAdminToken(request))) {
+    return NextResponse.json({ error: 'Unauthorized. Admin only.' }, { status: 401 });
   }
-}
 
-// PUT - Update user profile
-export async function PUT(request) {
-  try {
-    await dbConnect();
-    
-    const decoded = verifyToken(request);
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-    
-    const data = await request.json();
-    const { name, phone, avatar, address, dateOfBirth, gender, notificationPreferences, privacySettings } = data;
-    
-    // Build update object
-    const updateData = {};
-    if (name) updateData.name = name;
-    if (phone) updateData.phone = phone;
-    if (avatar !== undefined) updateData.avatar = avatar;
-    if (address) updateData.address = address;
-    if (dateOfBirth !== undefined) updateData.dateOfBirth = dateOfBirth;
-    if (gender !== undefined) updateData.gender = gender;
-    if (notificationPreferences) updateData.notificationPreferences = notificationPreferences;
-    if (privacySettings) updateData.privacySettings = privacySettings;
-    
-    const user = await User.findByIdAndUpdate(
-      decoded.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
-    return NextResponse.json({
-      message: 'Profile updated successfully',
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        avatar: user.avatar,
-        role: user.role,
-        address: user.address,
-        dateOfBirth: user.dateOfBirth,
-        gender: user.gender,
-        notificationPreferences: user.notificationPreferences,
-        privacySettings: user.privacySettings,
-      }
-    });
-  } catch (error) {
-    console.error('Update profile error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update profile' },
-      { status: 500 }
-    );
-  }
-}
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
+  const table = searchParams.get('table');
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '50');
 
-// PATCH - Change password
-export async function PATCH(request) {
+  const supabase = getSupabaseAdmin();
+
   try {
-    await dbConnect();
-    
-    const decoded = verifyToken(request);
-    if (!decoded) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+    // Action 1: Get all known tables and their approximate counts
+    if (action === 'get_tables') {
+      const tables = [
+        'users', 'products', 'orders', 'categories', 
+        'coupons', 'banners', 'settings', 'cart'
+      ];
+      
+      const tableStats = await Promise.all(
+        tables.map(async (tableName) => {
+          const { count, error } = await supabase
+            .from(tableName)
+            .select('*', { count: 'exact', head: true });
+            
+          return {
+            name: tableName,
+            count: error ? 0 : count,
+            status: error ? 'error' : 'active'
+          };
+        })
       );
+
+      return NextResponse.json({ tables: tableStats });
     }
-    
-    const { currentPassword, newPassword } = await request.json();
-    
-    if (!currentPassword || !newPassword) {
-      return NextResponse.json(
-        { error: 'Current password and new password are required' },
-        { status: 400 }
-      );
+
+    // Action 2: Get dynamic data for a specific table
+    if (action === 'get_data' && table) {
+      const start = (page - 1) * limit;
+      const end = start + limit - 1;
+
+      const { data, count, error } = await supabase
+        .from(table)
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false, nullsFirst: false })
+        .range(start, end);
+
+      if (error) throw error;
+
+      // Get columns dynamically from the first row or assume empty
+      const columns = data.length > 0 ? Object.keys(data[0]) : [];
+
+      return NextResponse.json({
+        table,
+        data,
+        columns,
+        pagination: {
+          total: count,
+          page,
+          limit,
+          totalPages: Math.ceil(count / limit)
+        }
+      });
     }
-    
-    // Get user with password
-    const user = await User.findById(decoded.id).select('+password');
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-    
-    // Verify current password
-    const isMatch = await user.comparePassword(currentPassword);
-    if (!isMatch) {
-      return NextResponse.json(
-        { error: 'Current password is incorrect' },
-        { status: 400 }
-      );
-    }
-    
-    // Update password
-    user.password = newPassword;
-    await user.save();
-    
-    return NextResponse.json({
-      message: 'Password changed successfully'
-    });
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+
   } catch (error) {
-    console.error('Change password error:', error);
-    return NextResponse.json(
-      { error: 'Failed to change password' },
-      { status: 500 }
-    );
+    console.error('Database API Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

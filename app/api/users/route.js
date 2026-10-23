@@ -1,37 +1,35 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import User from '@/models/User';
-import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
+
+export const dynamic = 'force-dynamic';
+
+const getSupabaseClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase URL or Key');
+  }
+  return createClient(supabaseUrl, supabaseKey);
+};
 
 export async function GET() {
   try {
-    await dbConnect();
-
-    // Admin auth check (cookie-based)
-    const cookieStore = cookies();
-    const adminToken = cookieStore.get('adminToken')?.value;
-    if (!adminToken) {
-      return NextResponse.json({ error: 'Unauthorized - no admin token' }, { status: 401 });
-    }
-
-    // TODO: Verify admin token against DB/session
-
-    const users = await User.find({})
-      .select('-password -resetPasswordToken -resetPasswordExpire')
-      .populate('wishlist', '_id name image')
-      .sort({ createdAt: -1 })
-      .limit(100);
-
-    const total = await User.countDocuments();
-    const active = await User.countDocuments({ status: 'active' });
-    const vendors = await User.countDocuments({ role: 'vendor' });
-
-    return NextResponse.json({
+    const supabase = getSupabaseClient();
+    
+    const { data: usersData, error } = await supabase
+      .from('users')
+      .select('id, name, email, role, status, phone, email_verified, created_at, last_login')
+      .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    
+    const users = usersData.map(u => ({ ...u, _id: u.id, emailVerified: u.email_verified, createdAt: u.created_at, lastLogin: u.last_login }));
+    
+    return NextResponse.json({ 
       users,
-      stats: { total, active, vendors }
+      stats: { active: users.filter(u => u.status === 'active').length } 
     });
-  } catch (error) {
-    console.error('Users GET error:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch (error) { 
+    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 }); 
   }
 }

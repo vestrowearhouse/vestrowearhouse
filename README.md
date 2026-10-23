@@ -1,6 +1,6 @@
 # StellarMartBD - E-commerce Platform
 
-A full-featured multi-category e-commerce platform built with Next.js 14, MongoDB Atlas, and deployed on Vercel.
+A full-featured multi-category e-commerce platform built with Next.js 14, Supabase (PostgreSQL), and deployed on Vercel.
 
 ## Features
 
@@ -43,7 +43,7 @@ A full-featured multi-category e-commerce platform built with Next.js 14, MongoD
 ## Tech Stack
 
 - **Frontend & Backend**: Next.js 14 (App Router)
-- **Database**: MongoDB Atlas (Mongoose ODM)
+- **Database**: Supabase (PostgreSQL)
 - **Authentication**: JWT
 - **Styling**: Tailwind CSS
 - **State Management**: Zustand
@@ -67,13 +67,12 @@ bash
 npm install
 ```
 
-### 3. MongoDB Atlas Setup
+### 3. Supabase Database Setup
 
-1. Create a free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a new cluster (free tier)
-3. Create a database user
-4. Get your connection string
-5. Whitelist your IP address (0.0.0.0 for development)
+1. Create a free project at [Supabase](https://supabase.com/)
+2. Go to the SQL Editor in your Supabase Dashboard
+3. Copy and paste the SQL schema from `SUPABASE_SETUP_INSTRUCTIONS.md` and run it.
+4. Get your Project URL and API Keys from Project Settings > API.
 
 ### 4. Environment Variables
 
@@ -81,8 +80,10 @@ Create a `.env.local` file in the root directory:
 
 ```
 env
-# MongoDB Connection String
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/stellarmartbd?retryWrites=true&w=majority
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # JWT Secret Key
 JWT_SECRET=stellarmartbd_secret_key_2024_change_this
