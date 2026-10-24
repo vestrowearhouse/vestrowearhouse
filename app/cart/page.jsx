@@ -72,6 +72,19 @@ export default function CartPage() {
                   <Link href={`/product/${product.slug}`} className="text-lg font-semibold text-gray-800 hover:text-blue-600 truncate block">
                     {product.name}
                   </Link>
+                  {/* Selected Attributes & Variant */}
+                  {(item.variantData?.selectedAttributes || item.selectedAttributes) && (
+                    <div className="flex flex-wrap gap-1 mt-1 mb-1.5">
+                      {Object.entries(item.variantData?.selectedAttributes || item.selectedAttributes).map(([k, v]) => (
+                        <span key={k} className="inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                          {k}: {v}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {item.variantSku && (
+                    <p className="text-[11px] text-gray-400 font-mono mb-1">SKU: {item.variantSku}</p>
+                  )}
                   <p className="text-gray-500 text-sm mb-2">{product.category?.name || product.category}</p>
                   <p className="text-blue-600 font-bold font-mono">৳ {price.toLocaleString()}</p>
                 </div>

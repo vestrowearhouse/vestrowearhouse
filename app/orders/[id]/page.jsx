@@ -130,6 +130,34 @@ export default function OrderTrackingPage({ params }) {
     }
   };
 
+  const resolveItemAttributes = (item) => {
+    let attrs = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes;
+    if (typeof attrs === 'string') {
+      try {
+        attrs = JSON.parse(attrs);
+      } catch (e) {
+        attrs = null;
+      }
+    }
+    if (attrs && typeof attrs === 'object' && Object.keys(attrs).length > 0) {
+      return Object.entries(attrs).map(([k, v]) => ({ key: k, value: String(v) }));
+    }
+    if (item.variantTitle && typeof item.variantTitle === 'string') {
+      return [{ key: '', value: item.variantTitle }];
+    }
+    // Fallback: parse from variantSku (e.g. stm-0001-xl-blue)
+    if (item.variantSku && typeof item.variantSku === 'string' && item.variantSku.includes('-')) {
+      const parts = item.variantSku.split('-');
+      if (parts.length >= 4) {
+        return [
+          { key: 'Size', value: parts[2].toUpperCase() },
+          { key: 'Color', value: parts[3].charAt(0).toUpperCase() + parts[3].slice(1) }
+        ];
+      }
+    }
+    return [];
+  };
+
   const statusBadge = getStatusBadge(order.status);
   const shippingInfo = order.shipping_address || {};
   const orderDate = new Date(order.createdAt || order.created_at || Date.now());
@@ -174,7 +202,7 @@ export default function OrderTrackingPage({ params }) {
             </button>
 
             <a
-              href={`https://wa.me/8801345447500?text=${encodeURIComponent(`Hi StellarMart, I have a question regarding my order #${order.orderNumber || order.id}`)}`}
+              href={`https://wa.me/8801606069754?text=${encodeURIComponent(`Hi StellarMart, I have a question regarding my order #${order.orderNumber || order.id}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 transition shadow-2xs"
@@ -247,10 +275,10 @@ export default function OrderTrackingPage({ params }) {
               </p>
               <div className="flex justify-center gap-3">
                 <a 
-                  href="tel:+8801345447500" 
+                  href="tel:+8801606069754" 
                   className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition"
                 >
-                  Call Support (+880 1345-447500)
+                  Call Support (+880 1606-069754)
                 </a>
               </div>
             </div>
@@ -433,6 +461,23 @@ export default function OrderTrackingPage({ params }) {
                         <h4 className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 group-hover:text-blue-600 transition-colors">
                           {item.name}
                         </h4>
+                        {/* Selected Attributes & Variant */}
+                        {(() => {
+                          const attrList = resolveItemAttributes(item);
+                          if (!attrList || attrList.length === 0) return null;
+                          return (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {attrList.map((a, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs"
+                                >
+                                  {a.key ? `${a.key}: ` : ''}{a.value}
+                                </span>
+                              ))}
+                            </div>
+                          );
+                        })()}
                         <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
                           Price: ৳{itemPrice.toLocaleString()} × {itemQty}
                         </p>
@@ -459,14 +504,14 @@ export default function OrderTrackingPage({ params }) {
               </div>
               <div className="flex items-center gap-2.5">
                 <a
-                  href="tel:+8801345447500"
+                  href="tel:+8801606069754"
                   className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl shadow-2xs transition flex items-center gap-1.5"
                 >
                   <Phone className="w-3.5 h-3.5 text-blue-600" />
                   <span>Call Support</span>
                 </a>
                 <a
-                  href={`https://wa.me/8801345447500?text=${encodeURIComponent(`Hello, I need help with my order #${order.orderNumber || order.id}`)}`}
+                  href={`https://wa.me/8801606069754?text=${encodeURIComponent(`Hello, I need help with my order #${order.orderNumber || order.id}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-2xs transition flex items-center gap-1.5"

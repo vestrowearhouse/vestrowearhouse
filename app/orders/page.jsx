@@ -82,6 +82,34 @@ export default function OrdersPage() {
     }
   };
 
+  const resolveItemAttributes = (item) => {
+    let attrs = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes;
+    if (typeof attrs === 'string') {
+      try {
+        attrs = JSON.parse(attrs);
+      } catch (e) {
+        attrs = null;
+      }
+    }
+    if (attrs && typeof attrs === 'object' && Object.keys(attrs).length > 0) {
+      return Object.entries(attrs).map(([k, v]) => ({ key: k, value: String(v) }));
+    }
+    if (item.variantTitle && typeof item.variantTitle === 'string') {
+      return [{ key: '', value: item.variantTitle }];
+    }
+    // Fallback: parse from variantSku (e.g. stm-0001-xl-blue)
+    if (item.variantSku && typeof item.variantSku === 'string' && item.variantSku.includes('-')) {
+      const parts = item.variantSku.split('-');
+      if (parts.length >= 4) {
+        return [
+          { key: 'Size', value: parts[2].toUpperCase() },
+          { key: 'Color', value: parts[3].charAt(0).toUpperCase() + parts[3].slice(1) }
+        ];
+      }
+    }
+    return [];
+  };
+
   return (
     <div className="min-h-screen bg-slate-50/70 py-8 pb-32 sm:pb-16 text-slate-800">
       <div className="max-w-5xl mx-auto px-4">
@@ -198,7 +226,21 @@ export default function OrdersPage() {
                               <h4 className="font-semibold text-slate-800 text-xs sm:text-sm truncate">
                                 {item.name}
                               </h4>
-                              <p className="text-[11px] text-slate-400">
+                              {/* Selected Attributes & Variant */}
+                              {(() => {
+                                const attrList = resolveItemAttributes(item);
+                                if (attrList.length === 0) return null;
+                                return (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {attrList.map((a, i) => (
+                                      <span key={i} className="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
+                                        {a.key ? `${a.key}: ` : ''}{a.value}
+                                      </span>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
+                              <p className="text-[11px] text-slate-400 mt-0.5">
                                 Qty: {itemQty} × ৳{itemPrice.toLocaleString()}
                               </p>
                             </div>

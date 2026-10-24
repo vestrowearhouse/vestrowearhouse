@@ -16,7 +16,7 @@ export default function BuyNowModal({
   onDirectOrder,
 }) {
   const [mounted, setMounted] = useState(false);
-  const [whatsappPhone, setWhatsappPhone] = useState(cachedWhatsAppPhone || '8801345447500');
+  const [whatsappPhone, setWhatsappPhone] = useState(cachedWhatsAppPhone || '8801606069754');
 
   // SSR mount check for createPortal
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function BuyNowModal({
       .then((res) => res.json())
       .then((data) => {
         if (!isSubscribed) return;
-        const phone = data?.settings?.support_phone || data?.settings?.phone || '8801345447500';
+        const phone = data?.settings?.support_phone || data?.settings?.phone || '8801606069754';
         const clean = phone.replace(/[^0-9]/g, '');
         const normalized = clean.startsWith('01') ? `88${clean}` : clean;
         cachedWhatsAppPhone = normalized;
@@ -51,7 +51,7 @@ export default function BuyNowModal({
       })
       .catch(() => {
         // Fallback to default
-        cachedWhatsAppPhone = '8801345447500';
+        cachedWhatsAppPhone = '8801606069754';
       });
 
     return () => {
@@ -139,7 +139,7 @@ export default function BuyNowModal({
     }
     msg += `\nআমি এই পণ্যটি অর্ডার করতে চাই। দয়া করে বিস্তারিত জানিয়ে অর্ডারটি কনফার্ম করুন।`;
 
-    const cleanTarget = (whatsappPhone || '8801345447500').replace(/[^0-9]/g, '');
+    const cleanTarget = (whatsappPhone || '8801606069754').replace(/[^0-9]/g, '');
     const finalPhone = cleanTarget.startsWith('01') ? `88${cleanTarget}` : cleanTarget;
     const waUrl = `https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`;
 

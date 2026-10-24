@@ -9,13 +9,14 @@ const DEFAULT_SETTINGS = {
   site_name: 'StellarMartBD',
   site_tagline: 'Your trusted online shopping destination in Bangladesh.',
   email: 'support@stellarmartbd.com',
-  phone: '+880 1345-447500',
+  phone: '+880 1606-069754',
+  bkash_number: '01606069754',
   address: 'Dhaka, Bangladesh',
   facebook_url: '#',
   instagram_url: '#',
   youtube_url: '#',
-  whatsapp: '+880 1345-447500',
-  whatsapp_url: 'https://wa.me/8801345447500',
+  whatsapp: '+880 1606-069754',
+  whatsapp_url: 'https://wa.me/8801606069754',
 };
 
 // Only expose these keys publicly — never expose private/admin fields
@@ -23,6 +24,7 @@ const PUBLIC_FIELDS = [
   'site_name', 'site_tagline', 'email', 'phone', 'address',
   'facebook_url', 'instagram_url', 'youtube_url',
   'support_phone', 'support_email', 'whatsapp_url',
+  'bkash_number',
 ];
 
 export async function GET() {

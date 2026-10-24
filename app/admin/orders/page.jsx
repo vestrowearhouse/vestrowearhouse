@@ -18,7 +18,8 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
-  Filter
+  Filter,
+  Edit3
 } from 'lucide-react';
 
 export default function OrdersPage() {
@@ -43,6 +44,13 @@ export default function OrdersPage() {
   const [processingId, setProcessingId] = useState(null);
   const [updateForm, setUpdateForm] = useState({ status: '', payment_status: '' });
 
+  // State for editing order item variants (Size, Color)
+  const [editingItemIndex, setEditingItemIndex] = useState(null);
+  const [editingProductData, setEditingProductData] = useState(null);
+  const [editingAttrs, setEditingAttrs] = useState({});
+  const [isSavingItemVariant, setIsSavingItemVariant] = useState(false);
+  const [loadingItemProduct, setLoadingItemProduct] = useState(false);
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -62,6 +70,9 @@ export default function OrdersPage() {
   const handleViewOrder = async (orderId) => {
     setIsModalOpen(true);
     setOrderDetails(null); // Show loader in modal
+    setEditingItemIndex(null);
+    setEditingProductData(null);
+    setEditingAttrs({});
     try {
       const res = await fetch(`/api/admin/orders?id=${orderId}`);
       const data = await res.json();
@@ -74,6 +85,92 @@ export default function OrdersPage() {
       }
     } catch (error) {
       console.error('Failed to fetch order details:', error);
+    }
+  };
+
+  const handleOpenEditItemVariant = async (item, index) => {
+    setEditingItemIndex(index);
+    setLoadingItemProduct(true);
+    const existing = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes || {};
+    setEditingAttrs({ ...existing });
+
+    const prodId = item.id || item.productId || item.product;
+    try {
+      if (prodId) {
+        const res = await fetch(`/api/products/${encodeURIComponent(prodId)}`);
+        const data = await res.json();
+        if (data?.product) {
+          let pAttrs = data.product.attributes;
+          if (typeof pAttrs === 'string') {
+            try { pAttrs = JSON.parse(pAttrs); } catch (e) { pAttrs = []; }
+          }
+          let pVars = data.product.variants;
+          if (typeof pVars === 'string') {
+            try { pVars = JSON.parse(pVars); } catch (e) { pVars = []; }
+          }
+          setEditingProductData({
+            ...data.product,
+            parsedAttributes: Array.isArray(pAttrs) ? pAttrs : [],
+            parsedVariants: Array.isArray(pVars) ? pVars : []
+          });
+          return;
+        }
+      }
+      setEditingProductData(null);
+    } catch (e) {
+      console.error('Error fetching product for variant edit:', e);
+      setEditingProductData(null);
+    } finally {
+      setLoadingItemProduct(false);
+    }
+  };
+
+  const handleSaveItemVariant = async (index) => {
+    if (!orderDetails) return;
+    setIsSavingItemVariant(true);
+
+    try {
+      const updatedItems = [...orderDetails.items];
+      const targetItem = { ...updatedItems[index] };
+
+      const pVars = editingProductData?.parsedVariants || [];
+      let matchedVariant = null;
+      if (pVars.length > 0 && Object.keys(editingAttrs).length > 0) {
+        matchedVariant = pVars.find(v => {
+          const comb = v.combination || v.selectedAttributes || {};
+          return Object.entries(editingAttrs).every(([k, val]) => String(comb[k] || '').toLowerCase() === String(val || '').toLowerCase());
+        });
+      }
+
+      const variantSku = matchedVariant?.sku || targetItem.variantSku || targetItem.sku || null;
+      const variantTitle = Object.entries(editingAttrs).map(([k, v]) => `${k}: ${v}`).join(' • ');
+
+      targetItem.selectedAttributes = editingAttrs;
+      targetItem.variantSku = variantSku;
+      targetItem.variantTitle = variantTitle;
+      updatedItems[index] = targetItem;
+
+      const orderId = orderDetails.id || orderDetails._id;
+      const res = await fetch('/api/admin/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, items: updatedItems })
+      });
+
+      if (res.ok) {
+        setOrderDetails(prev => ({ ...prev, items: updatedItems }));
+        setOrders(prev => prev.map(o => (o.id === orderId || o._id === orderId) ? { ...o, items: updatedItems } : o));
+        setEditingItemIndex(null);
+        setEditingProductData(null);
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to update item variant');
+      }
+    } catch (error) {
+      console.error('Failed to update variant:', error);
+      alert('Error updating item variant');
+    } finally {
+      setIsSavingItemVariant(false);
     }
   };
 
@@ -636,7 +733,7 @@ export default function OrdersPage() {
           const qty = item.quantity || 1;
           const price = Number(item.price || item.unit_price || 0);
           const lineTotal = price * qty;
-          const rawAttrs = item.selectedAttributes || item.attributes;
+          const rawAttrs = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes;
           let attrText = '';
           if (rawAttrs && typeof rawAttrs === 'object') {
             attrText = Object.entries(rawAttrs).map(([k, v]) => `${k}: ${v}`).join(' • ');
@@ -857,8 +954,10 @@ export default function OrdersPage() {
                       {Array.isArray(order.items) && order.items.length > 0 && (
                         <div className="text-[11px] text-gray-500 mt-1 truncate max-w-[220px]">
                           {order.items.map((it) => {
-                            const attrs = it.selectedAttributes || it.attributes;
-                            const attrStr = attrs && typeof attrs === 'object' ? Object.values(attrs).join('/') : '';
+                            const attrs = it.selectedAttributes || it.attributes || it.variantData?.selectedAttributes;
+                            const attrStr = attrs && typeof attrs === 'object' && Object.keys(attrs).length > 0
+                              ? Object.values(attrs).join('/') 
+                              : (it.variantTitle || '');
                             return `${it.name || 'Item'}${attrStr ? ` (${attrStr})` : ''}`;
                           }).join(', ')}
                         </div>
@@ -1046,35 +1145,130 @@ export default function OrdersPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                           {orderDetails.items?.map((item, index) => {
-                            const rawAttrs = item.selectedAttributes || item.attributes;
+                            const rawAttrs = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes;
                             const hasAttrs = rawAttrs && typeof rawAttrs === 'object' && Object.keys(rawAttrs).length > 0;
+                            const isEditingThisItem = editingItemIndex === index;
+
                             return (
-                              <tr key={index}>
-                                <td className="p-4 flex items-center gap-3">
-                                  {(item.image || item.product_image) && (
-                                    <img src={item.image || item.product_image} alt="" className="w-12 h-12 object-cover rounded-lg border border-gray-100 shrink-0" />
-                                  )}
-                                  <div>
-                                    <span className="font-semibold text-gray-800 block">{item.name || item.product_name}</span>
-                                    {hasAttrs && (
-                                      <div className="flex flex-wrap gap-1 mt-1">
-                                        {Object.entries(rawAttrs).map(([k, v]) => (
-                                          <span key={k} className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                                            {k}: {v}
-                                          </span>
-                                        ))}
-                                      </div>
+                              <tr key={index} className="align-top">
+                                <td className="p-4">
+                                  <div className="flex items-start gap-3">
+                                    {(item.image || item.product_image) && (
+                                      <img src={item.image || item.product_image} alt="" className="w-12 h-12 object-cover rounded-lg border border-gray-100 shrink-0 mt-0.5" />
                                     )}
-                                    {(!hasAttrs && (item.variantTitle || item.variant_name || item.variant)) && (
-                                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700 mt-1">
-                                        {item.variantTitle || item.variant_name || item.variant}
-                                      </span>
-                                    )}
-                                    {(item.variantSku || item.sku) && (
-                                      <span className="text-[10px] text-gray-400 font-mono block mt-0.5">
-                                        SKU: {item.variantSku || item.sku}
-                                      </span>
-                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <span className="font-semibold text-gray-800 block">{item.name || item.product_name}</span>
+                                      
+                                      {/* Variant Attributes Badges */}
+                                      {hasAttrs ? (
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                          {Object.entries(rawAttrs).map(([k, v]) => (
+                                            <span key={k} className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                              {k}: {v}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      ) : (item.variantTitle || item.variant_name || item.variant) ? (
+                                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700 mt-1">
+                                          {item.variantTitle || item.variant_name || item.variant}
+                                        </span>
+                                      ) : (
+                                        <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 mt-1">
+                                          ⚠️ No Size/Color Selected
+                                        </span>
+                                      )}
+
+                                      {/* SKU */}
+                                      {(item.variantSku || item.sku) && (
+                                        <span className="text-[10px] text-gray-400 font-mono block mt-0.5">
+                                          SKU: {item.variantSku || item.sku}
+                                        </span>
+                                      )}
+
+                                      {/* Quick Edit Variant Trigger */}
+                                      {!isEditingThisItem ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleOpenEditItemVariant(item, index)}
+                                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 mt-1.5 transition-colors cursor-pointer"
+                                        >
+                                          <Edit3 className="w-3 h-3" />
+                                          {hasAttrs ? 'Edit Size/Color' : 'Set Size/Color'}
+                                        </button>
+                                      ) : null}
+
+                                      {/* Inline Variant Selection Form */}
+                                      {isEditingThisItem && (
+                                        <div className="mt-2.5 p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2 text-xs">
+                                          <div className="font-bold text-gray-800 flex items-center justify-between">
+                                            <span>Select / Change Item Options:</span>
+                                            {loadingItemProduct && <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />}
+                                          </div>
+
+                                          {editingProductData?.parsedAttributes && editingProductData.parsedAttributes.length > 0 ? (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                                              {editingProductData.parsedAttributes.map((attr) => (
+                                                <div key={attr.name}>
+                                                  <label className="block text-[10px] font-bold text-gray-600 uppercase mb-0.5">
+                                                    {attr.name}
+                                                  </label>
+                                                  <select
+                                                    value={editingAttrs[attr.name] || ''}
+                                                    onChange={(e) => setEditingAttrs({ ...editingAttrs, [attr.name]: e.target.value })}
+                                                    className="w-full p-1.5 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-800 focus:ring-1 focus:ring-blue-500"
+                                                  >
+                                                    <option value="">-- Select {attr.name} --</option>
+                                                    {attr.values?.map((val) => (
+                                                      <option key={val} value={val}>{val}</option>
+                                                    ))}
+                                                  </select>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-1.5 pt-1">
+                                              <p className="text-[11px] text-gray-600">Product has no preset options. You can type manual values:</p>
+                                              <div className="flex gap-2">
+                                                <input
+                                                  type="text"
+                                                  placeholder="Size (e.g. XL, M)"
+                                                  value={editingAttrs['Size'] || ''}
+                                                  onChange={(e) => setEditingAttrs({ ...editingAttrs, Size: e.target.value })}
+                                                  className="w-1/2 p-1.5 bg-white border border-gray-300 rounded text-xs"
+                                                />
+                                                <input
+                                                  type="text"
+                                                  placeholder="Color (e.g. Red, Black)"
+                                                  value={editingAttrs['Color'] || ''}
+                                                  onChange={(e) => setEditingAttrs({ ...editingAttrs, Color: e.target.value })}
+                                                  className="w-1/2 p-1.5 bg-white border border-gray-300 rounded text-xs"
+                                                />
+                                              </div>
+                                            </div>
+                                          )}
+
+                                          <div className="flex items-center gap-2 pt-1">
+                                            <button
+                                              type="button"
+                                              onClick={() => handleSaveItemVariant(index)}
+                                              disabled={isSavingItemVariant}
+                                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-[11px] inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                                            >
+                                              {isSavingItemVariant ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                              Save Size/Color
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => setEditingItemIndex(null)}
+                                              disabled={isSavingItemVariant}
+                                              className="px-2.5 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded font-medium text-[11px] cursor-pointer"
+                                            >
+                                              Cancel
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </td>
                                 <td className="p-4 text-center font-medium text-gray-600">{item.quantity}</td>

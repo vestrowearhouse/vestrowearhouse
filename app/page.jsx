@@ -26,7 +26,7 @@ const jsonLd = {
     '@type': 'ContactPoint',
     contactType: 'customer service',
     email: 'support@stellarmartbd.com',
-    telephone: '+880 1345-447500',
+    telephone: '+880 1606-069754',
     availableLanguage: ['English', 'Bengali'],
   },
   sameAs: [

@@ -11,7 +11,7 @@ export default function CartDrawer({ isOpen, onClose }) {
   const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
   const { updateQuantityWithDebounce, isLoading } = useDebounceQuantityUpdate(updateQuantity, 300);
   const items = cart?.items || [];
-  const [whatsappPhone, setWhatsappPhone] = useState('8801345447500');
+  const [whatsappPhone, setWhatsappPhone] = useState('8801606069754');
 
   useEffect(() => {
     const cached = typeof window !== 'undefined' ? sessionStorage.getItem('stellar_wa_phone') : null;
@@ -22,11 +22,11 @@ export default function CartDrawer({ isOpen, onClose }) {
     fetch('/api/settings')
       .then((res) => res.json())
       .then((data) => {
-        const phone = data?.settings?.support_phone || data?.settings?.phone || '8801345447500';
+        const phone = data?.settings?.support_phone || data?.settings?.phone || '8801606069754';
         const clean = phone.replace(/[^0-9]/g, '');
         const normalized = clean.startsWith('01') ? `88${clean}` : clean;
         if (typeof window !== 'undefined') sessionStorage.setItem('stellar_wa_phone', normalized);
-        setWhatsappPhone(normalized || '8801345447500');
+        setWhatsappPhone(normalized || '8801606069754');
       })
       .catch(() => {});
   }, []);

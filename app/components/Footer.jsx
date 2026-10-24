@@ -7,7 +7,7 @@ const DEFAULT_SETTINGS = {
   site_name: 'StellarMart',
   site_tagline: 'Your trusted online shopping destination.',
   email: 'support@stellarmartbd.com',
-  phone: '+880 1345-447500',
+  phone: '+880 1606-069754',
   address: 'Dhaka, Bangladesh',
   facebook_url: '#',
   instagram_url: '#',
@@ -84,12 +84,12 @@ export default async function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <a
-                  href={`https://wa.me/${(settings.phone || '+8801345447500').replace(/[^0-9]/g, '')}`}
+                  href={`https://wa.me/${(settings.phone || '+8801606069754').replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-green-400 transition-colors flex items-center gap-2"
                 >
-                  <span className="text-green-400">💬</span> WhatsApp: {settings.phone || '+880 1345-447500'}
+                  <span className="text-green-400">💬</span> WhatsApp: {settings.phone || '+880 1606-069754'}
                 </a>
               </li>
             </ul>

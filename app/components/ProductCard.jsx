@@ -104,10 +104,32 @@ function ProductCard({ product }) {
 
   const isWishlisted = isInWishlist(item._id);
 
+  // Check if product requires option/variant selection (e.g. Size, Color)
+  const hasOptions = (() => {
+    let attrs = product?.attributes;
+    if (typeof attrs === 'string') {
+      try { attrs = JSON.parse(attrs); } catch (e) { attrs = []; }
+    }
+    if (Array.isArray(attrs) && attrs.length > 0) return true;
+
+    let vars = product?.variants;
+    if (typeof vars === 'string') {
+      try { vars = JSON.parse(vars); } catch (e) { vars = []; }
+    }
+    if (Array.isArray(vars) && vars.length > 1) return true;
+    return false;
+  })();
+
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation(); // Prevents link navigation when clicking button
     if (!item.inStock) return;
+
+    // If product has size/color options, redirect to product page so user selects them
+    if (hasOptions) {
+      router.push(`/product/${item.slug || item._id}`);
+      return;
+    }
     
     setIsAdding(true);
     
@@ -128,10 +150,22 @@ function ProductCard({ product }) {
     e.stopPropagation();
     
     if (!item.inStock) return;
+
+    // If product has size/color options, redirect to product page so user selects them
+    if (hasOptions) {
+      router.push(`/product/${item.slug || item._id}`);
+      return;
+    }
+
     setIsBuyNowOpen(true);
   };
 
   const handleDirectOrder = () => {
+    // If product has options, always go to product details first
+    if (hasOptions) {
+      router.push(`/product/${item.slug || item._id}`);
+      return;
+    }
     // Redirect directly to checkout with the product ID and quantity
     router.push(`/checkout?buyNow=${item._id}&qty=1&source=direct`);
   };
@@ -309,7 +343,7 @@ function ProductCard({ product }) {
                 onClick={handleBuyNow}
                 className="w-full p-[12px] border-none rounded-[8px] cursor-pointer text-[15px] transition-all duration-300 bg-[#15803d] hover:bg-[#166534] hover:scale-[1.03] text-white font-bold flex justify-center items-center"
               >
-                Buy Now
+                {hasOptions ? 'Select Options' : 'Buy Now'}
               </button>
             </>
           ) : (

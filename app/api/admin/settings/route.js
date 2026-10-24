@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS = {
   site_name: 'StellarMartBD',
   site_tagline: 'Your Trusted Online Shopping Destination in Bangladesh',
   email: 'support@stellarmartbd.com',
-  phone: '+880 1345-447500',
+  phone: '+880 1606-069754',
   address: 'House #12, Road #5, Dhanmondi, Dhaka, Bangladesh',
   logo_url: 'https://i.postimg.cc/CxQSCP22/Whats-App-Image-2026-04-29-at-9-49-48-PM.jpg',
   facebook_url: 'https://www.facebook.com/stellarmartbd',

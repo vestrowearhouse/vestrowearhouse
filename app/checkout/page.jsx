@@ -54,7 +54,7 @@ function CheckoutContent() {
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [copiedNumber, setCopiedNumber] = useState(false);
   const [copiedOrderId, setCopiedOrderId] = useState(false);
-  const [bkashNumber, setBkashNumber] = useState('01345447500');
+  const [bkashNumber, setBkashNumber] = useState('01606069754');
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -74,6 +74,10 @@ function CheckoutContent() {
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
+        if (parsed?.bkash_number) {
+          setBkashNumber(parsed.bkash_number);
+          return;
+        }
         if (parsed?.phone) {
           const rawPhone = parsed.phone.replace(/[^0-9]/g, '');
           const localPhone = rawPhone.startsWith('880') ? '0' + rawPhone.slice(3) : rawPhone;
@@ -90,7 +94,9 @@ function CheckoutContent() {
       .then((data) => {
         if (data?.settings) {
           try { sessionStorage.setItem('stellar_settings_cache', JSON.stringify(data.settings)); } catch(e) {}
-          if (data.settings.phone) {
+          if (data.settings.bkash_number) {
+            setBkashNumber(data.settings.bkash_number);
+          } else if (data.settings.phone) {
             const rawPhone = data.settings.phone.replace(/[^0-9]/g, '');
             const localPhone = rawPhone.startsWith('880') ? '0' + rawPhone.slice(3) : rawPhone;
             if (localPhone.length >= 11) {
@@ -134,16 +140,55 @@ function CheckoutContent() {
           const data = await res.json();
           if (isMounted && data?.product) {
             const p = data.product;
+
+            // Safely parse attributes & variants
+            let pAttrs = p.attributes;
+            if (typeof pAttrs === 'string') {
+              try { pAttrs = JSON.parse(pAttrs); } catch (e) { pAttrs = []; }
+            }
+            let pVars = p.variants;
+            if (typeof pVars === 'string') {
+              try { pVars = JSON.parse(pVars); } catch (e) { pVars = []; }
+            }
+            if (!Array.isArray(pAttrs)) pAttrs = [];
+            if (!Array.isArray(pVars)) pVars = [];
+
+            // If attributes were not provided in URL/session, but product has attributes, pre-select default
+            if ((!parsedAttrs || Object.keys(parsedAttrs).length === 0) && pAttrs.length > 0) {
+              const defaultAttrs = {};
+              pAttrs.forEach(attr => {
+                if (attr.name && Array.isArray(attr.values) && attr.values.length > 0) {
+                  defaultAttrs[attr.name] = attr.values[0];
+                }
+              });
+              if (Object.keys(defaultAttrs).length > 0) {
+                parsedAttrs = defaultAttrs;
+              }
+            }
+
+            // Find matching variant if available
+            let matchedVariant = null;
+            if (pVars.length > 0 && parsedAttrs) {
+              matchedVariant = pVars.find(v => {
+                const comb = v.combination || v.selectedAttributes || {};
+                return Object.entries(parsedAttrs).every(([k, val]) => String(comb[k] || '').toLowerCase() === String(val || '').toLowerCase());
+              });
+            }
+
             const itemPrice = Number(
               sessionVariant?.variantPrice ||
+              matchedVariant?.discountPrice ||
+              matchedVariant?.price ||
               (rawPrice ? Number(rawPrice) : null) ||
               p.sellingPrice ||
               p.price ||
               p.selling_price ||
               0
             );
-            const itemImage = sessionVariant?.variantImage || p.featuredImage || (Array.isArray(p.images) ? p.images[0] : (typeof p.images === 'string' && p.images.startsWith('http') ? p.images : p.image)) || '';
-            const variantSku = sessionVariant?.variantSku || (paramSku ? decodeURIComponent(paramSku) : null) || p.sku || null;
+
+            const itemImage = sessionVariant?.variantImage || (matchedVariant?.images && matchedVariant.images[0]) || p.featuredImage || (Array.isArray(p.images) ? p.images[0] : (typeof p.images === 'string' && p.images.startsWith('http') ? p.images : p.image)) || '';
+            const variantSku = sessionVariant?.variantSku || (paramSku ? decodeURIComponent(paramSku) : null) || matchedVariant?.sku || p.sku || null;
+            const variantTitle = sessionVariant?.variantTitle || (parsedAttrs ? Object.entries(parsedAttrs).map(([k, v]) => `${k}: ${v}`).join(' • ') : null);
 
             setOrderItems([{
               ...p,
@@ -156,6 +201,9 @@ function CheckoutContent() {
               quantity: buyNowQty,
               variantSku,
               selectedAttributes: parsedAttrs,
+              variantTitle,
+              availableAttributes: pAttrs,
+              availableVariants: pVars,
             }]);
           }
         } catch (err) {
@@ -371,7 +419,7 @@ function CheckoutContent() {
             image: item.image || item.featuredImage || (Array.isArray(item.images) ? item.images[0] : (typeof item.images === 'string' && item.images.startsWith('http') ? item.images : '')) || '',
             variantSku: item.variantSku || null,
             selectedAttributes: item.selectedAttributes || null,
-            variantTitle: item.variantTitle || null,
+            variantTitle: item.variantTitle || (item.selectedAttributes && typeof item.selectedAttributes === 'object' ? Object.entries(item.selectedAttributes).map(([k, v]) => `${k}: ${v}`).join(' • ') : null),
           })),
           shipping: formData,
           payment: {
@@ -394,6 +442,9 @@ function CheckoutContent() {
       if (res.ok) {
         setOrderId(data.order.orderNumber || data.order._id);
         clearCart();
+        try {
+          sessionStorage.removeItem('stellar_buynow_variant');
+        } catch (e) {}
         setStep(3);
         if (typeof window !== 'undefined') {
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -581,6 +632,15 @@ function CheckoutContent() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-slate-800 truncate">{item.name}</p>
+                      {item.selectedAttributes && typeof item.selectedAttributes === 'object' && Object.keys(item.selectedAttributes).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-0.5">
+                          {Object.entries(item.selectedAttributes).map(([k, v]) => (
+                            <span key={k} className="inline-block px-1.5 py-0.2 bg-blue-50 text-blue-700 text-[9px] font-semibold rounded border border-blue-100">
+                              {k}: {v}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       <p className="text-[11px] text-slate-500">Qty: {item.quantity} × ৳{itemPrice.toLocaleString()}</p>
                     </div>
                     <span className="text-xs font-bold text-slate-900 font-mono">

@@ -61,7 +61,7 @@ export default function UserProfile() {
   // State for dynamic support settings
   const [supportSettings, setSupportSettings] = useState({ 
     email: "support@stellarmartbd.com", 
-    whatsapp: "+880 1345-447500" 
+    whatsapp: "+880 1606-069754" 
   });
 
   // Redirect if not logged in
@@ -150,7 +150,7 @@ export default function UserProfile() {
         const parsed = JSON.parse(cached);
         setSupportSettings({
           email: parsed.contactEmail || parsed.email || "support@stellarmartbd.com",
-          whatsapp: parsed.whatsappNumber || parsed.whatsapp_url || parsed.contactPhone || parsed.phone || "+880 1345-447500"
+          whatsapp: parsed.whatsappNumber || parsed.whatsapp_url || parsed.contactPhone || parsed.phone || "+880 1606-069754"
         });
         return;
       } catch(e) {}
@@ -163,7 +163,7 @@ export default function UserProfile() {
           try { sessionStorage.setItem('stellar_settings_cache', JSON.stringify(data.settings)); } catch(e) {}
           setSupportSettings({
             email: data.settings.contactEmail || data.settings.email || "support@stellarmartbd.com",
-            whatsapp: data.settings.whatsappNumber || data.settings.whatsapp_url || data.settings.contactPhone || data.settings.phone || "+880 1345-447500"
+            whatsapp: data.settings.whatsappNumber || data.settings.whatsapp_url || data.settings.contactPhone || data.settings.phone || "+880 1606-069754"
           });
         }
       })
