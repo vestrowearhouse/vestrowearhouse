@@ -235,7 +235,7 @@ export async function GET(request) {
       id: 'official',
       shop_name: 'StellarMart Official',
       owner_name: 'StellarMart',
-      logo_url: '/logo.png',
+      logo_url: '/stellar-logo-mark.png',
       is_verified: true,
       verification_badge: 'Official Mall',
       is_official: true,

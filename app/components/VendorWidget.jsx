@@ -31,7 +31,7 @@ export default function VendorWidget({ vendorId, vendor: initialVendor, isOffici
         id: 'official',
         shop_name: 'Stellar Mart Official',
         owner_name: 'Stellar Mart BD',
-        logo_url: null,
+        logo_url: '/stellar-logo-mark.png',
         is_official: true,
         is_verified: true,
         verification_badge: 'Official Mall',
@@ -93,8 +93,12 @@ export default function VendorWidget({ vendorId, vendor: initialVendor, isOffici
         <div className="flex items-start justify-between gap-3 relative z-10">
           <div className="flex items-center gap-3 min-w-0">
             {/* Official Mall Avatar */}
-            <div className="relative w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-md flex-shrink-0 border border-white/20">
-              <ShieldCheck className="w-6 h-6 text-white" />
+            <div className="relative w-12 h-12 rounded-xl bg-white p-1.5 flex items-center justify-center shadow-md flex-shrink-0 border border-white/40 overflow-hidden">
+              <img
+                src="/stellar-logo-mark.png"
+                alt="Stellar Mart Official"
+                className="w-full h-full object-contain"
+              />
               <div className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 rounded-full p-0.5 shadow">
                 <Sparkles className="w-3 h-3 fill-slate-950" />
               </div>

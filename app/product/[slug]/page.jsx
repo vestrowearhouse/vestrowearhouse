@@ -1216,8 +1216,28 @@ export default function ProductPage({ params }) {
                 {/* Seller Store Card (Stellar Theme) */}
                 <div className="p-3.5 bg-white border border-gray-200/80 rounded-xl flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-[#083b66] to-[#0284c7] text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                      {storeName.slice(0, 2).toUpperCase()}
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs border overflow-hidden ${
+                      isOfficial
+                        ? 'bg-white border-gray-200 p-1'
+                        : (product.vendor?.logo_url || product.vendor_logo)
+                          ? 'bg-white border-gray-200 p-0.5'
+                          : 'bg-gradient-to-tr from-[#083b66] to-[#0284c7] text-white font-extrabold text-xs'
+                    }`}>
+                      {isOfficial ? (
+                        <img
+                          src="/stellar-logo-mark.png"
+                          alt="Stellar Mart Official"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (product.vendor?.logo_url || product.vendor_logo) ? (
+                        <img
+                          src={product.vendor?.logo_url || product.vendor_logo}
+                          alt={storeName}
+                          className="w-full h-full object-cover rounded"
+                        />
+                      ) : (
+                        <span>{storeName.slice(0, 2).toUpperCase()}</span>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-bold text-sm text-gray-900 truncate">

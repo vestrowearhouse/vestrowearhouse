@@ -63,6 +63,7 @@ function ShopContent() {
       setVendorInfo({
         is_official: true,
         shop_name: 'Stellar Mart Official Store',
+        logo_url: '/stellar-logo-mark.png',
         description: 'Directly sourced, 100% authentic products fulfilled with express delivery from StellarMart fulfillment center.',
         rating: 4.9,
         total_reviews: 1250,
@@ -187,17 +188,29 @@ function ShopContent() {
             }`}>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
                 <div className="flex items-center gap-3.5 sm:gap-4">
-                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md border ${
+                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md border overflow-hidden ${
                     vendorParam === 'official'
-                      ? 'bg-gradient-to-tr from-blue-600 to-indigo-500 border-white/20'
-                      : 'bg-gradient-to-tr from-purple-600 to-indigo-500 border-white/20'
+                      ? 'bg-white border-white/40 p-2'
+                      : vendorInfo?.logo_url
+                        ? 'bg-white border-white/30 p-1.5'
+                        : 'bg-gradient-to-tr from-purple-600 to-indigo-500 border-white/20'
                   }`}>
                     {vendorParam === 'official' ? (
-                      <ShieldCheck className="w-8 h-8 text-white" />
+                      <img
+                        src="/stellar-logo-mark.png"
+                        alt="Stellar Mart Official Store"
+                        className="w-full h-full object-contain"
+                      />
                     ) : vendorInfo?.logo_url ? (
-                      <img src={vendorInfo.logo_url} alt={vendorInfo.shop_name} className="w-full h-full object-cover rounded-2xl" />
+                      <img
+                        src={vendorInfo.logo_url}
+                        alt={vendorInfo.shop_name || 'Vendor Logo'}
+                        className="w-full h-full object-cover rounded-xl"
+                      />
                     ) : (
-                      <Store className="w-8 h-8 text-white" />
+                      <span className="text-white font-extrabold text-lg sm:text-xl">
+                        {(vendorInfo?.shop_name || 'V').slice(0, 2).toUpperCase()}
+                      </span>
                     )}
                   </div>
                   <div>
