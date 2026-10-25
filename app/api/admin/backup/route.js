@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
+import { logActivity } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -173,11 +174,24 @@ export async function POST(request) {
     }
 
     const { type = 'full' } = await request.json().catch(() => ({}));
+    const backupId = `snapshot-${Date.now()}`;
+
+    await logActivity({
+      action: 'BACKUP_EXPORT',
+      resource: 'database',
+      resourceId: backupId,
+      description: `Generated ${type.toUpperCase()} database backup snapshot`,
+      details: {
+        backupId,
+        type,
+      },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,
       message: `${type.toUpperCase()} database backup snapshot created successfully.`,
-      backupId: `snapshot-${Date.now()}`,
+      backupId,
       timestamp: new Date().toISOString()
     });
   } catch (error) {

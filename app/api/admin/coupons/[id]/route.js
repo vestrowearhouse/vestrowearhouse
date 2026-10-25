@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '@/lib/logger';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -31,6 +32,15 @@ export async function DELETE(request, { params }) {
       .eq('id', id);
 
     if (error) throw error;
+
+    await logActivity({
+      action: 'COUPON_DELETE',
+      resource: 'coupons',
+      resourceId: String(id),
+      description: `Deleted coupon #${id}`,
+      details: { id },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, message: 'Coupon deleted successfully' });
   } catch (error) {
@@ -82,6 +92,19 @@ export async function PUT(request, { params }) {
       .select();
 
     if (error) throw error;
+
+    await logActivity({
+      action: 'COUPON_UPDATE',
+      resource: 'coupons',
+      resourceId: String(id),
+      description: `Updated coupon #${id}`,
+      details: {
+        changedFields: Object.keys(updateData).filter(k => k !== 'updated_at'),
+        status: updateData.status,
+        code: updateData.code,
+      },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, data: data?.[0] });
   } catch (error) {

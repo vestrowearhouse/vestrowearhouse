@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,6 +92,19 @@ export async function POST(request) {
     } catch (e) {
       console.warn('[Vendor Settings API] Upsert warning:', e);
     }
+
+    await logActivity({
+      action: 'VENDOR_SETTINGS_UPDATE',
+      resource: 'settings',
+      resourceId: 'vendor-settings',
+      description: 'Updated global vendor configuration settings',
+      details: {
+        changedFields: Object.keys(body || {}),
+        commission_rate: mergedSettings.commission_rate,
+        payout_frequency: mergedSettings.payout_frequency,
+      },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,6 +103,18 @@ export async function POST(request) {
     } catch (cacheErr) {
       console.warn('Revalidate warning:', cacheErr);
     }
+
+    await logActivity({
+      action: 'SETTINGS_UPDATE',
+      resource: 'settings',
+      resourceId: payload.id,
+      description: 'Updated system & store settings',
+      details: {
+        changedFields: Object.keys(body || {}),
+        site_name: payload.site_name,
+      },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,

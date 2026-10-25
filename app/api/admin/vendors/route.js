@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
+import { logActivity } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -215,6 +216,20 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    await logActivity({
+      action: 'VENDOR_CREATE',
+      resource: 'vendors',
+      resourceId: String(newVendor.id),
+      description: `Created new vendor store "${newVendor.shop_name}"`,
+      details: {
+        shop_name: newVendor.shop_name,
+        owner_name: newVendor.owner_name,
+        email: newVendor.email,
+        status: newVendor.status,
+      },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json(
       {

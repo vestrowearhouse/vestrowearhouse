@@ -1,6 +1,7 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,19 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
     }
 
+    await logActivity({
+      action: 'USER_UPDATE',
+      resource: 'users',
+      resourceId: String(id),
+      description: `Updated user #${id}`,
+      details: {
+        changedFields: Object.keys(updates),
+        status: updates.status,
+        role: updates.role,
+      },
+      req: request,
+    }).catch(() => {});
+
     return NextResponse.json({ success: true, user: data });
   } catch (error) {
     console.error('PATCH error:', error);
@@ -69,6 +83,15 @@ export async function DELETE(request, { params }) {
       console.error('User soft delete error:', error);
       return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
     }
+
+    await logActivity({
+      action: 'USER_DELETE',
+      resource: 'users',
+      resourceId: String(id),
+      description: `Soft deleted user #${id}`,
+      details: { status: 'deleted' },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, message: 'User deleted successfully' });
   } catch (error) {

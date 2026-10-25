@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,11 +64,26 @@ export async function POST(request) {
 
     const { data, error } = await supabase
       .from('coupons')
-      .insert([body]);
+      .insert([body])
+      .select()
+      .single();
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, data: data?.[0] });
+    await logActivity({
+      action: 'COUPON_CREATE',
+      resource: 'coupons',
+      resourceId: String(data?.id || body.code),
+      description: `Created coupon code "${body.code}"`,
+      details: {
+        code: body.code,
+        discount_type: body.discount_type,
+        discount_amount: body.discount_amount,
+      },
+      req: request,
+    }).catch(() => {});
+
+    return NextResponse.json({ success: true, data: data || body });
   } catch (error) {
     console.error('Coupon creation error:', error);
     return NextResponse.json(

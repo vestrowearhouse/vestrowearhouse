@@ -568,38 +568,7 @@ export default function ProductPage({ params }) {
     }
   };
 
-  // Scroll to section when tab clicked
-  const scrollToSection = (sectionId, tabKey) => {
-    setActiveNavTab(tabKey);
-    const elem = document.getElementById(sectionId);
-    if (elem) {
-      const yOffset = -155; // 64px (Navbar) + 40px (CategoryMenu) + 45px (Tabs) + 6px buffer
-      const y = elem.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-  };
 
-  // Scroll spy to update active top tab on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPos = window.scrollY + 160;
-      const recsTop = recsRef.current?.offsetTop || 999999;
-      const detailsTop = detailsRef.current?.offsetTop || 999999;
-      const ratingsTop = ratingsRef.current?.offsetTop || 999999;
-
-      if (scrollPos >= recsTop) {
-        setActiveNavTab('recommendations');
-      } else if (scrollPos >= detailsTop) {
-        setActiveNavTab('details');
-      } else if (scrollPos >= ratingsTop) {
-        setActiveNavTab('ratings');
-      } else {
-        setActiveNavTab('overview');
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Save new review → POST to real database
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -771,7 +740,7 @@ export default function ProductPage({ params }) {
   const filteredRecs = relatedProducts.length > 0 ? relatedProducts : [];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-24 md:pb-16 text-gray-900 selection:bg-blue-100 w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[#f8fafc] pb-24 md:pb-16 text-gray-900 selection:bg-blue-100 w-full max-w-full">
       
       {/* Toast notifications */}
       {copiedLink && (
@@ -781,61 +750,8 @@ export default function ProductPage({ params }) {
         </div>
       )}
 
-      {/* ── STICKY NAVIGATION TABS BAR (Desktop only, docked under CategoryMenu) ── */}
-      <div className="hidden md:block sticky top-[104px] z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between sm:justify-start gap-4 sm:gap-8 text-xs sm:text-sm font-semibold overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => scrollToSection('sec-overview', 'overview')}
-            className={`py-3 px-1 transition-all flex items-center gap-1.5 border-b-2 whitespace-nowrap ${
-              activeNavTab === 'overview'
-                ? 'text-[#083b66] border-[#083b66] font-bold'
-                : 'text-gray-500 border-transparent hover:text-gray-900'
-            }`}
-          >
-            {activeNavTab === 'overview' && <span className="text-[#083b66] font-black text-sm">•</span>}
-            Overview
-          </button>
-
-          <button
-            onClick={() => scrollToSection('sec-ratings', 'ratings')}
-            className={`py-3 px-1 transition-all flex items-center gap-1.5 border-b-2 whitespace-nowrap ${
-              activeNavTab === 'ratings'
-                ? 'text-[#083b66] border-[#083b66] font-bold'
-                : 'text-gray-500 border-transparent hover:text-gray-900'
-            }`}
-          >
-            {activeNavTab === 'ratings' && <span className="text-[#083b66] font-black text-sm">•</span>}
-            Ratings
-          </button>
-
-          <button
-            onClick={() => scrollToSection('sec-details', 'details')}
-            className={`py-3 px-1 transition-all flex items-center gap-1.5 border-b-2 whitespace-nowrap ${
-              activeNavTab === 'details'
-                ? 'text-[#083b66] border-[#083b66] font-bold'
-                : 'text-gray-500 border-transparent hover:text-gray-900'
-            }`}
-          >
-            {activeNavTab === 'details' && <span className="text-[#083b66] font-black text-sm">•</span>}
-            Product details
-          </button>
-
-          <button
-            onClick={() => scrollToSection('sec-recommendations', 'recommendations')}
-            className={`py-3 px-1 transition-all flex items-center gap-1.5 border-b-2 whitespace-nowrap ${
-              activeNavTab === 'recommendations'
-                ? 'text-[#083b66] border-[#083b66] font-bold'
-                : 'text-gray-500 border-transparent hover:text-gray-900'
-            }`}
-          >
-            {activeNavTab === 'recommendations' && <span className="text-[#083b66] font-black text-sm">•</span>}
-            Recommendations
-          </button>
-        </div>
-      </div>
-
-      {/* ── BREADCRUMB ROW ── */}
-      <div className="max-w-7xl mx-auto px-4 py-3 hidden md:block">
+      {/* ── BREADCRUMB ROW (Cleanly docked under CategoryMenu with no excess space) ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 hidden md:block">
         <nav className="flex items-center gap-1.5 text-xs text-gray-500 truncate">
           <Link href="/" className="hover:text-[#083b66] transition-colors">Home</Link>
           <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
@@ -860,7 +776,7 @@ export default function ProductPage({ params }) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-8 items-start">
 
             {/* ── LEFT COLUMN: PRODUCT IMAGES (lg:col-span-5) ── */}
-            <div className="lg:col-span-5 w-full p-0 sm:p-5 lg:sticky lg:top-18">
+            <div className="lg:col-span-5 w-full p-0 sm:p-5 lg:sticky lg:top-[120px] self-start">
               
               {/* Main Image Frame */}
               <div className="relative aspect-square w-full bg-[#f8fafc] sm:rounded-xl overflow-hidden border-b sm:border border-gray-200/80 flex items-center justify-center">

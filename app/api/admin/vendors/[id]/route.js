@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
+import { logActivity } from '@/lib/logger';
 import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
@@ -77,6 +78,18 @@ export async function PUT(request, { params }) {
         .catch(e => console.warn('Failed to sync vendor user account:', e.message));
     }
 
+    await logActivity({
+      action: 'VENDOR_UPDATE',
+      resource: 'vendors',
+      resourceId: String(id),
+      description: `Updated vendor "${updatedVendor.shop_name}"`,
+      details: {
+        changedFields: Object.keys(updates).filter(k => k !== 'password' && k !== 'updated_at'),
+        status: updatedVendor.status,
+      },
+      req: request,
+    }).catch(() => {});
+
     return NextResponse.json({ success: true, vendor: updatedVendor });
   } catch (error) {
     console.error('Error updating vendor:', error);
@@ -136,6 +149,18 @@ export async function DELETE(request, { params }) {
         console.warn('Linked user delete notice:', e.message);
       }
     }
+
+    await logActivity({
+      action: 'VENDOR_DELETE',
+      resource: 'vendors',
+      resourceId: String(id),
+      description: `Deleted vendor "${vendor.shop_name}"`,
+      details: {
+        shop_name: vendor.shop_name,
+        user_id: vendor.user_id,
+      },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,

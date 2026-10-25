@@ -1,11 +1,10 @@
 /**
- * Data Grid - Spreadsheet-like table view for database rows
+ * Data Grid - Clean Read-Only table view for database rows
  */
 
 'use client';
 
-import { useState, useCallback } from 'react';
-import { ChevronUp, ChevronDown, Trash2, Plus, Edit2 } from 'lucide-react';
+import { ChevronUp, ChevronDown, ShieldCheck } from 'lucide-react';
 
 export default function DataGrid({
   columns = [],
@@ -16,46 +15,9 @@ export default function DataGrid({
   pageSize = 100,
   onPageChange,
   onSort,
-  onAddRow,
-  onEditRow,
-  onDeleteRow,
   sortBy = null,
   sortOrder = 'asc'
 }) {
-  const [editingCell, setEditingCell] = useState(null);
-  const [editValue, setEditValue] = useState('');
-  const [selectedRows, setSelectedRows] = useState(new Set());
-
-  const handleCellEdit = (rowIndex, colName, value) => {
-    setEditingCell({ rowIndex, colName });
-    setEditValue(value);
-  };
-
-  const handleCellSave = (rowIndex, colName) => {
-    onEditRow?.(rowIndex, colName, editValue);
-    setEditingCell(null);
-  };
-
-  const toggleRowSelection = (rowIndex) => {
-    setSelectedRows(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(rowIndex)) {
-        newSet.delete(rowIndex);
-      } else {
-        newSet.add(rowIndex);
-      }
-      return newSet;
-    });
-  };
-
-  const toggleAllRows = () => {
-    if (selectedRows.size === rows.length) {
-      setSelectedRows(new Set());
-    } else {
-      setSelectedRows(new Set(rows.map((_, i) => i)));
-    }
-  };
-
   const totalPages = Math.ceil(totalCount / pageSize);
 
   if (loading && rows.length === 0) {
@@ -72,154 +34,74 @@ export default function DataGrid({
   if (rows.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96">
-        <p className="text-gray-500 mb-4">No data in this table</p>
-        <button
-          onClick={onAddRow}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={18} />
-          Add Row
-        </button>
+        <p className="text-gray-500 mb-2 font-medium">No records found in this table</p>
+        <span className="text-xs text-gray-400">Read-only table explorer</span>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onAddRow}
-            className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus size={16} />
-            Add Row
-          </button>
-          {selectedRows.size > 0 && (
-            <>
-              <span className="text-sm text-gray-600">
-                {selectedRows.size} row{selectedRows.size !== 1 ? 's' : ''} selected
-              </span>
-              <button
-                onClick={() => {
-                  if (window.confirm(`Delete ${selectedRows.size} row(s)?`)) {
-                    Array.from(selectedRows).forEach(rowIndex => {
-                      onDeleteRow?.(rowIndex);
-                    });
-                    setSelectedRows(new Set());
-                  }
-                }}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-red-600 hover:bg-red-50 text-sm rounded-lg transition-colors"
-              >
-                <Trash2 size={16} />
-                Delete
-              </button>
-            </>
-          )}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-gray-50/70">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-semibold border border-slate-200">
+            <ShieldCheck size={14} className="text-slate-500" />
+            Read-Only Grid
+          </span>
         </div>
 
-        <div className="text-sm text-gray-600">
-          {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalCount)} of {totalCount}
+        <div className="text-xs text-gray-500 font-medium">
+          Showing {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, totalCount)} of {totalCount} rows
         </div>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-x-auto border-b border-gray-200">
-        <table className="w-full border-collapse bg-white">
-          <thead className="bg-gray-100 border-b border-gray-200">
+      <div className="flex-1 overflow-auto">
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-100/90 border-b border-gray-200 sticky top-0 z-10 backdrop-blur-xs">
             <tr>
-              <th className="w-12 p-3 text-left">
-                <input
-                  type="checkbox"
-                  checked={selectedRows.size === rows.length && rows.length > 0}
-                  onChange={toggleAllRows}
-                  className="rounded cursor-pointer"
-                />
-              </th>
-              {columns.map((col, idx) => (
+              <th className="w-12 p-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">#</th>
+              {columns.map(col => (
                 <th
-                  key={idx}
-                  className="p-3 text-left text-xs font-semibold text-gray-700 bg-gray-100 border-b border-gray-200 hover:bg-gray-200 transition-colors cursor-pointer min-w-max"
+                  key={col}
                   onClick={() => onSort?.(col)}
+                  className="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider hover:bg-gray-200/70 cursor-pointer select-none transition-colors border-r border-gray-200/50 last:border-r-0"
                 >
-                  <div className="flex items-center gap-2">
-                    <span>{col}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate">{col}</span>
                     {sortBy === col && (
-                      sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                      <span className="text-blue-600 shrink-0">
+                        {sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </span>
                     )}
                   </div>
                 </th>
               ))}
-              <th className="w-20 p-3 text-center text-xs font-semibold text-gray-700">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {rows.map((row, rowIdx) => (
               <tr
                 key={rowIdx}
-                className={`border-b border-gray-200 hover:bg-blue-50 transition-colors ${
-                  selectedRows.has(rowIdx) ? 'bg-blue-100' : ''
-                }`}
+                className="hover:bg-blue-50/50 transition-colors"
               >
-                <td className="w-12 p-3 text-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.has(rowIdx)}
-                    onChange={() => toggleRowSelection(rowIdx)}
-                    className="rounded cursor-pointer"
-                  />
+                <td className="w-12 p-3 text-center text-xs font-mono text-gray-400 select-none">
+                  {((currentPage - 1) * pageSize) + rowIdx + 1}
                 </td>
                 {columns.map((col, colIdx) => (
                   <td
                     key={colIdx}
-                    className="p-3 text-sm text-gray-800 max-w-xs truncate cursor-cell border-gray-200"
-                    onDoubleClick={() => handleCellEdit(rowIdx, col, row[col])}
+                    className="p-3 text-xs text-gray-800 max-w-xs truncate border-r border-gray-100 last:border-r-0 font-mono"
+                    title={typeof row[col] === 'object' ? JSON.stringify(row[col]) : String(row[col] ?? '')}
                   >
-                    {editingCell?.rowIndex === rowIdx && editingCell?.colName === col ? (
-                      <input
-                        autoFocus
-                        type="text"
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onBlur={() => handleCellSave(rowIdx, col)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleCellSave(rowIdx, col);
-                          if (e.key === 'Escape') setEditingCell(null);
-                        }}
-                        className="w-full px-2 py-1 border border-blue-500 rounded text-sm"
-                      />
-                    ) : (
-                      <span className="block truncate">
-                        {typeof row[col] === 'object'
-                          ? JSON.stringify(row[col])
-                          : String(row[col] ?? '')}
-                      </span>
-                    )}
+                    <span className="block truncate">
+                      {typeof row[col] === 'object'
+                        ? JSON.stringify(row[col])
+                        : String(row[col] ?? '')}
+                    </span>
                   </td>
                 ))}
-                <td className="w-20 p-3 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => onEditRow?.(rowIdx)}
-                      className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                      title="Edit row"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm('Delete this row?')) {
-                          onDeleteRow?.(rowIdx);
-                        }
-                      }}
-                      className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
-                      title="Delete row"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
               </tr>
             ))}
           </tbody>
@@ -227,30 +109,22 @@ export default function DataGrid({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
-        <div className="text-sm text-gray-600">
-          Page {currentPage} of {totalPages}
+      <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50/80 text-xs">
+        <div className="text-gray-600 font-medium">
+          Page {currentPage} of {totalPages || 1}
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => onPageChange?.(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium text-gray-700 shadow-xs"
           >
             Previous
           </button>
-          <input
-            type="number"
-            min="1"
-            max={totalPages}
-            value={currentPage}
-            onChange={(e) => onPageChange?.(parseInt(e.target.value))}
-            className="w-16 px-2 py-1.5 text-sm border border-gray-300 rounded-lg text-center"
-          />
           <button
             onClick={() => onPageChange?.(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={currentPage >= totalPages}
+            className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium text-gray-700 shadow-xs"
           >
             Next
           </button>

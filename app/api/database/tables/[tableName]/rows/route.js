@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { createClient } from '@supabase/supabase-js';
 
@@ -55,28 +55,9 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function POST(request, { params }) {
-  try {
-    const token = request.cookies.get('adminToken')?.value;
-    const decoded = token ? verifyAdminToken(request) : null;
-    if (!decoded) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-    // Database explorer is restricted to super_admin only
-    if (decoded.role !== 'admin' && decoded.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Forbidden: super admin access required' }, { status: 403 });
-    }
-
-    const { tableName } = params;
-    const body = await request.json();
-
-    const { data, error } = await supabase.from(tableName).insert([body]).select();
-
-    if (error) throw error;
-
-    return NextResponse.json({ success: true, data: data[0] });
-  } catch (error) {
-    console.error('Error inserting table row:', error);
-    return NextResponse.json({ success: false, error: 'Failed to insert row' }, { status: 500 });
-  }
+export async function POST() {
+  return NextResponse.json(
+    { success: false, error: 'Row insertion from the database explorer has been permanently disabled for security reasons.' },
+    { status: 410 }
+  );
 }

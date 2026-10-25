@@ -1,6 +1,7 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,6 +93,18 @@ export async function PATCH(request) {
       .single();
 
     if (error) throw error;
+
+    await logActivity({
+      action: 'ORDER_UPDATE',
+      resource: 'orders',
+      resourceId: String(id),
+      description: `Updated order #${id}`,
+      details: {
+        changedFields: Object.keys(updateData),
+        status: updateData.status,
+      },
+      req: request,
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, order: data });
   } catch (error) {

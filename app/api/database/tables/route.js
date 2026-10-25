@@ -32,40 +32,9 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
-  try {
-    const token = request.cookies.get('adminToken')?.value;
-    const decoded = token ? await verifyAdminToken(request) : null;
-    if (!decoded) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-    // Database explorer is restricted to super_admin only
-    if (decoded.role !== 'admin' && decoded.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Forbidden: super admin access required' }, { status: 403 });
-    }
-
-    const { tableName, columns } = await request.json();
-    if (!tableName || !columns || !columns.length) {
-      return NextResponse.json({ success: false, error: 'Table name and columns required' }, { status: 400 });
-    }
-
-    const colDefs = columns.map(c => {
-      let def = `${c.name} ${c.type}`;
-      if (!c.nullable) def += ' NOT NULL';
-      if (c.unique) def += ' UNIQUE';
-      if (c.defaultValue) def += ` DEFAULT ${c.defaultValue}`;
-      return def;
-    }).join(', ');
-
-    const query = `CREATE TABLE ${tableName} (${colDefs});`;
-    
-    const { error } = await supabase.rpc('exec_sql', { query });
-
-    if (error) throw error;
-
-    return NextResponse.json({ success: true, message: 'Table created' });
-  } catch (error) {
-    console.error('Error creating table:', error);
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
-  }
+export async function POST() {
+  return NextResponse.json(
+    { success: false, error: 'Table creation from the web admin panel has been permanently disabled for security reasons.' },
+    { status: 410 }
+  );
 }

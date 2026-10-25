@@ -72,39 +72,31 @@ export default function DatabaseSidebar({
             {expandedSections[section.key] && (
               <div className="bg-slate-800/50 max-h-96 overflow-y-auto">
                 {section.key === 'tables' && (
-                  <>
-                    <button
-                      onClick={onCreateTable}
-                      className="w-full text-left px-6 py-2 text-xs text-blue-400 hover:bg-slate-700 transition-colors border-b border-slate-700 font-medium"
-                    >
-                      + New Table
-                    </button>
-                    {section.items.length === 0 ? (
-                      <div className="px-6 py-4 text-xs text-slate-400 text-center">
-                        No tables found
-                      </div>
-                    ) : (
-                      section.items.map(table => (
-                        <button
-                          key={table.name}
-                          onClick={() => onSelectTable(table.name)}
-                          className={`w-full text-left px-6 py-2 text-sm transition-colors flex items-center gap-2 ${
-                            selectedTable === table.name
-                              ? 'bg-blue-600 text-white border-l-2 border-blue-400'
-                              : 'hover:bg-slate-700 text-slate-200'
-                          }`}
-                        >
-                          <Table size={14} />
-                          <span>{table.name}</span>
-                          {table.rowCount !== undefined && (
-                            <span className="ml-auto text-xs text-slate-400">
-                              {table.rowCount}
-                            </span>
-                          )}
-                        </button>
-                      ))
-                    )}
-                  </>
+                  section.items.length === 0 ? (
+                    <div className="px-6 py-4 text-xs text-slate-400 text-center">
+                      No tables found
+                    </div>
+                  ) : (
+                    section.items.map(table => (
+                      <button
+                        key={table.name}
+                        onClick={() => onSelectTable(table.name)}
+                        className={`w-full text-left px-6 py-2 text-sm transition-colors flex items-center gap-2 ${
+                          selectedTable === table.name
+                            ? 'bg-blue-600 text-white border-l-2 border-blue-400'
+                            : 'hover:bg-slate-700 text-slate-200'
+                        }`}
+                      >
+                        <Table size={14} />
+                        <span>{table.name}</span>
+                        {table.rowCount !== undefined && (
+                          <span className="ml-auto text-xs text-slate-400">
+                            {table.rowCount}
+                          </span>
+                        )}
+                      </button>
+                    ))
+                  )
                 )}
 
                 {section.key === 'views' && (
