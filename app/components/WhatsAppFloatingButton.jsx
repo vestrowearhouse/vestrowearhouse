@@ -17,7 +17,7 @@ export default function WhatsAppFloatingButton() {
   const whatsappUrl = `https://wa.me/${cleanNumber}?text=${message}`;
 
   return (
-    <div className="fixed bottom-36 md:bottom-24 right-4 md:right-6 z-40 flex items-center group">
+    <div className="fixed bottom-[140px] md:bottom-24 right-4 md:right-6 z-40 flex items-center group">
       <a
         href={whatsappUrl}
         target="_blank"
@@ -26,7 +26,7 @@ export default function WhatsAppFloatingButton() {
         className="relative flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full shadow-[0_4px_20px_rgba(37,211,102,0.4)] hover:shadow-[0_6px_25px_rgba(37,211,102,0.6)] transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
       >
         {/* Pulsing ring animation */}
-        <span className="absolute -inset-1 rounded-full bg-[#25D366]/40 animate-ping opacity-75 pointer-events-none" />
+        <span className="absolute -inset-0.5 rounded-full bg-[#25D366]/30 animate-ping pointer-events-none" />
 
         {/* WhatsApp Icon from user */}
         <div className="relative w-full h-full p-1 z-10 flex items-center justify-center">
@@ -41,7 +41,7 @@ export default function WhatsAppFloatingButton() {
         </div>
 
         {/* Online Indicator Badge */}
-        <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full z-20" />
+        <span className="absolute top-0 right-0 w-3 h-3 md:w-3.5 md:h-3.5 bg-emerald-400 border-2 border-white rounded-full z-20" />
       </a>
 
       {/* Tooltip on Hover (Facing Left towards page content) */}

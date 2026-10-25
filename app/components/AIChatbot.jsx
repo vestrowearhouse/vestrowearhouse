@@ -199,16 +199,16 @@ export default function AIChatbot() {
   }
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 right-6 z-40">
+    <div className={`fixed bottom-20 md:bottom-6 right-4 md:right-6 ${isOpen ? 'z-50' : 'z-40'}`}>
       {/* Chat Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           aria-label="Toggle AI Chatbot"
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-xl transition-transform hover:scale-110 flex items-center justify-center relative group"
+          className="w-12 h-12 md:w-14 md:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-[0_4px_20px_rgba(37,99,235,0.4)] hover:shadow-[0_6px_25px_rgba(37,99,235,0.6)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative group cursor-pointer"
         >
-          <MessageCircle className="w-6 h-6" />
-          <span className="absolute right-full mr-3 bg-gray-900 text-white text-xs px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md pointer-events-none">
+          <MessageCircle className="w-6 h-6 md:w-7 md:h-7" />
+          <span className="hidden md:block absolute right-full mr-3 bg-gray-900 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg pointer-events-none">
             Need Help? Chat here
           </span>
         </button>
