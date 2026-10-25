@@ -26,7 +26,7 @@ export async function GET(request) {
     // Get user data
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, name, email, phone, avatar, status, created_at, last_login')
+      .select('id, name, email, phone, avatar, status, address, created_at, last_login')
       .eq('id', userId)
       .single();
 
@@ -63,6 +63,10 @@ export async function GET(request) {
         lastLogin: user.last_login,
       },
       orders: formattedOrders,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      }
     });
   } catch (error) {
     console.error('[UserProfile] GET error:', error);
@@ -79,22 +83,30 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { name, phone, avatar } = body;
+    const { name, phone, avatar, address } = body;
     const userId = tokenData.id;
 
     const supabase = getSupabaseClient();
 
     // Update user
     const updateData = {};
-    if (name !== undefined) updateData.name = name;
-    if (phone !== undefined) updateData.phone = phone;
+    if (name !== undefined) updateData.name = typeof name === 'string' ? name.trim() : name;
+    if (phone !== undefined) updateData.phone = typeof phone === 'string' ? phone.trim() : phone;
     if (avatar !== undefined) updateData.avatar = avatar;
+    if (address !== undefined) {
+      if (typeof address === 'object' && address !== null) {
+        updateData.address = address.street ? `${address.street}${address.city ? ', ' + address.city : ''}` : JSON.stringify(address);
+      } else {
+        updateData.address = typeof address === 'string' ? address.trim() : address;
+      }
+    }
+    updateData.updated_at = new Date().toISOString();
 
     const { data: user, error } = await supabase
       .from('users')
       .update(updateData)
       .eq('id', userId)
-      .select()
+      .select('id, name, email, phone, avatar, status, address, created_at, last_login')
       .single();
 
     if (error) {
@@ -108,6 +120,10 @@ export async function PUT(request) {
         ...user,
         _id: user.id,
       },
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      }
     });
   } catch (error) {
     console.error('[UserProfile] PUT error:', error);

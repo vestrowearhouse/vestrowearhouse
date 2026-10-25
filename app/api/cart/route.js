@@ -90,8 +90,8 @@ export async function POST(request) {
     const variantSku = variantData?.variantSku || null;
 
     const existingIndex = items.findIndex((item) => {
-      const itemId = item.product?._id || item.product?.id;
-      if (itemId !== productId) return false;
+      const itemId = item.product?._id || item.product?.id || item.productId || item.id;
+      if (String(itemId) !== String(productId)) return false;
       if (variantSku || item.variantSku || item.variantData?.variantSku) {
         return (item.variantSku || item.variantData?.variantSku) === variantSku;
       }
@@ -160,8 +160,8 @@ export async function PUT(request) {
 
     let items = cart.items || [];
     const itemIndex = items.findIndex((item) => {
-      const itemId = item.product?._id || item.product?.id;
-      if (itemId !== productId) return false;
+      const itemId = item.product?._id || item.product?.id || item.productId || item.id;
+      if (String(itemId) !== String(productId)) return false;
       if (variantSku || item.variantSku || item.variantData?.variantSku) {
         return (item.variantSku || item.variantData?.variantSku) === variantSku;
       }
@@ -226,8 +226,8 @@ export async function DELETE(request) {
       items = [];
     } else if (productId) {
       items = items.filter((item) => {
-        const itemId = item.product?._id || item.product?.id;
-        if (itemId !== productId) return true;
+        const itemId = item.product?._id || item.product?.id || item.productId || item.id;
+        if (String(itemId) !== String(productId)) return true;
         if (variantSku || item.variantSku || item.variantData?.variantSku) {
           return (item.variantSku || item.variantData?.variantSku) !== variantSku;
         }

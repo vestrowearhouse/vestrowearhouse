@@ -131,7 +131,7 @@ export default function OrderTrackingPage({ params }) {
   };
 
   const resolveItemAttributes = (item) => {
-    let attrs = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes;
+    let attrs = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes || item.selected_attributes;
     if (typeof attrs === 'string') {
       try {
         attrs = JSON.parse(attrs);
@@ -143,6 +143,16 @@ export default function OrderTrackingPage({ params }) {
       return Object.entries(attrs).map(([k, v]) => ({ key: k, value: String(v) }));
     }
     if (item.variantTitle && typeof item.variantTitle === 'string') {
+      if (item.variantTitle.includes('•') || item.variantTitle.includes(',')) {
+        const parts = item.variantTitle.split(/[•,]/).map(s => s.trim()).filter(Boolean);
+        return parts.map(part => {
+          if (part.includes(':')) {
+            const [k, ...v] = part.split(':');
+            return { key: k.trim(), value: v.join(':').trim() };
+          }
+          return { key: '', value: part };
+        });
+      }
       return [{ key: '', value: item.variantTitle }];
     }
     // Fallback: parse from variantSku (e.g. stm-0001-xl-blue)
@@ -152,6 +162,11 @@ export default function OrderTrackingPage({ params }) {
         return [
           { key: 'Size', value: parts[2].toUpperCase() },
           { key: 'Color', value: parts[3].charAt(0).toUpperCase() + parts[3].slice(1) }
+        ];
+      }
+      if (parts.length === 3) {
+        return [
+          { key: 'Option', value: parts[2].toUpperCase() }
         ];
       }
     }
@@ -202,7 +217,7 @@ export default function OrderTrackingPage({ params }) {
             </button>
 
             <a
-              href={`https://wa.me/8801606069754?text=${encodeURIComponent(`Hi StellarMart, I have a question regarding my order #${order.orderNumber || order.id}`)}`}
+              href={`https://wa.me/8801345447500?text=${encodeURIComponent(`Hi StellarMart, I have a question regarding my order #${order.orderNumber || order.id}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 transition shadow-2xs"
@@ -504,14 +519,14 @@ export default function OrderTrackingPage({ params }) {
               </div>
               <div className="flex items-center gap-2.5">
                 <a
-                  href="tel:+8801606069754"
+                  href="tel:+8801345447500"
                   className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl shadow-2xs transition flex items-center gap-1.5"
                 >
                   <Phone className="w-3.5 h-3.5 text-blue-600" />
                   <span>Call Support</span>
                 </a>
                 <a
-                  href={`https://wa.me/8801606069754?text=${encodeURIComponent(`Hello, I need help with my order #${order.orderNumber || order.id}`)}`}
+                  href={`https://wa.me/8801345447500?text=${encodeURIComponent(`Hello, I need help with my order #${order.orderNumber || order.id}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-2xs transition flex items-center gap-1.5"

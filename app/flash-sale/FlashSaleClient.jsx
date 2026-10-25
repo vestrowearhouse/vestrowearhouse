@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
+import { normalizeId } from '@/lib/normalizeId';
 
 export default function FlashSaleClient({ initialData }) {
   const router = useRouter();
@@ -131,17 +132,16 @@ export default function FlashSaleClient({ initialData }) {
   const handleWishlist = (e, item) => {
     e.preventDefault();
     e.stopPropagation();
-    const pId = item._id || item.id || item.productId;
-    if (!user) {
-      alert('Please login to save items to your wishlist.');
-      return;
-    }
+    const pId = normalizeId(item);
+    if (!pId) return;
     if (isInWishlist(pId)) {
       removeFromWishlist(pId);
     } else {
       addToWishlist({
         _id: pId,
+        id: pId,
         name: item.name,
+        slug: item.slug,
         image: item.image,
         price: Number(item.flashPrice || item.sellingPrice || 0)
       });
@@ -345,7 +345,7 @@ export default function FlashSaleClient({ initialData }) {
         {displayItems.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {displayItems.map((item, index) => {
-              const pId = item._id || item.id || item.productId;
+              const pId = normalizeId(item);
               const flashPrice = Number(item.flashPrice || item.sellingPrice || item.price || 0);
               const originalPrice = Number(item.originalPrice || item.regularPrice || 0);
               const discountPercent = Number(item.discountPercent || item.discount || 0);
@@ -355,11 +355,17 @@ export default function FlashSaleClient({ initialData }) {
               const isWish = isInWishlist(pId);
               const cleanCategory = item.category && !/^[0-9a-fA-F-]{20,}$/.test(item.category) ? item.category : null;
 
+              const handleCardClick = (e) => {
+                if (e.target.closest('button')) return;
+                if (e.target.closest('a')) return;
+                router.push(`/product/${item.slug || pId}`);
+              };
+
               return (
-                <Link
+                <div
                   key={pId || index}
-                  href={`/product/${item.slug || pId}`}
-                  className="bg-white rounded-2xl overflow-hidden border border-gray-200/80 hover:border-red-400 hover:shadow-xl transition-all duration-300 flex flex-col group relative"
+                  onClick={handleCardClick}
+                  className="bg-white rounded-2xl overflow-hidden border border-gray-200/80 hover:border-red-400 hover:shadow-xl transition-all duration-300 flex flex-col group relative cursor-pointer"
                 >
                   {/* Top Badges */}
                   <div className="absolute top-2.5 left-2.5 z-20 flex flex-col gap-1 pointer-events-none">
@@ -371,18 +377,18 @@ export default function FlashSaleClient({ initialData }) {
                     )}
                   </div>
 
-                  {/* Wishlist Button */}
+                  {/* Wishlist Button - Outside of Link */}
                   <button
                     type="button"
                     onClick={(e) => handleWishlist(e, item)}
-                    aria-label="Wishlist"
-                    className="absolute top-2.5 right-2.5 z-20 p-2 bg-white/90 hover:bg-white backdrop-blur-xs rounded-full shadow-sm text-gray-400 hover:text-red-500 transition active:scale-90"
+                    aria-label={isWish ? "Remove from wishlist" : "Add to wishlist"}
+                    className="absolute top-2.5 right-2.5 z-20 p-2 bg-white/90 hover:bg-white backdrop-blur-xs rounded-full shadow-sm text-gray-400 hover:text-red-500 transition active:scale-90 cursor-pointer"
                   >
                     <Heart size={16} className={isWish ? 'fill-red-500 text-red-500' : ''} />
                   </button>
 
-                  {/* Product Image */}
-                  <div className="block relative w-full aspect-square bg-[#f5f6f8] overflow-hidden">
+                  {/* Product Image Link */}
+                  <Link href={`/product/${item.slug || pId}`} className="block relative w-full aspect-square bg-[#f5f6f8] overflow-hidden">
                     <Image
                       src={item.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80'}
                       alt={item.name || 'Flash Deal'}
@@ -396,7 +402,7 @@ export default function FlashSaleClient({ initialData }) {
                         <span className="bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded-full">Out of Stock</span>
                       </div>
                     )}
-                  </div>
+                  </Link>
 
                   {/* Content Body */}
                   <div className="p-3.5 sm:p-4 flex flex-col flex-1">
@@ -409,9 +415,11 @@ export default function FlashSaleClient({ initialData }) {
                     )}
 
                     {/* Title */}
-                    <h3 className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-red-600 transition line-clamp-2 leading-snug mb-2 min-h-[2rem]">
-                      {item.name}
-                    </h3>
+                    <Link href={`/product/${item.slug || pId}`}>
+                      <h3 className="text-xs sm:text-sm font-bold text-gray-900 group-hover:text-red-600 transition line-clamp-2 leading-snug mb-2 min-h-[2rem]">
+                        {item.name}
+                      </h3>
+                    </Link>
 
                     {/* Pricing */}
                     <div className="mt-auto pt-2">
@@ -450,7 +458,7 @@ export default function FlashSaleClient({ initialData }) {
                     </div>
 
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>

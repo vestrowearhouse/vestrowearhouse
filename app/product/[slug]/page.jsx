@@ -37,6 +37,7 @@ import { useAuth } from '../../context/AuthContext';
 import ProductCard from '../../components/ProductCard';
 import BuyNowModal from '../../components/BuyNowModal';
 import { findActiveVariant } from '@/lib/variantUtils';
+import { normalizeId } from '@/lib/normalizeId';
 
 async function getProduct(slug) {
   try {
@@ -447,7 +448,7 @@ export default function ProductPage({ params }) {
   }, [activeVariant]);
 
   const currentImage = allImages[selectedImage] || allImages[0];
-  const productId = product?._id || product?.id;
+  const productId = normalizeId(product);
   const isWishlisted = isInWishlist(productId);
 
   const handleToggleWishlist = async () => {
@@ -455,7 +456,15 @@ export default function ProductPage({ params }) {
     if (isWishlisted) {
       await removeFromWishlist(productId);
     } else {
-      await addToWishlist(productId);
+      await addToWishlist({
+        _id: productId,
+        id: productId,
+        name: product?.name || 'Product',
+        slug: product?.slug || productId,
+        image: currentImage || product?.featuredImage || '/placeholder.jpg',
+        price: sellingPrice || 0,
+        inStock: isInStock
+      });
     }
   };
 
@@ -867,13 +876,13 @@ export default function ProductPage({ params }) {
 
                 {/* Discount Badge */}
                 {discount > 0 && (
-                  <div className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-[#b91c1c] text-white text-[11px] font-black rounded shadow-sm">
+                  <div className="absolute top-3.5 left-3.5 z-10 px-2 py-0.5 bg-[#b91c1c] text-white text-[11px] font-black rounded shadow-sm">
                     -{discount}%
                   </div>
                 )}
 
                 {/* Wishlist & Share buttons on image (Mobile Floating) */}
-                <div className="md:hidden absolute top-3 right-3 z-10 flex items-center gap-1.5">
+                <div className="md:hidden absolute top-3.5 right-3.5 z-10 flex items-center gap-1.5">
                   <button
                     onClick={handleToggleWishlist}
                     aria-label="Wishlist"
@@ -1170,47 +1179,62 @@ export default function ProductPage({ params }) {
                 {/* Delivery Box */}
                 <div
                   onClick={() => setDeliveryModalOpen(true)}
-                  className="p-3 sm:p-3.5 bg-gray-50/70 hover:bg-gray-50 border border-gray-200/80 rounded-xl cursor-pointer transition-colors"
+                  className="p-3.5 bg-gray-50/90 hover:bg-gray-50 border border-gray-200 rounded-xl cursor-pointer transition-all"
                 >
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-bold text-gray-700 flex items-center gap-1.5">
-                      <Truck className="w-4 h-4 text-[#083b66]" /> Delivery Option
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="font-bold text-gray-800 flex items-center gap-1.5">
+                      <Truck className="w-4 h-4 text-[#083b66]" /> হোম ডেলিভারি অপশন (Delivery)
                     </span>
                     <span className="text-[#083b66] font-bold flex items-center gap-0.5 hover:underline">
-                      Change Location <ChevronRight className="w-3.5 h-3.5" />
+                      লোকেশন পরিবর্তন <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-gray-600 pl-5">
+                  <div className="flex items-center justify-between text-xs text-gray-600 pl-5 mb-2">
                     <div>
                       <p className="font-semibold text-gray-800">
                         {deliveryLocation.area}, {deliveryLocation.city}
                       </p>
                       <p className="text-[11px] text-gray-500">
-                        Standard Delivery • Guaranteed by {guaranteedDate}
+                        স্ট্যান্ডার্ড ডেলিভারি • সম্ভাব্য তারিখ {guaranteedDate}
                       </p>
                     </div>
-                    <span className="font-bold text-gray-900 text-sm">
+                    <span className="font-extrabold text-gray-900 text-sm">
                       ৳{deliveryLocation.cost}
                     </span>
+                  </div>
+                  <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[11px] text-gray-600 pl-5">
+                    <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                      <span>💵</span> ক্যাশ অন ডেলিভারি প্রযোজ্য
+                    </span>
+                    <Link
+                      href="/delivery-policy"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      ডেলিভারি পলিসি দেখুন →
+                    </Link>
                   </div>
                 </div>
 
                 {/* Service Box */}
-                <div
-                  onClick={() => setServiceDrawerOpen(true)}
-                  className="p-3 sm:p-3.5 bg-gray-50/70 hover:bg-gray-50 border border-gray-200/80 rounded-xl cursor-pointer transition-colors flex items-center justify-between text-xs text-gray-700"
-                >
-                  <div className="flex items-center gap-4 flex-wrap">
+                <div className="p-3.5 bg-gradient-to-r from-emerald-50/50 via-blue-50/30 to-transparent border border-gray-200 rounded-xl text-xs text-gray-700 space-y-2">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <Link
+                      href="/return-policy"
+                      className="flex items-center gap-1.5 hover:text-emerald-700 transition"
+                    >
+                      <RotateCcw className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="font-bold text-gray-800">৭ দিনের সহজ রিটার্ন / রিপ্লেসমেন্ট</span>
+                      <ChevronRight className="w-3 h-3 text-gray-400" />
+                    </Link>
                     <div className="flex items-center gap-1.5">
-                      <RotateCcw className="w-4 h-4 text-emerald-600" />
-                      <span className="font-semibold text-gray-800">14 Days Easy Return</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-blue-600" />
-                      <span className="font-semibold text-gray-800">100% Authentic Product</span>
+                      <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span className="font-bold text-gray-800">১০০% আসল প্রোডাক্ট গ্যারান্টি</span>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                  <p className="text-[11px] text-gray-500 pl-5">
+                    পণ্য হাতে পাওয়ার পর রাইডারের সামনে চেক করার সুযোগ রয়েছে। কোনো সমস্যা হলে সাথে সাথে রিটার্ন করতে পারবেন।
+                  </p>
                 </div>
 
                 {/* Seller Store Card (Stellar Theme) */}

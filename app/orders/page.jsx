@@ -83,7 +83,7 @@ export default function OrdersPage() {
   };
 
   const resolveItemAttributes = (item) => {
-    let attrs = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes;
+    let attrs = item.selectedAttributes || item.attributes || item.variantData?.selectedAttributes || item.selected_attributes;
     if (typeof attrs === 'string') {
       try {
         attrs = JSON.parse(attrs);
@@ -95,6 +95,16 @@ export default function OrdersPage() {
       return Object.entries(attrs).map(([k, v]) => ({ key: k, value: String(v) }));
     }
     if (item.variantTitle && typeof item.variantTitle === 'string') {
+      if (item.variantTitle.includes('•') || item.variantTitle.includes(',')) {
+        const parts = item.variantTitle.split(/[•,]/).map(s => s.trim()).filter(Boolean);
+        return parts.map(part => {
+          if (part.includes(':')) {
+            const [k, ...v] = part.split(':');
+            return { key: k.trim(), value: v.join(':').trim() };
+          }
+          return { key: '', value: part };
+        });
+      }
       return [{ key: '', value: item.variantTitle }];
     }
     // Fallback: parse from variantSku (e.g. stm-0001-xl-blue)
@@ -104,6 +114,11 @@ export default function OrdersPage() {
         return [
           { key: 'Size', value: parts[2].toUpperCase() },
           { key: 'Color', value: parts[3].charAt(0).toUpperCase() + parts[3].slice(1) }
+        ];
+      }
+      if (parts.length === 3) {
+        return [
+          { key: 'Option', value: parts[2].toUpperCase() }
         ];
       }
     }

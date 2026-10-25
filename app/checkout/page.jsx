@@ -68,7 +68,7 @@ function CheckoutContent() {
     transactionId: '',
   });
 
-  // Fetch store phone / bKash number from public settings (cached)
+  // Fetch store bKash number from public settings (cached)
   useEffect(() => {
     const cached = typeof window !== 'undefined' ? sessionStorage.getItem('stellar_settings_cache') : null;
     if (cached) {
@@ -77,14 +77,6 @@ function CheckoutContent() {
         if (parsed?.bkash_number) {
           setBkashNumber(parsed.bkash_number);
           return;
-        }
-        if (parsed?.phone) {
-          const rawPhone = parsed.phone.replace(/[^0-9]/g, '');
-          const localPhone = rawPhone.startsWith('880') ? '0' + rawPhone.slice(3) : rawPhone;
-          if (localPhone.length >= 11) {
-            setBkashNumber(localPhone);
-            return;
-          }
         }
       } catch(e) {}
     }
@@ -96,12 +88,6 @@ function CheckoutContent() {
           try { sessionStorage.setItem('stellar_settings_cache', JSON.stringify(data.settings)); } catch(e) {}
           if (data.settings.bkash_number) {
             setBkashNumber(data.settings.bkash_number);
-          } else if (data.settings.phone) {
-            const rawPhone = data.settings.phone.replace(/[^0-9]/g, '');
-            const localPhone = rawPhone.startsWith('880') ? '0' + rawPhone.slice(3) : rawPhone;
-            if (localPhone.length >= 11) {
-              setBkashNumber(localPhone);
-            }
           }
         }
       })
@@ -262,7 +248,21 @@ function CheckoutContent() {
     const div = (formData.division || '').toLowerCase().trim();
 
     if (!dist) {
-      return div === 'dhaka' ? 80 : 120;
+      return div === 'dhaka' ? 60 : 120;
+    }
+    if (
+      dist === 'dhaka' ||
+      dist.includes('dhaka city') ||
+      dist.includes('dhaka north') ||
+      dist.includes('dhaka south') ||
+      dist.includes('mirpur') ||
+      dist.includes('gulshan') ||
+      dist.includes('dhanmondi') ||
+      dist.includes('uttara') ||
+      dist.includes('banani') ||
+      dist.includes('mohammadpur')
+    ) {
+      return 60;
     }
     if (
       dist.includes('dhaka') || 

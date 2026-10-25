@@ -11,7 +11,7 @@ export default function CartDrawer({ isOpen, onClose }) {
   const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
   const { updateQuantityWithDebounce, isLoading } = useDebounceQuantityUpdate(updateQuantity, 300);
   const items = cart?.items || [];
-  const [whatsappPhone, setWhatsappPhone] = useState('8801606069754');
+  const [whatsappPhone, setWhatsappPhone] = useState('8801345447500');
 
   useEffect(() => {
     const cached = typeof window !== 'undefined' ? sessionStorage.getItem('stellar_wa_phone') : null;
@@ -22,18 +22,18 @@ export default function CartDrawer({ isOpen, onClose }) {
     fetch('/api/settings')
       .then((res) => res.json())
       .then((data) => {
-        const phone = data?.settings?.support_phone || data?.settings?.phone || '8801606069754';
+        const phone = data?.settings?.whatsapp || data?.settings?.support_phone || data?.settings?.phone || '8801345447500';
         const clean = phone.replace(/[^0-9]/g, '');
         const normalized = clean.startsWith('01') ? `88${clean}` : clean;
         if (typeof window !== 'undefined') sessionStorage.setItem('stellar_wa_phone', normalized);
-        setWhatsappPhone(normalized || '8801606069754');
+        setWhatsappPhone(normalized || '8801345447500');
       })
       .catch(() => {});
   }, []);
 
   const subtotal = items.reduce((acc, item) => {
-    const price = item.product?.sellingPrice || item.product?.price || 0;
-    return acc + price * item.quantity;
+    const price = item.variantPrice || item.product?.sellingPrice || item.product?.price || 0;
+    return acc + Number(price) * (item.quantity || 1);
   }, 0);
   
   const shipping = 0;
@@ -89,15 +89,18 @@ export default function CartDrawer({ isOpen, onClose }) {
               <p className="text-lg font-semibold">Your cart is empty</p>
             </div>
           ) : (
-            items.map((item) => {
+            items.map((item, index) => {
               const product = item.product;
               if (!product) return null;
               
-              const price = product.sellingPrice || product.price || 0;
-              const image = product.featuredImage || (product.images && product.images[0]) || product.image || '/placeholder.png';
+              const productId = product._id || product.id || item.productId || item.id;
+              const variantSku = item.variantSku || item.variantData?.variantSku || null;
+              const itemKey = `${productId}-${variantSku || index}`;
+              const price = item.variantPrice || product.sellingPrice || product.price || 0;
+              const image = item.variantData?.variantImage || product.featuredImage || (product.images && product.images[0]) || product.image || '/placeholder.png';
 
               return (
-              <div key={product._id} className="flex items-center bg-white p-[15px] rounded-[12px] mb-[15px] shadow-[0_5px_15px_rgba(0,0,0,0.08)]">
+              <div key={itemKey} className="flex items-center bg-white p-[15px] rounded-[12px] mb-[15px] shadow-[0_5px_15px_rgba(0,0,0,0.08)]">
                 <div className="w-[80px] h-[80px] relative flex-shrink-0 mr-[15px]">
                   <Image 
                     src={image} 
@@ -110,29 +113,38 @@ export default function CartDrawer({ isOpen, onClose }) {
 
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-800 text-[14px] leading-tight line-clamp-2 pr-2">{product.name}</h3>
-                  <p className="text-[#2ed573] font-bold mt-1">৳ {price.toLocaleString()}</p>
+                  {(item.variantData?.selectedAttributes || item.selectedAttributes) && (
+                    <div className="flex flex-wrap gap-1 mt-1 mb-1">
+                      {Object.entries(item.variantData?.selectedAttributes || item.selectedAttributes).map(([k, v]) => (
+                        <span key={k} className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                          {k}: {v}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-[#2ed573] font-bold mt-1">৳ {Number(price).toLocaleString()}</p>
                 </div>
 
                 <div className="flex gap-[8px] items-center">
                   <button 
-                    onClick={() => updateQuantityWithDebounce(product._id, item.quantity - 1)}
+                    onClick={() => updateQuantityWithDebounce(productId, item.quantity - 1, variantSku)}
                     className="px-[10px] py-[4px] bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded text-gray-700 font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={item.quantity <= 1 || isLoading(product._id)}
+                    disabled={item.quantity <= 1 || isLoading(productId, variantSku)}
                   >
                     -
                   </button>
                   <span className="font-bold w-4 text-center text-sm">{item.quantity}</span>
                   <button 
-                    onClick={() => updateQuantityWithDebounce(product._id, item.quantity + 1)}
+                    onClick={() => updateQuantityWithDebounce(productId, item.quantity + 1, variantSku)}
                     className="px-[10px] py-[4px] bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded text-gray-700 font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading(product._id)}
+                    disabled={isLoading(productId, variantSku)}
                   >
                     +
                   </button>
                 </div>
 
                 <button 
-                  onClick={() => removeFromCart(product._id)}
+                  onClick={() => removeFromCart(productId, variantSku)}
                   className="ml-[15px] text-red-500 hover:text-red-700 font-medium text-[13px] bg-transparent border-none cursor-pointer transition-colors"
                 >
                   Remove

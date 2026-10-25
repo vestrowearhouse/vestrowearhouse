@@ -21,6 +21,7 @@ const inter = Inter({
 
 // Lazily load chatbot and login modal – they are never visible on first paint
 const AIChatbot = dynamic(() => import('./components/AIChatbot'), { ssr: false });
+const WhatsAppFloatingButton = dynamic(() => import('./components/WhatsAppFloatingButton'), { ssr: false });
 const ServiceWorkerRegister = dynamic(() => import('./components/ServiceWorkerRegister'), { ssr: false });
 const LoginModal = dynamic(() => import('./components/LoginModal'), { ssr: false });
 
@@ -127,6 +128,7 @@ export default function RootLayout({ children }) {
           </UserLayoutWrapper>
           <LoginModal />
           <AIChatbot />
+          <WhatsAppFloatingButton />
         </AuthProvider>
         <Analytics />
         <SpeedInsights />

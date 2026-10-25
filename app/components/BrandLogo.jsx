@@ -151,27 +151,21 @@ export default function BrandLogo({
   href = '/', 
   textColor = '',
   className = '',
-  hideText = false
+  hideText = false,
+  logoSrc = '/tab-icon.png'
 }) {
-  const iconSize = size === 'sm' ? 26 : size === 'lg' ? 40 : 32;
-  const containerSize = size === 'sm' ? 'w-9 h-9' : size === 'lg' ? 'w-14 h-14' : 'w-11 h-11';
-  const borderRadius = size === 'sm' ? 'rounded-[10px]' : size === 'lg' ? 'rounded-[16px]' : 'rounded-[12px]';
+  const containerSize = size === 'sm' ? 'w-8 h-8 sm:w-9 sm:h-9' : size === 'lg' ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-10 h-10 sm:w-11 sm:h-11';
   const textSize = size === 'sm' ? 'text-lg' : size === 'lg' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl';
   const isDark = textColor && textColor.includes('white');
 
   const content = (
     <div className={`inline-flex items-center gap-2.5 group transition-transform active:scale-98 select-none ${className}`}>
       {/* Official Main Brand Logo Container */}
-      <div className={`${containerSize} ${borderRadius} ${
-        isDark 
-          ? 'bg-slate-800 border-slate-700/80 shadow-inner' 
-          : 'bg-white border-blue-100 shadow-xs group-hover:border-blue-300 group-hover:shadow-md'
-      } flex items-center justify-center border transition-all duration-200 shrink-0 p-1 relative overflow-hidden`}>
+      <div className={`${containerSize} relative shrink-0`}>
         <Image
-          src="/stellar-logo-mark.png"
+          src={logoSrc}
           alt="Stellar Mart Logo"
-          width={iconSize}
-          height={iconSize}
+          fill
           className="object-contain transition-transform group-hover:scale-105 duration-200"
           priority
         />

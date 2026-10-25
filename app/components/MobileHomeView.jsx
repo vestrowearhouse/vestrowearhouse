@@ -195,7 +195,7 @@ export default function MobileHomeView({
   }, [quickChannelsConfig?.channels]);
 
   return (
-    <div className="md:hidden bg-[#f4f5f8] min-h-screen pb-12 pt-5">
+    <div className="md:hidden bg-[#f4f5f8] min-h-screen pb-12 pt-1.5">
       
       {/* 1. Promo Banner Carousel (Top of mobile home) */}
       {promoBanner && (
@@ -246,6 +246,24 @@ export default function MobileHomeView({
                 </div>
               )}
             </Link>
+          </div>
+
+          {/* Mobile Trust Badges Bar */}
+          <div className="mt-2.5 bg-gradient-to-r from-emerald-50 via-blue-50 to-indigo-50 border border-emerald-100/80 rounded-xl p-2.5 flex items-center justify-between text-[11px] font-bold text-gray-800 shadow-xs">
+            <div className="flex items-center gap-1 text-emerald-800">
+              <span className="text-sm">💵</span>
+              <span>ক্যাশ অন ডেলিভারি</span>
+            </div>
+            <div className="w-[1px] h-3.5 bg-gray-300"></div>
+            <div className="flex items-center gap-1 text-blue-800">
+              <span className="text-sm">🚚</span>
+              <span>দ্রুত ডেলিভারি</span>
+            </div>
+            <div className="w-[1px] h-3.5 bg-gray-300"></div>
+            <div className="flex items-center gap-1 text-purple-800">
+              <span className="text-sm">🔄</span>
+              <span>৭ দিনের রিটার্ন</span>
+            </div>
           </div>
         </div>
       )}

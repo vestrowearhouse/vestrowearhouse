@@ -25,8 +25,8 @@ export default function CartPage() {
   const getCartTotal = () => {
     return items.reduce((total, item) => {
       const product = item.product || {};
-      const price = product.sellingPrice || product.price || 0;
-      return total + price * item.quantity;
+      const price = item.variantPrice || product.sellingPrice || product.price || 0;
+      return total + Number(price) * (item.quantity || 1);
     }, 0);
   };
 
@@ -54,12 +54,15 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items List */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => {
+            {items.map((item, index) => {
               const product = item.product || {};
-              const price = product.sellingPrice || product.price || 0;
-              const image = product.featuredImage || (product.images && product.images[0]) || product.image || '';
+              const productId = product._id || product.id || item.productId || item.id;
+              const variantSku = item.variantSku || item.variantData?.variantSku || null;
+              const itemKey = `${productId}-${variantSku || index}`;
+              const price = item.variantPrice || product.sellingPrice || product.price || 0;
+              const image = item.variantData?.variantImage || product.featuredImage || (product.images && product.images[0]) || product.image || '';
               return (
-              <div key={product._id || product.id} className="bg-white rounded-xl shadow-sm p-4 flex gap-4 items-center">
+              <div key={itemKey} className="bg-white rounded-xl shadow-sm p-4 flex gap-4 items-center">
                 <div className="w-24 h-24 relative flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
                   {image ? (
                     <img src={image} alt={product.name} className="object-cover w-full h-full" />
@@ -86,12 +89,12 @@ export default function CartPage() {
                     <p className="text-[11px] text-gray-400 font-mono mb-1">SKU: {item.variantSku}</p>
                   )}
                   <p className="text-gray-500 text-sm mb-2">{product.category?.name || product.category}</p>
-                  <p className="text-blue-600 font-bold font-mono">৳ {price.toLocaleString()}</p>
+                  <p className="text-blue-600 font-bold font-mono">৳ {Number(price).toLocaleString()}</p>
                 </div>
 
                 <div className="flex flex-col items-end gap-3">
                   <button 
-                    onClick={() => removeFromCart(product._id || product.id)}
+                    onClick={() => removeFromCart(productId, variantSku)}
                     className="text-red-500 hover:text-red-700 p-2 bg-red-50 hover:bg-red-100 rounded-lg transition"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -99,16 +102,16 @@ export default function CartPage() {
                   
                   <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
                     <button 
-                      onClick={() => updateQuantityWithDebounce(product._id || product.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1 || isLoading(product._id || product.id)}
+                      onClick={() => updateQuantityWithDebounce(productId, item.quantity - 1, variantSku)}
+                      disabled={item.quantity <= 1 || isLoading(productId, variantSku)}
                       className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="font-medium w-4 text-center">{item.quantity}</span>
                     <button 
-                      onClick={() => updateQuantityWithDebounce(product._id || product.id, item.quantity + 1)}
-                      disabled={isLoading(product._id || product.id)}
+                      onClick={() => updateQuantityWithDebounce(productId, item.quantity + 1, variantSku)}
+                      disabled={isLoading(productId, variantSku)}
                       className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
                     >
                       <Plus className="w-3 h-3" />

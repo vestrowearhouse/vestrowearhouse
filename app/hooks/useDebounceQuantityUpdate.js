@@ -13,48 +13,54 @@ export function useDebounceQuantityUpdate(updateQuantity, delayMs = 300) {
   }, []);
 
   const processUpdate = useCallback(
-    async (productId, quantity) => {
-      setLoadingItems((prev) => new Set(prev).add(productId));
+    async (productId, quantity, variantSku = null) => {
+      const key = variantSku ? `${productId}_${variantSku}` : String(productId);
+      setLoadingItems((prev) => new Set(prev).add(key));
 
       try {
-        await updateQuantity(productId, quantity);
+        await updateQuantity(productId, quantity, variantSku);
       } finally {
         setLoadingItems((prev) => {
           const newSet = new Set(prev);
-          newSet.delete(productId);
+          newSet.delete(key);
           return newSet;
         });
-        pendingRef.current.delete(productId);
+        pendingRef.current.delete(key);
       }
     },
     [updateQuantity]
   );
 
   const updateQuantityWithDebounce = useCallback(
-    (productId, newQuantity) => {
+    (productId, newQuantity, variantSku = null) => {
       // Validate quantity
       if (newQuantity < 1) {
         return;
       }
 
+      const key = variantSku ? `${productId}_${variantSku}` : String(productId);
+
       // Clear existing timeout for this product
-      if (pendingRef.current.has(productId)) {
-        clearTimeout(pendingRef.current.get(productId).timeoutId);
+      if (pendingRef.current.has(key)) {
+        clearTimeout(pendingRef.current.get(key).timeoutId);
       }
 
       // Schedule new update (this replaces any pending update for this product)
       const timeoutId = setTimeout(() => {
-        processUpdate(productId, newQuantity);
+        processUpdate(productId, newQuantity, variantSku);
       }, delayMs);
 
       // Store the pending update
-      pendingRef.current.set(productId, { quantity: newQuantity, timeoutId });
+      pendingRef.current.set(key, { quantity: newQuantity, timeoutId });
     },
     [processUpdate, delayMs]
   );
 
   const isLoading = useCallback(
-    (productId) => loadingItems.has(productId),
+    (productId, variantSku = null) => {
+      const key = variantSku ? `${productId}_${variantSku}` : String(productId);
+      return loadingItems.has(key);
+    },
     [loadingItems]
   );
 

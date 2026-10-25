@@ -10,7 +10,7 @@ import { X, Upload, Loader2, MapPin, LogOut, Package, User, Settings, AlertTrian
 export default function UserProfile() {
   const [edit, setEdit] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const { user, logout, loading, isCheckingAuth } = useAuth();
+  const { user, logout, loading, isCheckingAuth, checkAuth } = useAuth();
   const { cart, removeFromCart, updateQuantity } = useCart();
   const router = useRouter();
   
@@ -18,6 +18,7 @@ export default function UserProfile() {
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
   
   // New states for added features
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -110,11 +111,22 @@ export default function UserProfile() {
     }
   };
 
+  const parseAddressString = (addr) => {
+    if (!addr) return "";
+    if (typeof addr === "string") return addr;
+    if (typeof addr === "object") {
+      if (addr.street && addr.city) return `${addr.street}, ${addr.city}`;
+      return addr.street || addr.city || addr.full || "";
+    }
+    return String(addr);
+  };
+
   const fetchProfileData = async () => {
     try {
       setLoadingProfile(true);
-      const res = await fetch('/api/user/profile', {
-        credentials: 'include'
+      const res = await fetch(`/api/user/profile?t=${Date.now()}`, {
+        credentials: 'include',
+        cache: 'no-store',
       });
       
       if (!res.ok) {
@@ -129,11 +141,12 @@ export default function UserProfile() {
       setProfileUser(data.user);
       setOrders(data.orders || []);
       
-      // Update form data
+      // Update form data with properly formatted address and phone
+      const addrString = parseAddressString(data.user?.address);
       setFormData({
-        name: data.user.name || "",
-        phone: data.user.phone || "",
-        address: data.user.address?.street || ""
+        name: data.user?.name || "",
+        phone: data.user?.phone || "",
+        address: addrString
       });
     } catch (error) {
       console.error('[Profile] Error fetching profile:', error);
@@ -141,6 +154,18 @@ export default function UserProfile() {
       setLoadingProfile(false);
     }
   };
+
+  // Keep form data in sync with user if fields are initially empty
+  useEffect(() => {
+    if (user && !edit) {
+      const addrString = parseAddressString(user.address);
+      setFormData(prev => ({
+        name: prev.name || user.name || "",
+        phone: prev.phone || user.phone || "",
+        address: prev.address || addrString || ""
+      }));
+    }
+  }, [user, edit]);
 
   // Fetch support settings from database (cached)
   useEffect(() => {
@@ -251,37 +276,56 @@ export default function UserProfile() {
   // 2. Save Profile Data
   const handleSaveProfile = async () => {
     try {
+      setSavingProfile(true);
       const res = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData)
       });
-      if (!res.ok) throw new Error("Failed to update profile");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to update profile");
+      }
       setEdit(false);
       alert("Profile updated successfully!");
-      fetchProfileData();
+      await fetchProfileData();
+      if (checkAuth) await checkAuth();
     } catch (err) {
       console.error(err);
-      alert("Failed to update profile");
+      alert(err.message || "Failed to update profile");
+    } finally {
+      setSavingProfile(false);
     }
   };
 
   // 3. Save New Address
   const handleSaveAddress = async () => {
     try {
-      await fetch("/api/user/address", {
+      const res = await fetch("/api/user/address", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(newAddress)
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to save address");
+      }
       setIsAddingAddress(false);
-      alert("New address added to your database!");
-      // Update local state temporarily
-      setFormData(prev => ({ ...prev, address: newAddress.street + (newAddress.city ? ", " + newAddress.city : "") }));
+      alert("New address added successfully!");
+      const formatted = newAddress.street + (newAddress.city ? ", " + newAddress.city : "");
+      setFormData(prev => ({ 
+        ...prev, 
+        address: formatted,
+        phone: newAddress.phone || prev.phone
+      }));
       setNewAddress({ street: "", city: "", phone: "" });
+      await fetchProfileData();
+      if (checkAuth) await checkAuth();
     } catch (err) {
       console.error(err);
+      alert(err.message || "Failed to save address");
     }
   };
 
@@ -443,15 +487,27 @@ export default function UserProfile() {
             <p className="text-xs text-gray-500">{user?.email}</p>
 
             {/* Profile Progress */}
-            <div className="w-full mt-4">
-              <div className="flex justify-between text-xs mb-1">
-                <span>Profile Complete</span>
-                <span className="text-indigo-600 font-medium">85%</span>
-              </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 w-[85%]" />
-              </div>
-            </div>
+            {(() => {
+              let score = 0;
+              if (formData.name || user?.name) score += 25;
+              if (user?.email) score += 25;
+              if (formData.phone || user?.phone) score += 25;
+              if (formData.address || user?.address) score += 25;
+              return (
+                <div className="w-full mt-4">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Profile Complete</span>
+                    <span className="text-indigo-600 font-medium">{score}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 transition-all duration-500" 
+                      style={{ width: `${score}%` }} 
+                    />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Menu */}
@@ -509,9 +565,29 @@ export default function UserProfile() {
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-semibold text-gray-800">Profile Information</h3>
                     {edit ? (
-                      <button onClick={handleSaveProfile} className="px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors shadow-sm">
-                        Save Changes
-                      </button>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => setEdit(false)} 
+                          disabled={savingProfile}
+                          className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors shadow-sm disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={handleSaveProfile} 
+                          disabled={savingProfile}
+                          className="px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors shadow-sm flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          {savingProfile ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            'Save Changes'
+                          )}
+                        </button>
+                      </div>
                     ) : (
                       <button onClick={() => setEdit(true)} className="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors shadow-sm">
                         Edit Profile
@@ -520,10 +596,33 @@ export default function UserProfile() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ProfileField label="Full Name" value={formData.name} edit={edit} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-                    <ProfileField label="Email" value={user?.email || ""} edit={edit} disabled={true} />
-                    <ProfileField label="Phone" value={formData.phone} edit={edit} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
-                    <ProfileField label="Address" value={formData.address} edit={edit} onChange={(e) => setFormData({...formData, address: e.target.value})} />
+                    <ProfileField 
+                      label="Full Name" 
+                      value={formData.name} 
+                      edit={edit} 
+                      onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                      placeholder="e.g. John Doe"
+                    />
+                    <ProfileField 
+                      label="Email" 
+                      value={user?.email || ""} 
+                      edit={edit} 
+                      disabled={true} 
+                    />
+                    <ProfileField 
+                      label="Phone" 
+                      value={formData.phone} 
+                      edit={edit} 
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                      placeholder="e.g. 01847853867"
+                    />
+                    <ProfileField 
+                      label="Address" 
+                      value={formData.address} 
+                      edit={edit} 
+                      onChange={(e) => setFormData({...formData, address: e.target.value})} 
+                      placeholder="e.g. House 12, Road 5, Mirpur, Dhaka"
+                    />
                   </div>
                 </div>
               )}
@@ -590,10 +689,13 @@ export default function UserProfile() {
               {activeTab === "addresses" && (
                 <div className="bg-white rounded-2xl shadow-md border-0 p-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Saved Addresses</h3>
-                  {formData.address || user?.address?.street ? (
+                  {formData.address || parseAddressString(user?.address) ? (
                     <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/50 mb-4">
                       <p className="font-medium text-gray-800">Home Address</p>
-                      <p className="text-sm text-gray-500 mt-1">{formData.address || user?.address?.street}</p>
+                      <p className="text-sm text-gray-600 mt-1">{formData.address || parseAddressString(user?.address)}</p>
+                      {(formData.phone || user?.phone) && (
+                        <p className="text-xs text-gray-500 mt-1">Phone: {formData.phone || user?.phone}</p>
+                      )}
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500 mb-4">No addresses saved yet.</p>
@@ -941,24 +1043,27 @@ export default function UserProfile() {
                       {cart.items.map((item) => {
                         const product = item.product;
                         if (!product) return null;
-                        const price = product.sellingPrice || product.price || 0;
-                        const image = product.featuredImage || (product.images && product.images[0]) || product.image || '/placeholder.png';
+                        const productId = product._id || product.id || item.productId || item.id;
+                        const variantSku = item.variantSku || item.variantData?.variantSku || null;
+                        const itemKey = `${productId}-${variantSku || index}`;
+                        const price = item.variantPrice || product.sellingPrice || product.price || 0;
+                        const image = item.variantData?.variantImage || product.featuredImage || (product.images && product.images[0]) || product.image || '/placeholder.png';
 
                         return (
-                          <div key={product._id || product.id} className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow bg-gray-50/50">
+                          <div key={itemKey} className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow bg-gray-50/50">
                             <div className="w-20 h-20 relative flex-shrink-0 bg-white rounded-lg overflow-hidden border border-gray-100">
                               <img src={image} alt={product.name} className="w-full h-full object-cover" />
                             </div>
                             
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-gray-800 text-sm md:text-base truncate pr-4">{product.name}</h4>
-                              <p className="text-indigo-600 font-bold mt-1">৳ {price.toLocaleString()}</p>
+                              <p className="text-indigo-600 font-bold mt-1">৳ {Number(price).toLocaleString()}</p>
                             </div>
 
                             <div className="flex flex-col items-end gap-2">
                               <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200">
                                 <button 
-                                  onClick={() => updateQuantity(product._id || product.id, item.quantity - 1)}
+                                  onClick={() => updateQuantity(productId, item.quantity - 1, variantSku)}
                                   disabled={item.quantity <= 1}
                                   className="w-6 h-6 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded shadow-sm text-gray-600 disabled:opacity-50"
                                 >
@@ -966,14 +1071,14 @@ export default function UserProfile() {
                                 </button>
                                 <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
                                 <button 
-                                  onClick={() => updateQuantity(product._id || product.id, item.quantity + 1)}
+                                  onClick={() => updateQuantity(productId, item.quantity + 1, variantSku)}
                                   className="w-6 h-6 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded shadow-sm text-gray-600"
                                 >
                                   +
                                 </button>
                               </div>
                               <button 
-                                onClick={() => removeFromCart(product._id || product.id)}
+                                onClick={() => removeFromCart(productId, variantSku)}
                                 className="text-xs text-red-500 font-medium hover:underline"
                               >
                                 Remove
@@ -1182,14 +1287,21 @@ export default function UserProfile() {
 }
 
 // 🔥 Reusable components
-function ProfileField({ label, value, edit, disabled = false, onChange }) {
+function ProfileField({ label, value, edit, disabled = false, onChange, placeholder = "" }) {
   return (
     <div>
       <label className="text-xs text-gray-500 block mb-1">{label}</label>
       {edit && !disabled ? (
-        <input value={value || ""} onChange={onChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-shadow" />
+        <input 
+          value={value || ""} 
+          onChange={onChange} 
+          placeholder={placeholder || `Enter your ${label.toLowerCase()}`}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-shadow" 
+        />
       ) : (
-        <p className="font-medium text-gray-800 bg-gray-50 px-3 py-2 rounded-md min-h-[38px] flex items-center border border-transparent">{value}</p>
+        <p className={`font-medium px-3 py-2 rounded-md min-h-[38px] flex items-center border border-transparent ${value ? 'text-gray-800 bg-gray-50' : 'text-gray-400 bg-gray-50 italic text-sm'}`}>
+          {value || "Not set yet"}
+        </p>
       )}
     </div>
   );

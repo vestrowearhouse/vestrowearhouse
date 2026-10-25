@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { normalizeId } from '@/lib/normalizeId';
 
 // BuyNowModal (14KB) is only needed when user clicks "Buy Now" — lazy load it
 const BuyNowModal = dynamic(() => import('./BuyNowModal'), { ssr: false });
@@ -59,9 +60,12 @@ function ProductCard({ product }) {
     calculatedDiscount = Math.round(((originalPrice - price) / originalPrice) * 100);
   }
 
+  const pId = normalizeId(product);
+
   const item = {
-    _id: product?._id || product?.id || '',
-    slug: product?.slug || product?.id || product?._id || '',
+    _id: pId,
+    id: pId,
+    slug: product?.slug || pId || '',
     name: product?.name || 'Product',
     description: product?.description || product?.shortDescription || '',
     category: product?.category?.name || (typeof product?.category === 'string' ? product.category : '') || '',
@@ -178,15 +182,19 @@ function ProductCard({ product }) {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!user) {
-      alert('Please login to manage your wishlist.');
-      return;
-    }
-
     if (isWishlisted) {
       await removeFromWishlist(item._id);
     } else {
-      await addToWishlist(item._id);
+      await addToWishlist({
+        _id: item._id,
+        id: item._id,
+        name: item.name,
+        slug: item.slug,
+        image: item.image,
+        price: item.price,
+        originalPrice: item.originalPrice,
+        inStock: item.inStock
+      });
     }
   };
 
@@ -284,47 +292,46 @@ function ProductCard({ product }) {
           
           {/* Desktop Stars Rating + Sold Count */}
           <div className="hidden md:flex items-center justify-between text-[12px] mb-2 min-h-[18px]">
-            <div className="flex items-center tracking-wide">
-              {item.rating > 0 ? (
-                <>
-                  <span className="text-[#f1c40f]">
-                    {'★'.repeat(Math.round(item.rating)) + '☆'.repeat(5 - Math.round(item.rating))}
-                  </span>
-                  <span className="text-gray-700 font-semibold ml-1 font-sans text-[11px]">{item.rating.toFixed(1)}</span>
+            {item.rating > 0 ? (
+              <div className="flex items-center tracking-wide">
+                <span className="text-[#f1c40f]">
+                  {'★'.repeat(Math.round(item.rating)) + '☆'.repeat(5 - Math.round(item.rating))}
+                </span>
+                <span className="text-gray-700 font-semibold ml-1 font-sans text-[11px]">{item.rating.toFixed(1)}</span>
+                {item.reviewCount > 0 && (
                   <span className="text-gray-400 font-normal text-[11px] ml-0.5">({item.reviewCount})</span>
-                </>
-              ) : (
-                <div className="flex items-center text-gray-400 text-[11px] gap-1">
-                  <span className="text-gray-300 tracking-tighter">☆☆☆☆☆</span>
-                  <span className="text-gray-400 font-sans">({item.reviewCount})</span>
-                </div>
-              )}
-            </div>
-            {item.soldCount > 0 ? (
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center text-emerald-700 text-[10px] font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                <span>✓ Verified Authentic</span>
+              </div>
+            )}
+            {item.soldCount > 0 && (
               <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded leading-none">
                 {item.soldCountFormatted} sold
-              </span>
-            ) : (
-              <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded leading-none">
-                0 sold
               </span>
             )}
           </div>
 
           {/* Mobile Rating + Sold Count (compact) */}
           <div className="flex md:hidden items-center justify-between text-[11px] text-gray-500 mb-1 min-h-[16px]">
-            <div className="flex items-center gap-1">
-              <span className={item.rating > 0 ? "text-[#f1c40f]" : "text-gray-300"}>★</span>
-              <span className="font-semibold text-gray-700">{item.rating > 0 ? item.rating.toFixed(1) : '0.0'}</span>
-              <span className="text-gray-400">({item.reviewCount})</span>
-            </div>
-            {item.soldCount > 0 ? (
+            {item.rating > 0 ? (
+              <div className="flex items-center gap-1">
+                <span className="text-[#f1c40f]">★</span>
+                <span className="font-semibold text-gray-700">{item.rating.toFixed(1)}</span>
+                {item.reviewCount > 0 && (
+                  <span className="text-gray-400">({item.reviewCount})</span>
+                )}
+              </div>
+            ) : (
+              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">
+                ✓ Authentic
+              </span>
+            )}
+            {item.soldCount > 0 && (
               <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded leading-none">
                 {item.soldCountFormatted} sold
-              </span>
-            ) : (
-              <span className="text-[9px] font-normal text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded leading-none">
-                0 sold
               </span>
             )}
           </div>

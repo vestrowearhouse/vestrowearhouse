@@ -6,6 +6,7 @@ import HeroBanner from './components/HeroBanner';
 import dynamic from 'next/dynamic';
 import { createClient } from '@supabase/supabase-js';
 import ProductCard from './components/ProductCard';
+import Features from './components/Features';
 
 // MobileHomeView is a large client-only component (23KB) — never shown on desktop
 // Lazy-load it so it doesn't block the initial page render
@@ -227,7 +228,11 @@ export default async function HomePage() {
   // so we just display all 12 fetched categories.
   const displayCategories = categories;
   const displayFeatured = featuredProducts.length > 0 ? featuredProducts : [];
-  const displayNewArrivals = newArrivals.length > 0 ? newArrivals : [];
+  
+  // De-duplicate: New arrivals should show items that are distinct from featured
+  const featuredIdSet = new Set(displayFeatured.map(p => p.id || p._id));
+  const uniqueArrivals = newArrivals.filter(p => !featuredIdSet.has(p.id || p._id));
+  const displayNewArrivals = uniqueArrivals.length > 0 ? uniqueArrivals : newArrivals;
 
   const categoryLayoutPc = data.categoryLayout?.pc || [];
   const categoryLayoutMobile = data.categoryLayout?.mobile || [];
@@ -267,7 +272,18 @@ export default async function HomePage() {
           ) : iconType === 'custom' && customCode ? (
             <div className="w-full h-full flex items-center justify-center" dangerouslySetInnerHTML={{ __html: customCode }} />
           ) : (
-            <span className="text-2xl md:text-3xl">{icon || '📦'}</span>
+            <span className="text-2xl md:text-3xl">
+              {icon && icon !== '📦' ? icon : (
+                category.slug?.includes('game') || category.name?.toLowerCase().includes('game') ? '🎮' :
+                category.slug?.includes('headphone') ? '🎧' :
+                category.slug?.includes('sleeve') ? '🧤' :
+                category.slug?.includes('fashion') ? '👔' :
+                category.slug?.includes('home') ? '🏠' :
+                category.slug?.includes('pi') || category.slug?.includes('arduino') ? '🖥️' :
+                category.slug?.includes('sensor') ? '📡' :
+                category.slug?.includes('robot') ? '🤖' : '🎮'
+              )}
+            </span>
           )}
         </div>
         <h3 className="font-bold text-gray-800 group-hover:text-blue-600 text-xs md:text-sm text-center w-full truncate">{category.name}</h3>
@@ -290,7 +306,7 @@ export default async function HomePage() {
         <MobileHomeView
           categories={categories}
           featuredProducts={featuredProducts}
-          newArrivals={newArrivals}
+          newArrivals={displayNewArrivals}
           allProducts={allProducts}
           banners={banners}
           flashSaleConfig={data.flashSaleConfig}
@@ -301,6 +317,7 @@ export default async function HomePage() {
       {/* Desktop/PC View (Preserved Exactly) */}
       <div className="hidden md:block">
         <HeroBanner banners={banners} />
+        <Features />
 
       <section className="py-6 md:py-12">
         <div className="max-w-7xl mx-auto px-2 md:px-4">
@@ -359,22 +376,33 @@ export default async function HomePage() {
       </section>
       )}
 
-      <section className="py-6 md:py-12">
+      {/* Trust & Niche Focus Promotional Strip */}
+      <section className="py-6 md:py-10">
         <div className="max-w-7xl mx-auto px-2 md:px-4">
           <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-            <div className="bg-gradient-to-r from-pink-500 to-pink-600 rounded-xl md:rounded-2xl p-4 md:p-8 text-white">
-              <h2 className="text-lg md:text-2xl font-bold mb-1 md:mb-2">Super Sale</h2>
-              <p className="mb-3 md:mb-4 opacity-95 text-sm md:text-base">Up to 50% off on electronics</p>
-              <Link href="/shop" aria-label="Shop Super Sale electronics" className="inline-block px-4 md:px-6 py-2 md:py-2.5 bg-white text-pink-600 rounded-lg font-bold hover:bg-gray-100 text-sm md:text-base">
-                Shop Now
-              </Link>
+            <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 rounded-xl md:rounded-2xl p-6 md:p-8 text-white shadow-md flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Pro Gaming & Tech Setup</span>
+                <h2 className="text-xl md:text-2xl font-bold mt-1 mb-2">Upgrade Your Battlestation</h2>
+                <p className="opacity-90 text-sm md:text-base max-w-md">Mechanical keyboards, high-precision mice, cooling pads & setup accessories.</p>
+              </div>
+              <div className="mt-6">
+                <Link href="/shop" aria-label="Shop Gaming Gear" className="inline-block px-5 py-2.5 bg-white text-blue-800 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-sm text-sm md:text-base">
+                  Explore Gaming Gear →
+                </Link>
+              </div>
             </div>
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl md:rounded-2xl p-4 md:p-8 text-white">
-              <h2 className="text-lg md:text-2xl font-bold mb-1 md:mb-2">New Collection</h2>
-              <p className="mb-3 md:mb-4 opacity-95 text-sm md:text-base">Explore the latest fashion trends</p>
-              <Link href="/shop" aria-label="Shop New Collection fashion trends" className="inline-block px-4 md:px-6 py-2 md:py-2.5 bg-white text-purple-600 rounded-lg font-bold hover:bg-gray-100 text-sm md:text-base">
-                Shop Now
-              </Link>
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-cyan-800 rounded-xl md:rounded-2xl p-6 md:p-8 text-white shadow-md flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">100% Risk-Free Shopping</span>
+                <h2 className="text-xl md:text-2xl font-bold mt-1 mb-2">সারা বাংলাদেশে ক্যাশ অন ডেলিভারি</h2>
+                <p className="opacity-90 text-sm md:text-base max-w-md">পণ্য হাতে পেয়ে চেক করে মূল্য পরিশোধ করুন। ৭ দিনের সহজ রিটার্ন ও ইনস্ট্যান্ট রিপ্লেসমেন্ট সুবিধা।</p>
+              </div>
+              <div className="mt-6">
+                <Link href="/return-policy" aria-label="View Return Policy" className="inline-block px-5 py-2.5 bg-white text-emerald-800 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-sm text-sm md:text-base">
+                  আমাদের রিটার্ন পলিসি জানুন →
+                </Link>
+              </div>
             </div>
           </div>
         </div>

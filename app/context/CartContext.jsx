@@ -201,8 +201,8 @@ export function CartProvider({ children }) {
 
     // Optimistic UI update
     const updatedItems = cart.items.map((item) => {
-      const id = item.product?._id || item.product?.id;
-      if (id === productId) {
+      const id = item.product?._id || item.product?.id || item.productId || item.id;
+      if (String(id) === String(productId)) {
         if (!variantSku || (item.variantSku || item.variantData?.variantSku) === variantSku) {
           return { ...item, quantity };
         }
@@ -255,8 +255,8 @@ export function CartProvider({ children }) {
 
     // Optimistic UI update
     const updatedItems = cart.items.filter((item) => {
-      const id = item.product?._id || item.product?.id;
-      if (id !== productId) return true;
+      const id = item.product?._id || item.product?.id || item.productId || item.id;
+      if (String(id) !== String(productId)) return true;
       if (variantSku) {
         return (item.variantSku || item.variantData?.variantSku) !== variantSku;
       }

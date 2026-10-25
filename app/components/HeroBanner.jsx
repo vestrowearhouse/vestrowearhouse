@@ -9,24 +9,24 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const defaultMainBanners = [
   {
     id: 'default-main-1',
-    title: 'Mega Sale',
-    description: 'Up to 50% Off on Electronics',
+    title: 'Pro Gaming Gear',
+    description: 'Keyboards, Mice & Accessories • 100% Cash On Delivery',
     image: '/banners/default_banner_1.webp',
-    link: '/flash-sale',
+    link: '/shop',
     position: 0,
   },
   {
     id: 'default-main-2',
-    title: 'New Collection',
-    description: 'Explore Latest Fashion Trends',
+    title: 'Desk Setup Essentials',
+    description: 'Level Up Your Battlestation with Premium Accessories',
     image: '/banners/default_banner_2.webp',
-    link: '/category/fashion',
+    link: '/shop',
     position: 1,
   },
   {
     id: 'default-main-3',
-    title: 'Free Shipping',
-    description: 'On Orders Over ৳500',
+    title: 'সারা দেশে ক্যাশ অন ডেলিভারি',
+    description: 'পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন • ৭ দিনের সহজ রিটার্ন',
     image: '/banners/default_banner_3.webp',
     link: '/shop',
     position: 2,
@@ -35,19 +35,19 @@ const defaultMainBanners = [
 
 const defaultSideTopBanner = {
   id: 'default-side-top',
-  title: 'Special Deals',
-  description: 'Top Electronics & Accessories',
+  title: 'Mobile Gaming',
+  description: 'Finger Sleeves, Coolers & Triggers',
   image: '/banners/default_banner_4.webp',
-  link: '/category/electronics',
+  link: '/shop',
   position: 100,
 };
 
 const defaultSideBottomBanner = {
   id: 'default-side-bottom',
-  title: 'Fashion Trends',
-  description: 'Up to 40% Off New Styles',
+  title: 'দ্রুত হোম ডেলিভারি',
+  description: 'ঢাকার ভিতরে ২৪-৪৮ ঘণ্টায় ক্যাশ অন ডেলিভারি',
   image: '/banners/default_banner_5.webp',
-  link: '/category/fashion',
+  link: '/delivery-policy',
   position: 200,
 };
 
