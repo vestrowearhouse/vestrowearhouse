@@ -3,11 +3,17 @@ import Image from 'next/image';
 import { Suspense } from 'react';
 import { ArrowRight as ArrowRightIcon } from 'lucide-react';
 import HeroBanner from './components/HeroBanner';
-import MobileHomeView from './components/MobileHomeView';
 import dynamic from 'next/dynamic';
 import { createClient } from '@supabase/supabase-js';
-
 import ProductCard from './components/ProductCard';
+
+// MobileHomeView is a large client-only component (23KB) — never shown on desktop
+// Lazy-load it so it doesn't block the initial page render
+const MobileHomeView = dynamic(() => import('./components/MobileHomeView'), {
+  ssr: false,
+  loading: () => null,
+});
+
 
 // JSON-LD structured data for the Organization — helps Google rich results
 const jsonLd = {

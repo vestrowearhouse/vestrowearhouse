@@ -245,7 +245,7 @@ export default function Navbar() {
 
       {/* Mobile Top Bar - Logo + Search (Sticky Top) */}
       <div className="md:hidden sticky top-0 z-50 bg-white shadow-xs border-b border-gray-200">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 h-[60px]">
           {/* Logo */}
           <BrandLogo size="sm" />
 

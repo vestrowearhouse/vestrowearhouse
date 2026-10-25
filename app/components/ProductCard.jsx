@@ -8,7 +8,11 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useRouter } from 'next/navigation';
-import BuyNowModal from './BuyNowModal';
+import dynamic from 'next/dynamic';
+
+// BuyNowModal (14KB) is only needed when user clicks "Buy Now" — lazy load it
+const BuyNowModal = dynamic(() => import('./BuyNowModal'), { ssr: false });
+
 
 function ProductCard({ product }) {
   const [isHovered, setIsHovered] = useState(false);

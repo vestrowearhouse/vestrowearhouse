@@ -1,7 +1,23 @@
 import { NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/email';
+import { verifyAdminToken } from '@/lib/secureJwt';
 
 export async function POST(request) {
+  // 🔒 SECURITY: Disable test-email endpoint in production
+  // This is a debug endpoint that should never be accessible publicly
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: 'This endpoint is disabled in production.' },
+      { status: 403 }
+    );
+  }
+
+  // Admin-only in development
+  const adminPayload = await verifyAdminToken(request);
+  if (!adminPayload) {
+    return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 401 });
+  }
+
   try {
     const { email } = await request.json();
 

@@ -564,7 +564,7 @@ export default function ProductPage({ params }) {
     setActiveNavTab(tabKey);
     const elem = document.getElementById(sectionId);
     if (elem) {
-      const yOffset = -70;
+      const yOffset = -155; // 64px (Navbar) + 40px (CategoryMenu) + 45px (Tabs) + 6px buffer
       const y = elem.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
@@ -573,7 +573,7 @@ export default function ProductPage({ params }) {
   // Scroll spy to update active top tab on scroll
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPos = window.scrollY + 140;
+      const scrollPos = window.scrollY + 160;
       const recsTop = recsRef.current?.offsetTop || 999999;
       const detailsTop = detailsRef.current?.offsetTop || 999999;
       const ratingsTop = ratingsRef.current?.offsetTop || 999999;
@@ -772,8 +772,8 @@ export default function ProductPage({ params }) {
         </div>
       )}
 
-      {/* ── STICKY NAVIGATION TABS BAR (Subtle under Header) ── */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-2xs">
+      {/* ── STICKY NAVIGATION TABS BAR (Desktop only, docked under CategoryMenu) ── */}
+      <div className="hidden md:block sticky top-[104px] z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between sm:justify-start gap-4 sm:gap-8 text-xs sm:text-sm font-semibold overflow-x-auto no-scrollbar">
           <button
             onClick={() => scrollToSection('sec-overview', 'overview')}

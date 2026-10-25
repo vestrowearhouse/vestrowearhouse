@@ -2,9 +2,11 @@
  * POST /api/upload/review-media
  * Upload review images/videos to Cloudinary
  * Used by frontend when submitting a review
+ * 🔒 Requires authenticated user session
  */
 import { NextResponse } from 'next/server';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { verifyUserToken, verifyAdminToken } from '@/lib/secureJwt';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +17,17 @@ const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/mov', 'video/quic
 
 export async function POST(request) {
   try {
+    // 🔒 SECURITY: Only authenticated users/admins can upload media
+    const userPayload = await verifyUserToken(request);
+    const adminPayload = await verifyAdminToken(request);
+
+    if (!userPayload && !adminPayload) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Please log in to upload media.' },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file');
     const folder = formData.get('folder') || 'stellar-mart/reviews';

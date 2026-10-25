@@ -60,7 +60,6 @@ const nextConfig = {
     // Cover every common breakpoint so Next.js serves the right size
     deviceSizes: [375, 640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    // Reduce quality slightly for WebP — still looks great, much smaller files
     dangerouslyAllowSVG: false,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -68,13 +67,34 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
   },
+  // Move heavy server-only packages out of the client bundle entirely
   // Tree-shake large packages — only import what is actually used
   experimental: {
+    serverComponentsExternalPackages: [
+      'nodemailer',
+      'firebase-admin',
+      'cloudinary',
+      'mongoose',
+      'bcryptjs',
+      'jsonwebtoken',
+      'sharp',
+      'papaparse',
+      'xlsx',
+      'jspdf',
+      'jspdf-autotable',
+      'node-os-utils',
+    ],
     optimizePackageImports: [
       'lucide-react',
       '@supabase/supabase-js',
       'react-icons',
       'react-markdown',
+      'framer-motion',
+      'recharts',
+      'date-fns',
+      'zod',
+      'clsx',
+      'swr',
     ],
   },
   async rewrites() {
@@ -131,13 +151,30 @@ const nextConfig = {
           },
         ],
       },
-      // ── Sensitive / Dynamic API routes: strict no-store ──────────────────────
+      // ── Sensitive / Dynamic API routes: strict no-store + CORS restrict ──────
       {
-        source: '/api/(auth|admin|user|vendor|cart|checkout|orders|profile)/:path*',
+        source: '/api/(auth|admin|user|vendor|cart|checkout|orders|profile|messages|users|upload)/:path*',
         headers: [
           {
             key: 'Cache-Control',
             value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          },
+          // 🔒 CORS: Restrict to stellarmartbd.com only — override Vercel default '*'
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: 'https://www.stellarmartbd.com',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization, X-CSRF-Token',
+          },
+          {
+            key: 'Access-Control-Allow-Credentials',
+            value: 'true',
           },
         ],
       },
@@ -149,6 +186,11 @@ const nextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          // ── XSS Protection (legacy browsers) ────────────────────────────────
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
           },
           // ── Prevent MIME-type sniffing ───────────────────────────────────────
           {

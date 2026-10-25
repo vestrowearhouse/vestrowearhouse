@@ -1,18 +1,25 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminToken } from '@/lib/secureJwt';
 
 export const dynamic = 'force-dynamic';
 
 const getSupabaseClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Missing Supabase URL or Key');
   }
   return createClient(supabaseUrl, supabaseKey);
 };
 
-export async function GET() {
+export async function GET(request) {
+  // 🔒 SECURITY: Admin-only endpoint — verify admin token before returning user data
+  const adminPayload = await verifyAdminToken(request);
+  if (!adminPayload) {
+    return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 401 });
+  }
+
   try {
     const supabase = getSupabaseClient();
     
