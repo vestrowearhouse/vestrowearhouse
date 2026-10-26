@@ -115,7 +115,9 @@ function applyWAF(request) {
   }
 
   // ── 2. Bad User-Agents (scanners, exploit tools) ───────────────
-  if (ua && BAD_UA_PATTERNS.some(pattern => ua.includes(pattern))) {
+  // Exempt exact path /api/cron/backup so automated cron runners/curl can trigger it
+  // (the route itself strictly verifies Authorization: Bearer <CRON_SECRET>)
+  if (path !== '/api/cron/backup' && ua && BAD_UA_PATTERNS.some(pattern => ua.includes(pattern))) {
     console.warn(`[WAF] Bad UA blocked: ${ua.substring(0, 80)}`);
     return wafBlock('Access denied', 403);
   }
