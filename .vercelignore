@@ -16,3 +16,4 @@ deep_scan_report2
 fix-api.js
 fix-layout-db.js
 test-embedding.js
+*backup*.json
