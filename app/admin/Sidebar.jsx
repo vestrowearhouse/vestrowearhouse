@@ -18,6 +18,7 @@ const menuSections = [
     items: [
       { name: 'Products', href: '/admin/products', icon: '🛍️' },
       { name: 'Bulk Add Products', href: '/admin/products/bulk', icon: '📥' },
+      { name: 'SKU Codes & Master', href: '/admin/sku-management', icon: '🏷️' },
       { name: 'Categories', href: '/admin/categories', icon: '📁' },
       { name: 'Bulk Add Categories', href: '/admin/categories/bulk', icon: '📑' },
       { name: 'Banners', href: '/admin/banners', icon: '🖼️' },

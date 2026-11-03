@@ -1,21 +1,12 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { logActivity } from '@/lib/logger';
+import { getAdminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
-const getSupabaseClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase URL or Key');
-  }
-
-  return createClient(supabaseUrl, supabaseKey);
-};
+const getSupabaseClient = () => getAdminSupabase();
 
 export async function GET(request) {
   try {

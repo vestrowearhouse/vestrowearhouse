@@ -111,16 +111,17 @@ export default function VariantTable({ variants = [], onChange, disabled = false
                   </div>
                 </td>
 
-                {/* SKU */}
+                {/* SKU - Auto-generated and read-only */}
                 <td className="px-4 py-3">
-                  <input
-                    type="text"
-                    value={variant.sku || ''}
-                    onChange={(e) => updateVariant(idx, 'sku', e.target.value)}
-                    disabled={disabled}
-                    placeholder="SKU"
-                    className="w-full min-w-[100px] text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono disabled:bg-gray-50 disabled:text-gray-500"
-                  />
+                  {variant.sku ? (
+                    <span className="inline-block px-2 py-1 bg-slate-100 text-slate-800 border border-slate-200 rounded font-mono text-xs font-semibold tracking-wider">
+                      {variant.sku}
+                    </span>
+                  ) : (
+                    <span className="inline-block px-2 py-0.5 bg-gray-50 text-gray-400 border border-dashed border-gray-300 rounded font-mono text-[11px] italic">
+                      Auto on save
+                    </span>
+                  )}
                 </td>
 
                 {/* Price */}

@@ -136,7 +136,7 @@ export default function ActivityLogsPage() {
             <h1 className="text-2xl font-black text-gray-900 tracking-tight">Audit & Activity Logs</h1>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-xs">
               <ShieldCheck className="w-4 h-4 text-blue-600" />
-              Immutable Ledger
+              Database Audit Trail
             </span>
           </div>
           <p className="text-gray-500 text-sm mt-1">

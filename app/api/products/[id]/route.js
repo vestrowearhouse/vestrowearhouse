@@ -3,6 +3,7 @@ import { verifyAdminToken } from '@/lib/secureJwt';
 import { cookies } from 'next/headers';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { assignProductAndVariantSKUs } from '@/lib/skuServer';
 
 // Lazy initialize Supabase client
 const getSupabaseClient = () => {
@@ -41,13 +42,14 @@ export async function GET(request, { params }) {
       try {
         const { data: vendorData } = await supabase
           .from('vendors')
-          .select('id, shop_name, owner_name, shop_address, logo_url, is_verified, verification_badge')
-          .eq('id', product.vendor_id)
-          .single();
+          .select('id, user_id, shop_name, owner_name, shop_address, logo_url, is_verified, verification_badge')
+          .or(`id.eq.${product.vendor_id},user_id.eq.${product.vendor_id}`)
+          .maybeSingle();
         if (vendorData) {
           product = {
             ...product,
             store_name: vendorData.shop_name,
+            vendor_logo: vendorData.logo_url,
             is_official: false,
             vendor: {
               ...vendorData,
@@ -58,13 +60,27 @@ export async function GET(request, { params }) {
               on_time_delivery: '99%'
             }
           };
+        } else {
+          product = {
+            ...product,
+            store_name: 'Vendor Store',
+            vendor_logo: null,
+            is_official: false,
+            vendor: {
+              id: product.vendor_id,
+              shop_name: 'Vendor Store',
+              logo_url: null,
+              is_official: false,
+              is_verified: false
+            }
+          };
         }
       } catch (err) {
         console.error('Error fetching vendor in single product API:', err);
       }
     }
 
-    if (!product.vendor) {
+    if (!product.vendor && !product.vendor_id) {
       product = {
         ...product,
         store_name: 'StellarMart Official',
@@ -112,6 +128,39 @@ export async function PUT(request, { params }) {
     const supabase = getSupabaseClient();
     const data = await request.json();
 
+    // Fetch existing product to preserve immutable SKU and lock category if already assigned
+    const { data: existingProduct } = await supabase
+      .from('products')
+      .select('id, sku, category, category_code, size_code, color_code, variants')
+      .eq('id', id)
+      .maybeSingle();
+
+    // Process variant SKUs and maintain immutability
+    let finalSku = existingProduct?.sku || data.sku || null;
+    let finalCategoryCode = existingProduct?.category_code || data.category_code || null;
+    let finalSizeCode = existingProduct?.size_code || data.size_code || null;
+    let finalColorCode = existingProduct?.color_code || data.color_code || null;
+    let finalVariants = Array.isArray(data.variants) ? data.variants : (existingProduct?.variants || []);
+
+    if (existingProduct) {
+      try {
+        const skuAssignment = await assignProductAndVariantSKUs(supabase, {
+          categoryId: existingProduct.category || data.category,
+          categoryCode: existingProduct.category_code || data.category_code,
+          variants: finalVariants,
+          attributes: data.attributes,
+          existingProduct
+        });
+        finalSku = skuAssignment.sku;
+        finalCategoryCode = skuAssignment.category_code;
+        finalSizeCode = skuAssignment.size_code;
+        finalColorCode = skuAssignment.color_code;
+        finalVariants = skuAssignment.variants;
+      } catch (skuErr) {
+        console.error('Update SKU assignment warning:', skuErr);
+      }
+    }
+
     // Construct strict payload to match DB schema
     const updateData = {
       name: data.name,
@@ -125,8 +174,11 @@ export async function PUT(request, { params }) {
       oldPrice: data.oldPrice || data.regularPrice || 0,
       stockQuantity: data.stock || data.stockQuantity || 0,
       stock: data.stock || data.stockQuantity || 0,
-      category: data.category && data.category !== '' ? data.category : null,
-      sku: data.sku || null,
+      category: existingProduct?.sku ? existingProduct.category : (data.category && data.category !== '' ? data.category : null),
+      category_code: finalCategoryCode,
+      size_code: finalSizeCode,
+      color_code: finalColorCode,
+      sku: finalSku,
       brand: data.brand || null,
       tags: data.tags || [],
       images: data.images || [],
@@ -137,7 +189,7 @@ export async function PUT(request, { params }) {
       isActive: data.isActive !== undefined ? data.isActive : true,
       // ── Variant engine fields ──
       attributes: Array.isArray(data.attributes) ? data.attributes : [],
-      variants: Array.isArray(data.variants) ? data.variants : [],
+      variants: finalVariants,
       ...(data.sold_count !== undefined && !isNaN(Number(data.sold_count)) ? { sold_count: Math.max(0, Number(data.sold_count)) } : {}),
       ...(data.rating !== undefined && !isNaN(Number(data.rating)) ? { rating: Math.min(5, Math.max(0, Number(data.rating))) } : {}),
       ...(data.review_count !== undefined && !isNaN(Number(data.review_count)) ? { review_count: Math.max(0, Number(data.review_count)) } : {}),

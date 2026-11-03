@@ -7,6 +7,7 @@ import {
   ShoppingCart,
   Loader2,
   AlertCircle,
+  AlertTriangle,
   RefreshCw,
   TrendingUp,
   Star,

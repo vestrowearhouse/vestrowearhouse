@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
-import { createClient } from '@supabase/supabase-js';
 import { logActivity } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
-const getSupabase = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-};
+const getSupabase = () => getAdminSupabase();
 
 const DEFAULT_SETTINGS = {
   id: 'site-settings',
@@ -27,6 +21,7 @@ const DEFAULT_SETTINGS = {
 
 import { revalidatePath } from 'next/cache';
 import { clearCache, clearCacheByPrefix } from '@/lib/api-cache';
+import { getAdminSupabase } from '@/lib/dbExplorer';
 
 export async function GET(request) {
   try {

@@ -79,7 +79,7 @@ export default function ReportsPage() {
             o.id.substring(0, 8),
             new Date(o.created_at).toLocaleDateString(),
             o.status || 'Completed',
-            Number(o.total_amount || 0).toFixed(2)
+            Number(o.total ?? o.total_amount ?? 0).toFixed(2)
           ]),
         });
       }
@@ -127,16 +127,33 @@ export default function ReportsPage() {
                 <report.icon className="w-6 h-6 text-blue-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-lg">{report.name}</h3>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-semibold text-lg">{report.name}</h3>
+                  {report.id !== 'sales' && (
+                    <span className="text-xs bg-amber-50 text-amber-700 px-2.5 py-0.5 rounded-full font-medium border border-amber-200">
+                      Under Development
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-500 text-sm mb-4">{report.description}</p>
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => generatePDF(report.id)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download PDF
-                  </button>
+                  {report.id === 'sales' ? (
+                    <button 
+                      onClick={() => generatePDF(report.id)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download PDF
+                    </button>
+                  ) : (
+                    <button 
+                      disabled
+                      className="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+                    >
+                      <Download className="w-4 h-4" />
+                      Under Development
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

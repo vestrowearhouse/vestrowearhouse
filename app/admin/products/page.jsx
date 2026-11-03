@@ -28,7 +28,8 @@ import {
 } from 'lucide-react';
 import DynamicAttributeBuilder from '@/app/components/DynamicAttributeBuilder';
 import VariantTable from '@/app/components/VariantTable';
-import { cartesianProduct, buildVariants, validateVariants, generateStmSku } from '@/lib/variantUtils';
+import { cartesianProduct, buildVariants, validateVariants } from '@/lib/variantUtils';
+import { deriveCategoryCode, SKU_CATEGORIES_MAP } from '@/lib/skuUtils';
 import imageCompression from 'browser-image-compression';
 
 export default function ProductsPage() {
@@ -48,6 +49,36 @@ export default function ProductsPage() {
   const [togglingMap, setTogglingMap] = useState({}); // tracking active quick toggles
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
+
+  // SKU Quick Lookup Box state
+  const [skuLookupInput, setSkuLookupInput] = useState('');
+  const [skuLookupResult, setSkuLookupResult] = useState(null);
+  const [skuLookupLoading, setSkuLookupLoading] = useState(false);
+  const [skuLookupError, setSkuLookupError] = useState(null);
+  const [showSkuLookup, setShowSkuLookup] = useState(false);
+
+  const handleSkuLookup = async (e) => {
+    if (e) e.preventDefault();
+    const clean = skuLookupInput.trim().toUpperCase();
+    if (!clean) return;
+    setSkuLookupLoading(true);
+    setSkuLookupError(null);
+    try {
+      const res = await fetch(`/api/admin/sku/lookup?sku=${encodeURIComponent(clean)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setSkuLookupError(data.message || data.error || 'No record found for this SKU');
+        setSkuLookupResult(null);
+      } else {
+        setSkuLookupResult(data);
+        setSkuLookupError(null);
+      }
+    } catch (err) {
+      setSkuLookupError('Failed to perform lookup');
+    } finally {
+      setSkuLookupLoading(false);
+    }
+  };
 
   // Reset pagination to page 1 whenever any filter or search changes
   useEffect(() => {
@@ -168,8 +199,8 @@ export default function ProductsPage() {
       // Remove UI-only fields that do not belong in the Supabase products table
       const { tagsInput, category, sellingPrice, regularPrice, stockQuantity, ...cleanFormData } = formData;
 
-      // Ensure SKU follows stm-0000 format
-      let finalSku = formData.sku?.trim() ? formData.sku.trim().toLowerCase() : generateStmSku('stm');
+      // Keep existing SKU if already set
+      let finalSku = formData.sku?.trim() || null;
 
       // If user provided attributes with values, but variants array is empty, auto-generate variants
       let finalVariants = Array.isArray(formData.variants) ? [...formData.variants] : [];
@@ -179,7 +210,7 @@ export default function ProductsPage() {
       ) {
         const combos = cartesianProduct(formData.attributes);
         if (combos.length > 0) {
-          finalVariants = buildVariants(combos, [], formData.name, sellingPrice || 0, finalSku);
+          finalVariants = buildVariants(combos, [], formData.name, sellingPrice || 0);
         }
       }
 
@@ -402,15 +433,13 @@ export default function ProductsPage() {
       alert('Please add at least one attribute with values first.');
       return;
     }
-    const baseSku = formData.sku?.trim() ? formData.sku.trim().toLowerCase() : generateStmSku('stm');
     const newVariants = buildVariants(
       combinations,
       formData.variants,
       formData.name,
-      formData.sellingPrice || 0,
-      baseSku
+      formData.sellingPrice || 0
     );
-    setFormData((prev) => ({ ...prev, variants: newVariants, sku: prev.sku || baseSku }));
+    setFormData((prev) => ({ ...prev, variants: newVariants }));
   };
 
   const generateAITags = async () => {
@@ -692,6 +721,18 @@ export default function ProductsPage() {
             <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">
               Total: {products.length} {products.length === 1 ? 'Product' : 'Products'}
             </span>
+            <button
+              type="button"
+              onClick={() => setShowSkuLookup(!showSkuLookup)}
+              className={`px-3.5 py-2 border rounded-lg flex items-center gap-2 text-sm font-semibold transition-all whitespace-nowrap shadow-xs ${
+                showSkuLookup
+                  ? 'bg-purple-600 text-white border-purple-600'
+                  : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200'
+              }`}
+            >
+              <span>🔎</span>
+              <span>SKU Lookup</span>
+            </button>
             <Link
               href="/admin/products/bulk"
               className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg flex items-center gap-2 text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
@@ -708,6 +749,113 @@ export default function ProductsPage() {
             </button>
           </div>
         </div>
+
+        {/* Dedicated SKU Lookup Box */}
+        {showSkuLookup && (
+          <div className="p-4 bg-gradient-to-r from-purple-50 via-slate-50 to-blue-50 border border-purple-200 rounded-xl">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-3">
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span>🔎</span> SKU Real-Time Registry Lookup
+                </h4>
+                <p className="text-xs text-slate-500">
+                  Instant lookup: Enter SKU to inspect its category, size, color, vendor, and live stock.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowSkuLookup(false); setSkuLookupResult(null); setSkuLookupError(null); }}
+                className="text-xs text-slate-400 hover:text-slate-600 self-end sm:self-auto"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <form onSubmit={handleSkuLookup} className="flex gap-2">
+              <input
+                type="text"
+                value={skuLookupInput}
+                onChange={(e) => setSkuLookupInput(e.target.value.toUpperCase())}
+                placeholder="Enter SKU (e.g. SMBD200001)..."
+                className="flex-1 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono uppercase focus:ring-2 focus:ring-purple-500 outline-none"
+              />
+              <button
+                type="submit"
+                disabled={skuLookupLoading || !skuLookupInput.trim()}
+                className="px-5 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition disabled:opacity-50 flex items-center gap-2"
+              >
+                {skuLookupLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Lookup SKU
+              </button>
+            </form>
+
+            {skuLookupError && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-medium">
+                ⚠️ {skuLookupError}
+              </div>
+            )}
+
+            {skuLookupResult && skuLookupResult.found && (
+              <div className="mt-3 p-4 bg-white border border-purple-200 rounded-xl shadow-xs">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between border-b pb-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    {skuLookupResult.product?.image ? (
+                      <img src={skuLookupResult.product.image} alt="" className="w-12 h-12 rounded-lg object-cover border" />
+                    ) : (
+                      <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
+                        <ImageIcon className="w-5 h-5" />
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-extrabold text-sm text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
+                          {skuLookupResult.sku}
+                        </span>
+                        {skuLookupResult.isVariant && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-800 rounded">
+                            Variant: {skuLookupResult.variantKey}
+                          </span>
+                        )}
+                      </div>
+                      <h5 className="font-bold text-slate-900 text-sm mt-0.5">
+                        {skuLookupResult.product?.name || 'Product'}
+                      </h5>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs text-slate-500 block">Current Stock</span>
+                    <span className={`text-base font-extrabold font-mono ${skuLookupResult.product?.stock > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {skuLookupResult.product?.stock || 0} Units
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="p-2 bg-slate-50 rounded-lg">
+                    <span className="text-slate-400 block font-medium">Category</span>
+                    <span className="font-bold text-slate-800">
+                      Code {skuLookupResult.decoded?.categoryCode}: {skuLookupResult.decoded?.categoryName}
+                    </span>
+                  </div>
+                  <div className="p-2 bg-slate-50 rounded-lg">
+                    <span className="text-slate-400 block font-medium">Size</span>
+                    <span className="font-bold text-slate-800">{skuLookupResult.size || 'No size'}</span>
+                  </div>
+                  <div className="p-2 bg-slate-50 rounded-lg">
+                    <span className="text-slate-400 block font-medium">Color</span>
+                    <span className="font-bold text-slate-800">{skuLookupResult.color || 'No color'}</span>
+                  </div>
+                  <div className="p-2 bg-slate-50 rounded-lg">
+                    <span className="text-slate-400 block font-medium">Vendor</span>
+                    <span className="font-bold text-purple-700">
+                      {skuLookupResult.vendor?.shop_name || 'StellarMart Official'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Filter Controls Bar */}
         <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-100 text-sm">
@@ -872,7 +1020,25 @@ export default function ProductsPage() {
                   <td className="px-4 py-3">
                     <div className="font-medium text-gray-900 line-clamp-1">{product.name}</div>
                     <div className="text-xs text-gray-400 flex items-center gap-2 mt-0.5">
-                      <span>SKU: {product.sku || '-'}</span>
+                      {product.sku ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSkuLookupInput(product.sku);
+                            setShowSkuLookup(true);
+                            fetch(`/api/admin/sku/lookup?sku=${encodeURIComponent(product.sku)}`)
+                              .then(r => r.json())
+                              .then(d => { setSkuLookupResult(d); setSkuLookupError(null); })
+                              .catch(() => setSkuLookupError('Failed to lookup SKU'));
+                          }}
+                          className="px-1.5 py-0.5 font-mono font-bold text-[11px] bg-slate-100 hover:bg-purple-100 text-slate-800 hover:text-purple-700 rounded border border-slate-200 transition"
+                          title="Click to inspect SKU in Registry"
+                        >
+                          {product.sku}
+                        </button>
+                      ) : (
+                        <span className="text-[11px] font-mono text-gray-400">SKU: -</span>
+                      )}
                       {product.brand && <span>• {product.brand}</span>}
                     </div>
                     <div className="mt-1 flex items-center gap-1.5">
@@ -1121,14 +1287,18 @@ export default function ProductsPage() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU (e.g. stm-0001)</label>
-                  <input
-                    type="text"
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="stm-0001"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Product SKU (Permanent Code)
+                  </label>
+                  <div className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 flex items-center justify-between">
+                    <span className="font-bold tracking-wider">{formData.sku || 'Auto-generated on save'}</span>
+                    <span className="text-[11px] font-sans px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold">
+                      Immutable
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Format: SMBD + Category Code + Serial. Auto-assigned server-side upon saving.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
@@ -1218,7 +1388,14 @@ export default function ProductsPage() {
 
               {/* Category (Searchable) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Category *</label>
+                  {editingProduct?.sku && !editingProduct.sku.startsWith('stm-') && (
+                    <span className="text-[11px] text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                      🔒 Locked (SKU Assigned)
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   {/* Hidden input for native HTML5 validation */}
                   <input 
@@ -1230,8 +1407,15 @@ export default function ProductsPage() {
                     tabIndex="-1"
                   />
                   <div
-                    className={`w-full px-4 py-2 border ${isCategoryDropdownOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-300'} rounded-lg bg-white flex justify-between items-center cursor-pointer`}
-                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                    className={`w-full px-4 py-2 border ${
+                      editingProduct?.sku && !editingProduct.sku.startsWith('stm-')
+                        ? 'border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed'
+                        : isCategoryDropdownOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-300'
+                    } rounded-lg bg-white flex justify-between items-center cursor-pointer`}
+                    onClick={() => {
+                      if (editingProduct?.sku && !editingProduct.sku.startsWith('stm-')) return;
+                      setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
+                    }}
                   >
                     <span className={formData.category ? 'text-gray-900 line-clamp-1' : 'text-gray-500'}>
                       {formData.category
@@ -1301,6 +1485,21 @@ export default function ProductsPage() {
                     </>
                   )}
                 </div>
+
+                {formData.category && (() => {
+                  const selectedCat = categories.find(c => (c.id || c._id || c.category_id) === formData.category);
+                  const derivedCode = deriveCategoryCode(selectedCat);
+                  const skuCatInfo = SKU_CATEGORIES_MAP[derivedCode];
+                  return (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+                      <span className="font-semibold text-slate-700">Derived SKU Category:</span>
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-800 font-mono font-bold rounded">
+                        Code {derivedCode}
+                      </span>
+                      <span>{skuCatInfo?.name || 'General'} ({skuCatInfo?.group || 'Other'})</span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* SEO Tags */}
@@ -1441,6 +1640,21 @@ export default function ProductsPage() {
                     </div>
                   )}
                 </div>
+
+                {formData.category && (() => {
+                  const selectedCat = categories.find(c => (c.id || c._id || c.category_id) === formData.category);
+                  const derivedCode = deriveCategoryCode(selectedCat);
+                  const skuCatInfo = SKU_CATEGORIES_MAP[derivedCode];
+                  return (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+                      <span className="font-semibold text-slate-700">Derived SKU Category:</span>
+                      <span className="px-2 py-0.5 bg-blue-100 text-blue-800 font-mono font-bold rounded">
+                        Code {derivedCode}
+                      </span>
+                      <span>{skuCatInfo?.name || 'General'} ({skuCatInfo?.group || 'Other'})</span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Homepage & Visibility Settings */}

@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
@@ -24,8 +24,8 @@ export async function GET(request, { params }) {
           phone
         )
       `)
-      .eq('id', params.id)
-      .single();
+      .or(`id.eq.${params.id},user_id.eq.${params.id}`)
+      .maybeSingle();
 
     if (error || !vendor) {
       return NextResponse.json(

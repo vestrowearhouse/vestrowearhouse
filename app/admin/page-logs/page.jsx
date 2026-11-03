@@ -198,7 +198,7 @@ export default function PageLogsPage() {
           <div className="min-w-0">
             <span className="text-xs text-gray-400 font-medium block">Active Routes</span>
             <span className="text-sm font-bold text-gray-900 truncate block">
-              {stats?.scannedRoutes || 51} Monitored
+              {stats?.scannedRoutes && stats.scannedRoutes !== 'N/A' ? `${stats.scannedRoutes} Monitored` : 'N/A'}
             </span>
           </div>
         </div>

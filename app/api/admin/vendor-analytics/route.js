@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
+import { getAdminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
-const getSupabaseClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return createClient(supabaseUrl, supabaseKey);
-};
+const getSupabaseClient = () => getAdminSupabase();
 
 export async function GET(request) {
   try {

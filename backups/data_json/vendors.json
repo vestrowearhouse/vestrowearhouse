@@ -1,0 +1,38 @@
+[
+  {
+    "id": "4ed1ff47-e2da-4a2e-9445-cf37937c59e4",
+    "user_id": "7ac73279-1882-4eca-971e-982aada54073",
+    "username": null,
+    "shop_name": "Luxivon",
+    "owner_name": "Rafxan ",
+    "shop_address": null,
+    "logo_url": null,
+    "status": "active",
+    "is_verified": false,
+    "created_at": "2026-06-15T17:46:51.160712+00:00",
+    "updated_at": "2026-09-25T12:48:52.32+00:00",
+    "password": "$2a$10$YeX.zg4nTjg2LFvxa8Uvj.nEfqr9VrBMMmSWF1OUyXmj57LVJaHl6",
+    "email": "raselhossain.aa258@gmail.com",
+    "phone": 1795984757,
+    "verification_badge": false,
+    "description": null
+  },
+  {
+    "id": "3df1673a-a6f0-4df0-aca9-6776d53856e4",
+    "user_id": "13e05f5e-2e48-4c84-ab5b-ba9d75ac7373",
+    "username": "vestrowearhouse",
+    "shop_name": "Vestro Wear House",
+    "owner_name": "Ayan",
+    "shop_address": "Dhaka, Dhaka",
+    "logo_url": "https://res.cloudinary.com/do56bvtzt/image/upload/v1792999767/stellar-mart/vendors/3df1673a-a6f0-4df0-aca9-6776d53856e4/nhko2kdjlmmbvc983pue.jpg",
+    "status": "active",
+    "is_verified": true,
+    "created_at": "2026-10-16T17:06:55.429644+00:00",
+    "updated_at": "2026-10-26T07:29:36.537+00:00",
+    "password": "$2a$10$ZpYrTyzsJbLASjsUGS5Q1eSoz.TCiEPJRKJXE8JVrx2dGEX5squd.",
+    "email": "dxayanahmed11@gmail.com",
+    "phone": 1411863999,
+    "verification_badge": true,
+    "description": "❤️ Vestro Wear House-এ স্বাগতম\n👔 ছেলে ও মেয়েদের ফ্যাশনেবল পোশাক ✨ রেডিমেড ও কাস্টম অর্ডারের সুবিধা 🎨 আপনার ডিজাইন, আপনার পছন্দ 🛍️ আপনার স্টাইল অনুযায়ী পোশাক 📩 অর্ডার ও বিস্তারিত জানতে ইনবক্স করুন 💖\n££"
+  }
+]

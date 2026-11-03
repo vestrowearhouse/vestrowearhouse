@@ -47,9 +47,11 @@ export async function PATCH(request, { params }) {
     const supabase = getVendorSupabaseClient();
     const body = await request.json();
 
-    // Strip protected fields
+    // Strip protected fields - SKU and category are strictly immutable once product exists
     delete body.vendor_id;
     delete body.id;
+    delete body.sku;
+    delete body.category_code;
 
     if (body.sellingPrice !== undefined && body.price === undefined) body.price = body.sellingPrice;
     if (body.price !== undefined && body.sellingPrice === undefined) body.sellingPrice = body.price;

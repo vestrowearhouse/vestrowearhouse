@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
-const getSupabase = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-};
+const getSupabase = () => getAdminSupabase();
 
 /**
  * Generate human-readable, clean descriptions for audit log records.
@@ -105,103 +100,20 @@ export async function GET(request) {
       query = query.eq('table_name', category);
     }
 
-    const { data: dbLogs } = await query;
+    const { data: dbLogs, count } = await query;
 
-    // Fetch recent orders for realistic live activity if table empty
-    const { data: recentOrders } = await supabase
-      .from('orders')
-      .select('id, total, status, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    let logs = [];
-
-    if (dbLogs && dbLogs.length > 0) {
-      logs = dbLogs.map(item => ({
-        id: item.id,
-        action: item.action_type ? `${item.action_type}_${item.table_name?.toUpperCase() || 'SYSTEM'}` : 'SYSTEM_ACTION',
-        category: item.table_name || 'system',
-        description: generateHumanDescription(item),
-        actor: item.details?.actor || 'Admin',
-        ip_address: item.details?.ip || '103.145.132.42 (Dhaka, BD)',
-        status: item.details?.status || 'success',
-        created_at: item.created_at,
-        record_id: item.record_id,
-        details: item.details || null
-      }));
-    } else {
-      // Dynamic operational audit trail fallback
-      const now = Date.now();
-      const synthesized = [
-        {
-          id: 'act-01',
-          action: 'SETTINGS_UPDATE',
-          category: 'settings',
-          description: 'Updated system configuration & homepage module visibility',
-          actor: 'Super Admin',
-          ip_address: '103.145.132.42 (Dhaka, BD)',
-          status: 'success',
-          created_at: new Date(now - 8 * 60 * 1000).toISOString()
-        },
-        {
-          id: 'act-02',
-          action: 'BACKUP_EXPORT',
-          category: 'database',
-          description: 'Exported Full System JSON Database snapshot',
-          actor: 'Super Admin',
-          ip_address: '103.145.132.42 (Dhaka, BD)',
-          status: 'success',
-          created_at: new Date(now - 22 * 60 * 1000).toISOString()
-        },
-        {
-          id: 'act-03',
-          action: 'SITEMAP_REINDEX',
-          category: 'seo',
-          description: 'Sitemap XML generated with 51 live indexed store URLs',
-          actor: 'Googlebot Engine',
-          ip_address: '66.249.66.1 (Google Edge)',
-          status: 'success',
-          created_at: new Date(now - 45 * 60 * 1000).toISOString()
-        },
-        {
-          id: 'act-04',
-          action: 'CACHE_REVALIDATE',
-          category: 'system',
-          description: 'Cleared cache tags [homepage-data, categories] on production',
-          actor: 'Vercel Serverless',
-          ip_address: '127.0.0.1 (US-East)',
-          status: 'success',
-          created_at: new Date(now - 75 * 60 * 1000).toISOString()
-        },
-        {
-          id: 'act-05',
-          action: 'ADMIN_LOGIN',
-          category: 'auth',
-          description: 'Admin authenticated session verified with JWT token',
-          actor: 'Super Admin',
-          ip_address: '103.145.132.42 (Dhaka, BD)',
-          status: 'success',
-          created_at: new Date(now - 120 * 60 * 1000).toISOString()
-        }
-      ];
-
-      if (recentOrders && recentOrders.length > 0) {
-        recentOrders.forEach((o, idx) => {
-          synthesized.push({
-            id: `act-order-${o.id || idx}`,
-            action: 'ORDER_RECORD',
-            category: 'orders',
-            description: `Order #${String(o.id).slice(0, 8)} (${o.status || 'Pending'}) — ৳${o.total || 0}`,
-            actor: 'Checkout System',
-            ip_address: '103.145.132.42 (Customer Session)',
-            status: 'success',
-            created_at: o.created_at || new Date(now - (idx + 1) * 3600 * 1000).toISOString()
-          });
-        });
-      }
-
-      logs = synthesized;
-    }
+    const logs = (dbLogs || []).map(item => ({
+      id: item.id,
+      action: item.action_type ? `${item.action_type}_${item.table_name?.toUpperCase() || 'SYSTEM'}` : 'SYSTEM_ACTION',
+      category: item.table_name || 'system',
+      description: generateHumanDescription(item),
+      actor: item.details?.actor || 'Admin',
+      ip_address: item.details?.ip || 'N/A',
+      status: item.details?.status || 'success',
+      created_at: item.created_at,
+      record_id: item.record_id,
+      details: item.details || null
+    }));
 
     return NextResponse.json({
       success: true,

@@ -1,41 +1,64 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Requires service role key to access auth.users
-export const dynamic = 'force-dynamic';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
-
 import { verifyAdminToken } from '@/lib/secureJwt';
+import { getAdminSupabase } from '@/lib/dbExplorer';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
     if (!(await verifyAdminToken(request))) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
+
+    let supabase;
+    try {
+      supabase = getAdminSupabase();
+    } catch (e) {
+      return NextResponse.json({ success: false, error: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY is required' }, { status: 500 });
+    }
+
     // 1. Get auth users count
     const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
     const totalUsers = users ? users.length : 0;
 
-    // 2. Call RPC for table stats
-    const { data: dbStats, error: rpcError } = await supabase.rpc('get_public_tables');
+    // 2. Call RPC for table stats with safe fallback
+    let tableStats = [];
+    const { data: rpcStats, error: rpcError } = await supabase.rpc('get_public_tables');
 
-    if (rpcError && !dbStats) {
-      // If RPC fails, fallback to simple query or throw
-      throw rpcError;
+    if (!rpcError && rpcStats && rpcStats.length > 0) {
+      tableStats = rpcStats;
+    } else {
+      const candidateTables = [
+        'products', 'orders', 'categories', 'users', 'coupons', 'banners',
+        'reviews', 'marketing_campaigns', 'page_views', 'page_logs',
+        'activity_logs', 'build_logs', 'admins', 'notifications'
+      ];
+      const countResults = await Promise.allSettled(
+        candidateTables.map(tbl => supabase.from(tbl).select('*', { count: 'exact', head: true }))
+      );
+      countResults.forEach((res, idx) => {
+        if (res.status === 'fulfilled' && !res.value.error) {
+          tableStats.push({
+            name: candidateTables[idx],
+            total_rows: res.value.count ?? 0
+          });
+        }
+      });
     }
 
     let totalRows = 0;
-    let totalSize = 0;
-    
-    if (dbStats) {
-      dbStats.forEach(table => {
-        totalRows += Number(table.total_rows || 0);
-        totalSize += Number(table.total_rows || 0) * 1024 * 5; // Fake size: 5KB per row
-      });
+    tableStats.forEach(table => {
+      totalRows += Number(table.total_rows || 0);
+    });
+
+    // 3. Query real database disk size via RPC (no formulas)
+    let totalSize = null;
+    try {
+      const { data: sizeData, error: sizeError } = await supabase.rpc('get_database_size');
+      if (!sizeError && typeof sizeData === 'number') {
+        totalSize = sizeData;
+      }
+    } catch {
+      totalSize = null;
     }
 
     return NextResponse.json({
@@ -43,8 +66,8 @@ export async function GET(request) {
       data: {
         totalUsers,
         totalRows,
-        totalSize,
-        tables: dbStats || []
+        totalSize, // Real bytes if RPC is present, or null (N/A)
+        tables: tableStats
       }
     });
   } catch (error) {

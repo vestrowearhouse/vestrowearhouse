@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
-const getSupabase = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-};
+const getSupabase = () => getAdminSupabase();
 
 const DEFAULT_ROBOTS = `User-agent: *
 Allow: /

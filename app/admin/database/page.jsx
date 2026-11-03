@@ -186,17 +186,20 @@ export default function DatabasePage() {
               <div className="p-3 bg-white text-green-600 rounded-lg shadow-sm"><HardDrive className="w-6 h-6" /></div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">DB Size</p>
-                <p className="text-xl font-bold text-gray-800">{dbStats ? (dbStats.totalSize / 1024 / 1024).toFixed(2) + ' MB' : '...'}</p>
+                <p className="text-xl font-bold text-gray-800">
+                  {dbStats ? (dbStats.totalSize ? `${(dbStats.totalSize / (1024 * 1024)).toFixed(2)} MB` : 'N/A') : '...'}
+                </p>
               </div>
             </div>
             <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex items-center gap-4">
               <div className="p-3 bg-white text-gray-600 rounded-lg shadow-sm">
-                <Wifi className="w-6 h-6 text-green-500" />
+                <Wifi className={`w-6 h-6 ${error ? 'text-red-500' : tables.length > 0 ? 'text-green-500' : 'text-gray-400'}`} />
               </div>
               <div>
                 <p className="text-sm text-gray-500 font-medium">Connection</p>
-                <p className="text-md font-bold text-green-600 flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Healthy
+                <p className={`text-md font-bold flex items-center gap-1.5 ${error ? 'text-red-600' : tables.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                  <span className={`w-2 h-2 rounded-full ${error ? 'bg-red-500' : tables.length > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                  {error ? 'Error' : loading ? 'Checking...' : tables.length > 0 ? 'Connected' : 'Offline'}
                 </p>
               </div>
             </div>

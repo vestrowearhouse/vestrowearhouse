@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { checkAdminAccess, ROLES } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 import { cacheHeaders, getCache, setCache } from '@/lib/api-cache';
+import { assignProductAndVariantSKUs } from '@/lib/skuServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -125,7 +126,21 @@ export async function GET(request) {
     if (vendorParam === 'official') {
       query = query.is('vendor_id', null);
     } else if (vendorParam) {
-      query = query.eq('vendor_id', vendorParam);
+      try {
+        const { data: vRow } = await supabase
+          .from('vendors')
+          .select('id, user_id')
+          .or(`id.eq.${vendorParam},user_id.eq.${vendorParam}`)
+          .maybeSingle();
+        if (vRow) {
+          const matchIds = [vRow.id, vRow.user_id].filter(Boolean);
+          query = query.in('vendor_id', matchIds);
+        } else {
+          query = query.eq('vendor_id', vendorParam);
+        }
+      } catch {
+        query = query.eq('vendor_id', vendorParam);
+      }
     }
     if (categoryParam) {
       if (matchedCategoryValues && matchedCategoryValues.length > 0) {
@@ -253,11 +268,11 @@ export async function GET(request) {
       try {
         const { data: vendorsList } = await supabase
           .from('vendors')
-          .select('id, shop_name, owner_name, shop_address, logo_url, is_verified, verification_badge')
-          .in('id', vendorIds);
+          .select('id, user_id, shop_name, owner_name, shop_address, logo_url, is_verified, verification_badge')
+          .or(`id.in.(${vendorIds.join(',')}),user_id.in.(${vendorIds.join(',')})`);
         if (vendorsList) {
           for (const v of vendorsList) {
-            vendorMap[v.id] = {
+            const vData = {
               ...v,
               is_official: false,
               rating: 4.8,
@@ -265,6 +280,8 @@ export async function GET(request) {
               response_rate: '98%',
               on_time_delivery: '99%'
             };
+            if (v.id) vendorMap[v.id] = vData;
+            if (v.user_id) vendorMap[v.user_id] = vData;
           }
         }
       } catch (vErr) {
@@ -279,8 +296,25 @@ export async function GET(request) {
           ...p,
           vendor_id: p.vendor_id,
           store_name: v.shop_name,
+          vendor_logo: v.logo_url,
           is_official: false,
           vendor: v
+        };
+      }
+      if (p.vendor_id) {
+        return {
+          ...p,
+          vendor_id: p.vendor_id,
+          store_name: 'Vendor Store',
+          vendor_logo: null,
+          is_official: false,
+          vendor: {
+            id: p.vendor_id,
+            shop_name: 'Vendor Store',
+            logo_url: null,
+            is_official: false,
+            is_verified: false
+          }
         };
       }
       return {
@@ -357,6 +391,23 @@ export async function POST(request) {
     }
 
     const supabase = getSupabaseAdmin();
+
+    // Generate atomic, race-condition safe SKUs server-side for product & variants
+    try {
+      const skuAssignment = await assignProductAndVariantSKUs(supabase, {
+        categoryId: body.category,
+        categoryCode: body.category_code,
+        variants: body.variants,
+        attributes: body.attributes
+      });
+      body.sku = skuAssignment.sku;
+      body.category_code = skuAssignment.category_code;
+      body.size_code = skuAssignment.size_code;
+      body.color_code = skuAssignment.color_code;
+      body.variants = skuAssignment.variants;
+    } catch (skuErr) {
+      console.error('Server SKU generation warning:', skuErr);
+    }
 
     const { data, error } = await supabase.from('products').insert([body]).select().single();
     if (error) throw error;

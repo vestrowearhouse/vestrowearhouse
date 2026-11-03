@@ -1,16 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { logActivity } from '@/lib/logger';
+import { getAdminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
-
-const getSupabase = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-};
 
 export async function GET(request) {
   try {
@@ -22,7 +15,12 @@ export async function GET(request) {
     const download = searchParams.get('download');
     const type = searchParams.get('type') || 'full'; // 'full', 'products', 'orders', 'categories'
 
-    const supabase = getSupabase();
+    let supabase;
+    try {
+      supabase = getAdminSupabase();
+    } catch (e) {
+      return NextResponse.json({ success: false, error: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY is required' }, { status: 500 });
+    }
 
     // If download requested, fetch real database data and return attachment
     if (download === 'true') {
@@ -73,6 +71,16 @@ export async function GET(request) {
         };
       }
 
+      // Log real export event to activity_logs
+      await logActivity({
+        action: 'BACKUP_EXPORT',
+        resource: 'backup',
+        resourceId: `export-${type}-${dateStr}`,
+        description: `Exported ${type.toUpperCase()} database backup dataset (${filename})`,
+        details: { type, filename, exportedAt: new Date().toISOString() },
+        req: request,
+      }).catch(() => {});
+
       const jsonString = JSON.stringify(exportData, null, 2);
       return new Response(jsonString, {
         status: 200,
@@ -83,12 +91,13 @@ export async function GET(request) {
       });
     }
 
-    // Standard GET: Return database stats & backup ledger
-    const [productsCountRes, categoriesCountRes, ordersCountRes, usersCountRes] = await Promise.all([
+    // Standard GET: Return database stats & real backup ledger
+    const [productsCountRes, categoriesCountRes, ordersCountRes, usersCountRes, exportLogsRes] = await Promise.all([
       supabase.from('products').select('*', { count: 'exact', head: true }),
       supabase.from('categories').select('*', { count: 'exact', head: true }),
       supabase.from('orders').select('*', { count: 'exact', head: true }),
       supabase.from('users').select('*', { count: 'exact', head: true }),
+      supabase.from('activity_logs').select('id, record_id, details, created_at').eq('action_type', 'BACKUP_EXPORT').order('created_at', { ascending: false }).limit(10)
     ]);
 
     const pCount = productsCountRes.count || 0;
@@ -96,53 +105,20 @@ export async function GET(request) {
     const oCount = ordersCountRes.count || 0;
     const uCount = usersCountRes.count || 0;
     const totalRecords = pCount + cCount + oCount + uCount;
-    const estimatedKb = Math.round(150 + totalRecords * 2.8);
 
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    // Real history derived from recorded backup exports
+    const history = (exportLogsRes.data || []).map(item => ({
+      id: item.id,
+      filename: item.details?.filename || `stellarmart-${item.details?.type || 'full'}-backup.json`,
+      type: item.details?.type ? `${item.details.type.toUpperCase()} Export` : 'Full System Export',
+      size: 'N/A', // Real byte size varies by format and compression
+      trigger: 'Manual / On-Demand',
+      date: new Date(item.created_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+      status: 'Exported',
+      downloadType: item.details?.type || 'full'
+    }));
 
-    const history = [
-      {
-        id: `bk-${todayStr}-full`,
-        filename: `stellarmart-full-backup-${todayStr}.json`,
-        type: 'Full System',
-        size: `${(estimatedKb / 1024).toFixed(1)} MB`,
-        trigger: 'Manual / On-Demand',
-        date: 'Ready to Download',
-        status: 'Success',
-        downloadType: 'full'
-      },
-      {
-        id: `bk-${todayStr}-prod`,
-        filename: `stellarmart-products-backup-${todayStr}.json`,
-        type: 'Products Catalog',
-        size: `${Math.round(pCount * 1.8 + 20)} KB`,
-        trigger: 'Catalog Snapshot',
-        date: 'Ready to Download',
-        status: 'Success',
-        downloadType: 'products'
-      },
-      {
-        id: `bk-${todayStr}-orders`,
-        filename: `stellarmart-orders-backup-${todayStr}.json`,
-        type: 'Orders & Sales',
-        size: `${Math.round(oCount * 1.5 + 15)} KB`,
-        trigger: 'Sales Ledger',
-        date: 'Ready to Download',
-        status: 'Success',
-        downloadType: 'orders'
-      },
-      {
-        id: `bk-${todayStr}-cats`,
-        filename: `stellarmart-categories-backup-${todayStr}.json`,
-        type: 'Categories & Layout',
-        size: `${Math.round(cCount * 2 + 10)} KB`,
-        trigger: 'Structure Snapshot',
-        date: 'Ready to Download',
-        status: 'Success',
-        downloadType: 'categories'
-      }
-    ];
+    const lastRealExport = history.length > 0 ? history[0].date : 'None recorded';
 
     return NextResponse.json({
       success: true,
@@ -152,9 +128,9 @@ export async function GET(request) {
         ordersCount: oCount,
         usersCount: uCount,
         totalRecords,
-        estimatedSizeKB: estimatedKb,
-        lastCloudBackup: 'Today, 02:00 AM UTC',
-        nextCloudBackup: 'Tomorrow, 02:00 AM UTC'
+        lastRealExport,
+        lastCloudBackup: 'N/A (Managed by Supabase Cloud)',
+        nextCloudBackup: 'Automated Daily Cycle (Supabase)'
       },
       history
     });
@@ -176,21 +152,24 @@ export async function POST(request) {
     const { type = 'full' } = await request.json().catch(() => ({}));
     const backupId = `snapshot-${Date.now()}`;
 
+    // Note: Web admin cannot trigger hardware-level Postgres snapshots directly.
+    // We log the manual backup intent and direct administrators to download the dataset or use Supabase dashboard.
     await logActivity({
       action: 'BACKUP_EXPORT',
-      resource: 'database',
+      resource: 'backup',
       resourceId: backupId,
-      description: `Generated ${type.toUpperCase()} database backup snapshot`,
+      description: `Manual ${type.toUpperCase()} backup event logged`,
       details: {
         backupId,
         type,
+        timestamp: new Date().toISOString()
       },
       req: request,
     }).catch(() => {});
 
     return NextResponse.json({
       success: true,
-      message: `${type.toUpperCase()} database backup snapshot created successfully.`,
+      message: `On-demand ${type.toUpperCase()} backup event logged. Use 'Download Full Backup' to download the JSON payload, or use the Supabase Dashboard for point-in-time snapshots.`,
       backupId,
       timestamp: new Date().toISOString()
     });

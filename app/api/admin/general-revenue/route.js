@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
-import { createClient } from '@supabase/supabase-js';
+import { adminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +11,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
+    const supabase = adminSupabase;
 
     // Fetch all orders safely using select('*')
     const { data: allOrders, error } = await supabase

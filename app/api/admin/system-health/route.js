@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import os from 'os';
-import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
+import { adminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic'; // Prevent caching
 
@@ -15,8 +15,9 @@ export async function GET(request) {
     const model = cpus && cpus.length > 0 ? cpus[0].model : 'Intel(R) Xeon(R) Processor';
     const cpuCount = cpus && cpus.length > 0 ? cpus.length : 2;
 
-    // Realistic CPU fluctuation for live dashboard
-    const cpuUsage = Math.min(Math.max(Math.random() * 12 + 6, 3), 95);
+    // Real system load average if available (no Math.random fluctuation)
+    const loadAverages = os.loadavg ? os.loadavg().map(v => Number(v.toFixed(2))) : null;
+    const cpuUsage = loadAverages && loadAverages.length > 0 && loadAverages[0] > 0 ? Number((loadAverages[0] * 10).toFixed(1)) : null;
 
     const totalMemBytes = os.totalmem() || 2 * 1024 * 1024 * 1024;
     const freeMemBytes = os.freemem() || 1.8 * 1024 * 1024 * 1024;
@@ -31,43 +32,44 @@ export async function GET(request) {
 
     // Measure live database query latency & row counts
     const dbStartTime = Date.now();
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
+    const supabase = adminSupabase;
 
     let userCount = 0;
     let orderCount = 0;
     let productCount = 0;
     let dbStatus = 'Healthy';
+    let dbSizeMB = null;
 
     try {
-      const [usersRes, ordersRes, productsRes] = await Promise.all([
+      const [usersRes, ordersRes, productsRes, sizeRes] = await Promise.all([
         supabase.from('users').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('*', { count: 'exact', head: true }),
         supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.rpc('get_database_size').catch(() => ({ data: null })),
       ]);
 
       userCount = usersRes?.count || 0;
       orderCount = ordersRes?.count || 0;
       productCount = productsRes?.count || 0;
+      if (sizeRes?.data && typeof sizeRes.data === 'number') {
+        dbSizeMB = Number((sizeRes.data / (1024 * 1024)).toFixed(2));
+      }
     } catch (dbErr) {
       console.error('Supabase query error:', dbErr);
       dbStatus = 'Degraded';
     }
 
-    const latencyMs = Math.max(Date.now() - dbStartTime, 15);
+    const latencyMs = Math.max(Date.now() - dbStartTime, 5);
     const totalRows = userCount + orderCount + productCount;
-    const estimatedDbSizeMB = Number((45.5 + (userCount * 0.01) + (orderCount * 0.05) + (productCount * 0.1)).toFixed(1));
 
     return NextResponse.json({
       success: true,
       data: {
         cpu: {
-          usage: Number(cpuUsage.toFixed(1)),
-          model: model || 'Intel(R) Xeon(R) Processor',
+          usage: cpuUsage,
+          model: model || 'Cloud Serverless Runtime',
           count: cpuCount,
-          loadAverage: os.loadavg ? os.loadavg().map(v => Number(v.toFixed(2))) : [0.18, 0.22, 0.25]
+          loadAverage: loadAverages || ['N/A']
         },
         memory: {
           totalMemMb: Number(totalMemMb.toFixed(1)),
@@ -77,7 +79,7 @@ export async function GET(request) {
         },
         database: {
           status: dbStatus,
-          sizeMB: estimatedDbSizeMB,
+          sizeMB: dbSizeMB,
           totalRows,
           userCount,
           orderCount,
@@ -90,10 +92,10 @@ export async function GET(request) {
         nodeVersion: process.version || 'v20.x',
         timestamp: new Date().toISOString(),
         services: {
-          database: { status: 'operational', latency: `${latencyMs}ms`, name: 'Supabase PostgreSQL' },
-          cache: { status: 'operational', latency: '< 5ms', name: 'Next.js Edge Tag Cache' },
-          storage: { status: 'operational', latency: '< 30ms', name: 'Supabase Object Store' },
-          edge: { status: 'operational', latency: '< 10ms', name: 'Vercel Serverless Edge' }
+          database: { status: dbStatus === 'Healthy' ? 'operational' : 'degraded', latency: `${latencyMs}ms`, name: 'Supabase PostgreSQL' },
+          cache: { status: 'operational', latency: 'N/A (Managed)', name: 'Next.js Edge Tag Cache' },
+          storage: { status: 'operational', latency: 'N/A (Managed)', name: 'Supabase Object Store' },
+          edge: { status: 'operational', latency: 'N/A (Managed)', name: 'Vercel Serverless Edge' }
         }
       }
     });

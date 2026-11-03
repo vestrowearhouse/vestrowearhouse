@@ -146,14 +146,14 @@ export default function SystemHealthPage() {
     );
   }
 
-  const cpuUsage = stats?.cpu?.usage || 0;
+  const cpuUsage = stats?.cpu?.usage ?? null;
   const memUsagePercent = stats?.memory?.usedMemPercentage || 0;
   const totalMemGb = (stats?.memory?.totalMemMb / 1024).toFixed(1);
   const usedMemGb = (stats?.memory?.usedMemMb / 1024).toFixed(1);
   const freeMemGb = (stats?.memory?.freeMemMb / 1024).toFixed(1);
 
-  const dbSizeMB = stats?.database?.sizeMB || 51.8;
-  const dbCapacityPercent = Math.min(Math.round((dbSizeMB / 500) * 100), 100);
+  const dbSizeMB = stats?.database?.sizeMB ?? null;
+  const dbCapacityPercent = dbSizeMB ? Math.min(Math.round((dbSizeMB / 500) * 100), 100) : 0;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
@@ -223,7 +223,9 @@ export default function SystemHealthPage() {
           </div>
           <div className="min-w-0">
             <span className="text-xs text-gray-400 font-medium block">Overall Status</span>
-            <span className="text-sm font-bold text-gray-900 truncate block">100% Healthy</span>
+            <span className="text-sm font-bold text-gray-900 truncate block">
+              {stats?.database?.status === 'Healthy' ? 'Operational' : 'Degraded'}
+            </span>
           </div>
         </div>
 
@@ -282,8 +284,8 @@ export default function SystemHealthPage() {
             {/* Circular Gauge */}
             <div className="flex justify-center py-2">
               <CircularMetricGauge
-                percentage={cpuUsage}
-                valueText={`${cpuUsage.toFixed(1)}%`}
+                percentage={cpuUsage !== null ? cpuUsage : 0}
+                valueText={cpuUsage !== null ? `${cpuUsage.toFixed(1)}%` : 'N/A'}
                 labelText="CPU Load"
                 subText={stats?.cpu?.model || 'Intel Xeon'}
                 gradientId="cpuGradient"
@@ -439,7 +441,7 @@ export default function SystemHealthPage() {
               <h3 className="font-bold text-gray-900 text-base">Service Connectivity & Status</h3>
             </div>
             <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              All Systems Go
+              {stats?.database?.status === 'Healthy' ? 'Database Operational' : 'Degraded'}
             </span>
           </div>
 

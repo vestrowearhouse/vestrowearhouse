@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { checkAdminAccess, ROLES } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 import { clearCache, clearCacheByPrefix } from '@/lib/api-cache';
 import { revalidatePath } from 'next/cache';
 import { updateProductEmbedding } from '@/lib/ai-embeddings';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { adminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,10 +40,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Max 1000 products allowed per bulk batch.' }, { status: 400 });
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
+    const supabase = adminSupabase;
 
     // Fetch existing categories for mapping and slug/name resolution
     let categoryMap = new Map();

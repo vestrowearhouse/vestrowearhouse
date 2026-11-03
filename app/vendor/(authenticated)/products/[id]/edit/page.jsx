@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 import DynamicAttributeBuilder from '@/app/components/DynamicAttributeBuilder';
 import VariantTable from '@/app/components/VariantTable';
-import { cartesianProduct, buildVariants, generateStmSku } from '@/lib/variantUtils';
+import { cartesianProduct, buildVariants } from '@/lib/variantUtils';
+import { deriveCategoryCode, SKU_CATEGORIES_MAP } from '@/lib/skuUtils';
 
 export default function VendorEditProductPage() {
   const router = useRouter();
@@ -207,15 +208,13 @@ export default function VendorEditProductPage() {
       alert('Please add at least one attribute with values first.');
       return;
     }
-    const baseSku = formData.sku?.trim() ? formData.sku.trim().toLowerCase() : generateStmSku('stm');
     const newVariants = buildVariants(
       combinations,
       formData.variants,
       formData.name,
-      formData.sellingPrice || 0,
-      baseSku
+      formData.sellingPrice || 0
     );
-    setFormData((prev) => ({ ...prev, variants: newVariants, sku: prev.sku || baseSku }));
+    setFormData((prev) => ({ ...prev, variants: newVariants }));
   };
 
   // AI Helpers
@@ -300,8 +299,8 @@ export default function VendorEditProductPage() {
       const categoryId = formData.category || null;
       const { tagsInput, category, sellingPrice, regularPrice, stockQuantity, ...cleanFormData } = formData;
 
-      // Ensure SKU follows stm-0000 format
-      let finalSku = formData.sku?.trim() ? formData.sku.trim().toLowerCase() : generateStmSku('stm');
+      // Keep existing permanent SKU unchanged
+      let finalSku = formData.sku?.trim() || null;
 
       // If user provided attributes with values, but variants array is empty, auto-generate variants
       let finalVariants = Array.isArray(formData.variants) ? [...formData.variants] : [];
@@ -311,7 +310,7 @@ export default function VendorEditProductPage() {
       ) {
         const combos = cartesianProduct(formData.attributes);
         if (combos.length > 0) {
-          finalVariants = buildVariants(combos, [], formData.name, parseFloat(sellingPrice) || 0, finalSku);
+          finalVariants = buildVariants(combos, [], formData.name, parseFloat(sellingPrice) || 0);
         }
       }
 
@@ -456,14 +455,18 @@ export default function VendorEditProductPage() {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SKU (e.g. stm-0001)</label>
-              <input
-                type="text"
-                value={formData.sku}
-                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                placeholder="stm-0001"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Product SKU (অনন্য কোড)
+              </label>
+              <div className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 flex items-center justify-between">
+                <span className="font-bold tracking-wider">{formData.sku || 'Auto-generated on save'}</span>
+                <span className="text-[11px] font-sans px-2 py-0.5 bg-slate-200 text-slate-700 rounded font-semibold">
+                  Immutable
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">
+                SKU is permanent and cannot be modified once created.
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
@@ -559,7 +562,14 @@ export default function VendorEditProductPage() {
 
           {/* Category (Searchable Custom Dropdown) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Category *</label>
+              {formData.sku && !formData.sku.startsWith('stm-') && (
+                <span className="text-[11px] text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                  🔒 Locked (SKU Assigned)
+                </span>
+              )}
+            </div>
             <div className="relative">
               <input
                 type="text"
@@ -571,9 +581,14 @@ export default function VendorEditProductPage() {
               />
               <div
                 className={`w-full px-4 py-2 border ${
-                  isCategoryDropdownOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-300'
+                  formData.sku && !formData.sku.startsWith('stm-')
+                    ? 'border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed'
+                    : isCategoryDropdownOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-300'
                 } rounded-lg bg-white flex justify-between items-center cursor-pointer`}
-                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                onClick={() => {
+                  if (formData.sku && !formData.sku.startsWith('stm-')) return;
+                  setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
+                }}
               >
                 <span className={formData.category ? 'text-gray-900 line-clamp-1 text-sm' : 'text-gray-500 text-sm'}>
                   {formData.category

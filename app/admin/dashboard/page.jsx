@@ -467,11 +467,6 @@ export default function AdminDashboard() {
                   <Users className="w-7 h-7 text-blue-600" />
                 </div>
 
-                <div className="flex items-center gap-1 text-green-600 font-semibold text-sm">
-                  <TrendingUp className="w-4 h-4" />
-                  +12%
-                </div>
-
               </div>
 
               <p className="text-gray-500 font-medium">
@@ -495,11 +490,6 @@ export default function AdminDashboard() {
 
                 <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center">
                   <ShoppingCart className="w-7 h-7 text-green-600" />
-                </div>
-
-                <div className="flex items-center gap-1 text-green-600 font-semibold text-sm">
-                  <TrendingUp className="w-4 h-4" />
-                  +18%
                 </div>
 
               </div>
@@ -527,11 +517,6 @@ export default function AdminDashboard() {
                   <Package className="w-7 h-7 text-purple-600" />
                 </div>
 
-                <div className="flex items-center gap-1 text-green-600 font-semibold text-sm">
-                  <TrendingUp className="w-4 h-4" />
-                  +8%
-                </div>
-
               </div>
 
               <p className="text-gray-500 font-medium">
@@ -555,11 +540,6 @@ export default function AdminDashboard() {
 
                 <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center">
                   <CreditCard className="w-7 h-7 text-orange-600" />
-                </div>
-
-                <div className="flex items-center gap-1 text-green-600 font-semibold text-sm">
-                  <TrendingUp className="w-4 h-4" />
-                  +24%
                 </div>
 
               </div>

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "0ac652b4-84e2-4bc1-8be4-0b93191d6790",
+    "title": "Mega Sale & Offers",
+    "image": "https://vgdejacoshvwpvbdpiqf.supabase.co/storage/v1/object/public/product-images/banners/banner-0-1789890370635.jpg",
+    "link": "/shop",
+    "position": 0,
+    "status": "active",
+    "created_at": "2026-06-13T07:08:35.114573",
+    "updated_at": "2026-09-20T07:46:11.644"
+  },
+  {
+    "id": "33c67cb1-7a54-46c2-bfd5-64c0c5f21dbe",
+    "title": "Trending Electronics",
+    "image": "https://vgdejacoshvwpvbdpiqf.supabase.co/storage/v1/object/public/product-images/banners/banner-200-1789890374479.jpg",
+    "link": "/shop",
+    "position": 200,
+    "status": "active",
+    "created_at": "2026-06-17T08:30:55.214885",
+    "updated_at": "2026-09-20T07:46:14.819"
+  },
+  {
+    "id": "e3e74a74-d818-4be9-880b-c653a82f9ba0",
+    "title": null,
+    "image": "https://vgdejacoshvwpvbdpiqf.supabase.co/storage/v1/object/public/product-images/admin/1790327618723-cxik5r9uzs6.jpg",
+    "link": "https://www.stellarmartbd.com/product/kz-edx-pro",
+    "position": 0,
+    "status": "active",
+    "created_at": "2026-09-25T09:14:12.888397",
+    "updated_at": "2026-09-25T09:14:12.888397"
+  },
+  {
+    "id": "5e1df970-ab62-48a4-86b3-270abbc796de",
+    "title": "Exclusive Collection",
+    "image": "https://vgdejacoshvwpvbdpiqf.supabase.co/storage/v1/object/public/product-images/admin/1790327723194-yk9ya6exab8.jpg",
+    "link": "/shop",
+    "position": 2,
+    "status": "active",
+    "created_at": "2026-06-18T18:37:00.068521",
+    "updated_at": "2026-09-25T09:15:35.881"
+  },
+  {
+    "id": "a1c14dc7-f8b4-4f5f-80d6-6b467e4a1625",
+    "title": "",
+    "image": "https://res.cloudinary.com/do56bvtzt/image/upload/v1792766320/stellar-mart/pt7azxrddaeoruthdo9w.jpg",
+    "link": "",
+    "position": 1,
+    "status": "active",
+    "created_at": "2026-10-23T14:38:50.351564",
+    "updated_at": "2026-10-25T18:14:07.787"
+  }
+]

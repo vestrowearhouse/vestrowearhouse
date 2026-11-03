@@ -1,0 +1,18 @@
+[
+  {
+    "id": "3c047c11-4d2f-4a0f-89cd-81aa16db8251",
+    "code": "ROCKY",
+    "discount_type": "percentage",
+    "discount_value": 20,
+    "min_order_amount": 0,
+    "max_discount_amount": null,
+    "usage_limit": 2,
+    "used_count": 0,
+    "user_usage_limit": 1,
+    "start_date": "2026-10-13T07:51:00",
+    "end_date": "2026-11-12T07:51:00",
+    "status": "active",
+    "created_at": "2026-10-13T13:52:29.955867",
+    "updated_at": "2026-10-13T13:53:48.539"
+  }
+]

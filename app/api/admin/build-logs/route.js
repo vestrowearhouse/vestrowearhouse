@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
-import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
-const getSupabase = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-};
+const getSupabase = () => getAdminSupabase();
 
 export async function GET(request) {
   try {
@@ -25,100 +20,71 @@ export async function GET(request) {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    const now = Date.now();
+    const vercelToken = process.env.VERCEL_API_TOKEN || process.env.VERCEL_TOKEN;
+    const vercelProjectId = process.env.VERCEL_PROJECT_ID;
 
-    // High fidelity deployment events
-    const defaultDeployments = [
-      {
-        id: 'dpl-live-01',
-        deployment_id: 'dpl_E5Fs2VpK7DJxws1fLJAYnCH73DTF',
-        status: 'success',
-        target: 'production',
-        domain: 'https://www.stellarmartbd.com',
-        commit_message: 'fix: Database Backup & Restore runtime error and schema export',
-        duration_sec: 48,
-        created_at: new Date(now - 4 * 60 * 1000).toISOString(),
-        terminal_lines: [
-          '▲ Vercel CLI 59.20.0 (Node.js 20.x on linux)',
-          'Retrieving list of 359 deployment files...',
-          'Restored build cache from previous deployment',
-          'Running "vercel build" — npm install & next build',
-          '✓ Next.js App Router compiled successfully in 1.84s',
-          '✓ Collected static files (public/, static/, .next/static)',
-          '✓ Traced Next.js serverless functions (36.2 kB middleware)',
-          'Deploying outputs to AWS East (iad1)...',
-          '▲ Aliased to https://www.stellarmartbd.com',
-          '✓ Deployment READY (State: PRODUCTION, Exit: 0)'
-        ]
-      },
-      {
-        id: 'dpl-live-02',
-        deployment_id: 'dpl_HQmyot9s67j2vt4ii2Cd2TRavkvq',
-        status: 'success',
-        target: 'production',
-        domain: 'https://www.stellarmartbd.com',
-        commit_message: 'feat: System Health SVG circular gauge overhaul & 3-column grid',
-        duration_sec: 52,
-        created_at: new Date(now - 25 * 60 * 1000).toISOString(),
-        terminal_lines: [
-          '▲ Vercel CLI 59.20.0',
-          'Running build in Washington, D.C. (iad1)',
-          'Building outputs with Turbopack and Edge runtime...',
-          '✓ Generated 51 static and dynamic routes',
-          '▲ Aliased to https://www.stellarmartbd.com',
-          '✓ Deployment READY'
-        ]
-      },
-      {
-        id: 'dpl-live-03',
-        deployment_id: 'dpl_8XiwjTE2mgZXGvGxx6nEU2ELPVqP',
-        status: 'success',
-        target: 'production',
-        domain: 'https://www.stellarmartbd.com',
-        commit_message: 'feat: Home Quick Icons master visibility toggle & revalidation',
-        duration_sec: 55,
-        created_at: new Date(now - 65 * 60 * 1000).toISOString(),
-        terminal_lines: [
-          '▲ Vercel CLI 59.20.0',
-          '✓ Restored cache (7hzwycsggu25cCoGbb7hPthV5zk5)',
-          '✓ Created all serverless functions in 2.16s',
-          '▲ Aliased to https://www.stellarmartbd.com',
-          '✓ Deployment READY'
-        ]
+    let vercelDeployments = [];
+    if (vercelToken && vercelProjectId) {
+      try {
+        const vRes = await fetch(`https://api.vercel.com/v6/deployments?projectId=${vercelProjectId}&limit=20`, {
+          headers: { Authorization: `Bearer ${vercelToken}` },
+        });
+        if (vRes.ok) {
+          const vData = await vRes.json();
+          vercelDeployments = (vData.deployments || []).map(d => ({
+            id: d.uid,
+            deployment_id: d.uid,
+            status: d.readyState === 'READY' ? 'success' : d.readyState === 'ERROR' ? 'failed' : 'building',
+            target: d.target || 'production',
+            domain: d.url ? `https://${d.url}` : 'https://www.stellarmartbd.com',
+            commit_message: d.meta?.githubCommitMessage || 'Production deployment',
+            duration_sec: d.buildingAt && d.ready ? Math.round((d.ready - d.buildingAt) / 1000) : null,
+            created_at: new Date(d.createdAt).toISOString(),
+            terminal_lines: [
+              `▲ Vercel Deployment: ${d.name || 'stellarmart'} (${d.uid})`,
+              `State: ${d.readyState}`,
+              `Commit: ${d.meta?.githubCommitMessage || 'N/A'}`
+            ]
+          }));
+        }
+      } catch (vErr) {
+        console.error('Vercel API fetch error:', vErr);
       }
-    ];
-
-    let merged = defaultDeployments;
-    if (dbLogs && dbLogs.length > 0) {
-      merged = [
-        ...dbLogs.map(item => ({
-          id: item.id,
-          deployment_id: item.deployment_id || `dpl_${String(item.id).slice(0, 10)}`,
-          status: item.status || 'success',
-          target: 'production',
-          domain: 'https://www.stellarmartbd.com',
-          commit_message: item.commit_message || 'Deployment update',
-          duration_sec: 50,
-          created_at: item.created_at,
-          terminal_lines: [
-            `▲ Deployment event registered (${item.status})`,
-            `Message: ${item.commit_message || 'System build'}`,
-            `Time: ${item.created_at}`
-          ]
-        })),
-        ...defaultDeployments
-      ];
     }
+
+    let merged = [];
+    if (vercelDeployments.length > 0) {
+      merged = vercelDeployments;
+    } else if (dbLogs && dbLogs.length > 0) {
+      merged = dbLogs.map(item => ({
+        id: item.id,
+        deployment_id: item.deployment_id || `dpl_${String(item.id).slice(0, 10)}`,
+        status: item.status || 'success',
+        target: 'production',
+        domain: 'https://www.stellarmartbd.com',
+        commit_message: item.commit_message || 'Deployment update',
+        duration_sec: item.duration_sec || null,
+        created_at: item.created_at,
+        terminal_lines: [
+          `▲ Deployment event registered (${item.status})`,
+          `Message: ${item.commit_message || 'System build'}`,
+          `Time: ${item.created_at}`
+        ]
+      }));
+    }
+
+    const successCount = merged.filter(m => m.status === 'success').length;
+    const successRate = merged.length > 0 ? `${Math.round((successCount / merged.length) * 100)}%` : 'N/A';
 
     return NextResponse.json({
       success: true,
       deployments: merged,
-      latest: merged[0],
+      latest: merged[0] || null,
       stats: {
         totalBuilds: merged.length,
-        successRate: '100%',
-        avgBuildTime: '51s',
-        environment: 'Production (Vercel Anycast)'
+        successRate,
+        avgBuildTime: merged.length > 0 ? 'N/A' : 'N/A',
+        environment: vercelToken ? 'Vercel API (Live)' : 'Database Audit (build_logs)'
       }
     });
   } catch (error) {

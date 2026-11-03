@@ -100,9 +100,11 @@ function ProductCard({ product }) {
       if (product.stockStatus === 'in_stock') return true;
       return hasStockField ? baseStock > 0 : true;
     })(),
-    storeName: product?.store_name || product?.vendor?.shop_name || (!product?.vendor_id ? 'StellarMart Official' : 'Vendor Store'),
-    isOfficial: product?.is_official ?? !product?.vendor_id,
-    vendorId: product?.vendor_id || null,
+    storeName: (!product?.vendor_id || product?.vendor_id === 'official')
+      ? 'StellarMart Official'
+      : (product?.store_name || product?.vendor?.shop_name || 'Vendor Store'),
+    isOfficial: !product?.vendor_id || product?.vendor_id === 'official' ? (product?.is_official !== false) : false,
+    vendorId: product?.vendor?.id || product?.vendor_id || null,
     soldCount: Number(product?.sold_count || product?.soldCount || product?.total_sold || 0),
     get soldCountFormatted() {
       if (this.soldCount >= 1000) return (this.soldCount / 1000).toFixed(1).replace('.0', '') + 'k';
@@ -272,7 +274,7 @@ function ProductCard({ product }) {
                 <ShieldCheck className="w-3 h-3 text-blue-600" /> StellarMart Official
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-700 bg-purple-50 border border-purple-200/70 px-1.5 py-0.5 rounded truncate max-w-[150px]">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-700 bg-purple-50 border border-purple-200/70 px-1.5 py-0.5 rounded truncate max-w-[200px]">
                 <Store className="w-3 h-3 text-purple-600 shrink-0" /> <span className="truncate">{item.storeName}</span>
               </span>
             )}

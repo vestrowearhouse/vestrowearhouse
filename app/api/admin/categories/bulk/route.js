@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { checkAdminAccess, ROLES } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 import { clearCache, clearCacheByPrefix } from '@/lib/api-cache';
 import { revalidatePath } from 'next/cache';
+import { adminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,10 +40,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Max 500 categories allowed per bulk batch.' }, { status: 400 });
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
+    const supabase = adminSupabase;
 
     // Fetch existing categories from Supabase
     const { data: existingCats } = await supabase.from('categories').select('id, name, slug');

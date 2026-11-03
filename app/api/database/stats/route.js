@@ -4,32 +4,29 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+import { getAdminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   try {
-    // Database stats are super_admin only
     const token = request.cookies.get('adminToken')?.value;
     const decoded = token ? await verifyAdminToken(request) : null;
     if (!decoded) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
     if (decoded.role !== 'admin' && decoded.role !== 'super_admin') {
-      return NextResponse.json({ error: 'Forbidden: super admin access required' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden: admin access required' }, { status: 403 });
     }
 
-    if (!supabase) {
+    let supabase;
+    try {
+      supabase = getAdminSupabase();
+    } catch (e) {
       return NextResponse.json({
         success: false,
-        error: 'Supabase not configured'
+        error: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY is required'
       }, { status: 500 });
     }
 

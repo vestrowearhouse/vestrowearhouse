@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { adminSupabase as supabase, getExcludedVisitorIds } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,20 +21,27 @@ export async function GET(request) {
     // 1. Fetch orders in date range
     const { data: orders, error: ordersError } = await supabase
       .from('orders')
-      .select('id, total_amount, status, created_at, user_id')
+      .select('id, total, status, created_at, user_id')
       .gte('created_at', startDateISO);
 
     if (ordersError) throw ordersError;
 
-    const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0);
+    const totalOrders = orders ? orders.length : 0;
+    const totalRevenue = (orders || []).reduce((sum, order) => sum + (Number(order.total) || 0), 0);
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-    // 2. Fetch page views in date range for conversion rate
-    const { count: uniqueVisitors, error: visitorsError } = await supabase
+    // 2. Fetch page views in date range for conversion rate (excluding test visitors)
+    let visitorsQuery = supabase
       .from('page_views')
       .select('visitor_id', { count: 'exact', head: true })
       .gte('created_at', startDateISO);
+
+    const excludedVisitorIds = getExcludedVisitorIds();
+    if (excludedVisitorIds.length > 0) {
+      visitorsQuery = visitorsQuery.not('visitor_id', 'in', `(${excludedVisitorIds.join(',')})`);
+    }
+
+    const { count: uniqueVisitors, error: visitorsError } = await visitorsQuery;
 
     if (visitorsError) throw visitorsError;
 

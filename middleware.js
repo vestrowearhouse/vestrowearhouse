@@ -427,76 +427,11 @@ export async function middleware(request, event) {
     }
   }
 
-  // ── 4. Analytics (async — non-blocking, production & real users only) ─────────
-  if (
-    process.env.NODE_ENV === 'production' &&
-    !path.startsWith('/api') &&
-    !path.startsWith('/admin') &&
-    !path.includes('.')
-  ) {
-    event.waitUntil(
-      (async () => {
-        try {
-          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // ── 4. Analytics ─────────────────────────────────────────────────────────────
+  // Server-side page_views insertion removed to prevent double-counting with client
+  // tracker and to avoid logging Next.js prefetch/RSC requests at the network edge.
+  // All telemetry is managed via client-side CustomAnalytics -> /api/analytics/track.
 
-          if (supabaseUrl && supabaseKey) {
-            const userAgent = request.headers.get('user-agent') || '';
-            // Skip automated web crawlers and bot hits from bloating Supabase
-            if (/bot|crawler|spider|crawling|preview|facebookexternalhit|whatsapp|googlebot|bingbot/i.test(userAgent)) {
-              return;
-            }
-
-            let device_type = 'desktop';
-            if (/mobile/i.test(userAgent)) device_type = 'mobile';
-            else if (/tablet/i.test(userAgent)) device_type = 'tablet';
-
-            let browser = 'Unknown';
-            if (/chrome/i.test(userAgent)) browser = 'Chrome';
-            else if (/safari/i.test(userAgent)) browser = 'Safari';
-            else if (/firefox/i.test(userAgent)) browser = 'Firefox';
-            else if (/edge/i.test(userAgent)) browser = 'Edge';
-
-            let os = 'Unknown';
-            if (/windows/i.test(userAgent)) os = 'Windows';
-            else if (/mac/i.test(userAgent)) os = 'MacOS';
-            else if (/linux/i.test(userAgent)) os = 'Linux';
-            else if (/android/i.test(userAgent)) os = 'Android';
-            else if (/ios|iphone|ipad/i.test(userAgent)) os = 'iOS';
-
-            const ip = getClientIP(request);
-            const visitor_id = Array.from(
-              new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip + userAgent)))
-            )
-              .map((b) => b.toString(16).padStart(2, '0'))
-              .join('')
-              .substring(0, 32);
-
-            await fetch(`${supabaseUrl}/rest/v1/page_views`, {
-              method: 'POST',
-              headers: {
-                apikey: supabaseKey,
-                Authorization: `Bearer ${supabaseKey}`,
-                'Content-Type': 'application/json',
-                Prefer: 'return=minimal',
-              },
-              body: JSON.stringify({
-                path,
-                visitor_id,
-                device_type,
-                browser,
-                os,
-                event_type: 'page_view',
-                referrer: request.headers.get('referer') || null,
-              }),
-            });
-          }
-        } catch {
-          // Silent catch — analytics must never block requests
-        }
-      })()
-    );
-  }
 
   // ── 5. Public paths (no auth required) ────────────────────────────────────────────
   const publicPaths = [

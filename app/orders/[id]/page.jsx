@@ -473,9 +473,16 @@ export default function OrderTrackingPage({ params }) {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 group-hover:text-blue-600 transition-colors">
-                          {item.name}
-                        </h4>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-2 group-hover:text-blue-600 transition-colors">
+                            {item.name}
+                          </h4>
+                          {(item.variantSku || item.sku) && (
+                            <span className="font-mono text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                              SKU: {item.variantSku || item.sku}
+                            </span>
+                          )}
+                        </div>
                         {/* Selected Attributes & Variant */}
                         {(() => {
                           const attrList = resolveItemAttributes(item);

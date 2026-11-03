@@ -170,6 +170,34 @@ export default function DynamicAttributeBuilder({ attributes = [], onChange, dis
         </div>
       ))}
 
+      {/* Quick preset buttons for common standardized SKU attributes */}
+      {!disabled && (
+        <div className="flex items-center gap-2 flex-wrap text-xs text-gray-500 mb-1">
+          <span className="font-medium">Quick presets:</span>
+          {['Size', 'Color', 'Storage', 'RAM'].map((preset) => {
+            const exists = attributes.some((a) => a.name.toLowerCase() === preset.toLowerCase());
+            return (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => {
+                  if (exists) return;
+                  emit([...attributes, { name: preset, values: [] }]);
+                }}
+                disabled={exists}
+                className={`px-2.5 py-1 rounded-lg border text-xs font-semibold transition ${
+                  exists
+                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                    : 'bg-white hover:bg-blue-50 text-blue-700 border-blue-200 hover:border-blue-300'
+                }`}
+              >
+                + {preset}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Add new attribute row */}
       {!disabled && (
         <div className="flex gap-2">

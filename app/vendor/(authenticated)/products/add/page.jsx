@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 import DynamicAttributeBuilder from '@/app/components/DynamicAttributeBuilder';
 import VariantTable from '@/app/components/VariantTable';
-import { cartesianProduct, buildVariants, generateStmSku } from '@/lib/variantUtils';
+import { cartesianProduct, buildVariants } from '@/lib/variantUtils';
+import { deriveCategoryCode, SKU_CATEGORIES_MAP } from '@/lib/skuUtils';
 
 export default function VendorAddProductPage() {
   const router = useRouter();
@@ -170,15 +171,13 @@ export default function VendorAddProductPage() {
       alert('Please add at least one attribute with values first.');
       return;
     }
-    const baseSku = formData.sku?.trim() ? formData.sku.trim().toLowerCase() : generateStmSku('stm');
     const newVariants = buildVariants(
       combinations,
       formData.variants,
       formData.name,
-      formData.sellingPrice || 0,
-      baseSku
+      formData.sellingPrice || 0
     );
-    setFormData((prev) => ({ ...prev, variants: newVariants, sku: prev.sku || baseSku }));
+    setFormData((prev) => ({ ...prev, variants: newVariants }));
   };
 
   // AI Helpers
@@ -421,14 +420,18 @@ export default function VendorAddProductPage() {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SKU (e.g. stm-0001)</label>
-              <input
-                type="text"
-                value={formData.sku}
-                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono"
-                placeholder="stm-0001"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Product SKU (অনন্য কোড)
+              </label>
+              <div className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-600 flex items-center justify-between">
+                <span>{formData.sku || 'Auto-generated on save (e.g. SMBD200001)'}</span>
+                <span className="text-[11px] font-sans px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold">
+                  Auto Server-side
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">
+                SKU format: SMBD + 2-digit Category + 4-digit serial. Immutable once created.
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
@@ -613,6 +616,21 @@ export default function VendorAddProductPage() {
                 </>
               )}
             </div>
+
+            {formData.category && (() => {
+              const selectedCat = categories.find((c) => (c.id || c._id || c.category_id) === formData.category);
+              const derivedCode = deriveCategoryCode(selectedCat);
+              const skuCatInfo = SKU_CATEGORIES_MAP[derivedCode];
+              return (
+                <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+                  <span className="font-semibold text-slate-700">Derived SKU Category:</span>
+                  <span className="px-2 py-0.5 bg-blue-100 text-blue-800 font-mono font-bold rounded">
+                    Code {derivedCode}
+                  </span>
+                  <span>{skuCatInfo?.name || 'General'} ({skuCatInfo?.group || 'Other'})</span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* SEO Tags */}
@@ -764,6 +782,21 @@ export default function VendorAddProductPage() {
                 </div>
               )}
             </div>
+
+            {formData.category && (() => {
+              const selectedCat = categories.find((c) => (c.id || c._id || c.category_id) === formData.category);
+              const derivedCode = deriveCategoryCode(selectedCat);
+              const skuCatInfo = SKU_CATEGORIES_MAP[derivedCode];
+              return (
+                <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+                  <span className="font-semibold text-slate-700">Derived SKU Category:</span>
+                  <span className="px-2 py-0.5 bg-blue-100 text-blue-800 font-mono font-bold rounded">
+                    Code {derivedCode}
+                  </span>
+                  <span>{skuCatInfo?.name || 'General'} ({skuCatInfo?.group || 'Other'})</span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Homepage & Visibility Settings (Hubohu Admin Panel) */}

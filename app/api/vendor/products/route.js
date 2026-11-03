@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getVendorSession, getVendorSupabaseClient } from '@/lib/vendorAuth';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { assignProductAndVariantSKUs } from '@/lib/skuServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,7 +82,7 @@ export async function POST(request) {
           }
 
           return {
-            vendor_id: session.userId || session.vendorId,
+            vendor_id: session.vendorId || session.userId,
             name: (p.name || p.title || '').trim(),
             nameBn: p.nameBn?.trim() || '',
             slug: generateSlug(p.name || p.title || 'product'),
@@ -217,8 +218,30 @@ export async function POST(request) {
     const finalStockQty = isNaN(parsedStock) ? 0 : parsedStock;
     const productIsActive = isActive !== undefined ? Boolean(isActive) : (status ? status === 'active' : true);
 
+    // Server-side atomic SKU generation for vendor products and variants
+    let generatedSku = null;
+    let generatedCatCode = null;
+    let generatedSizeCode = null;
+    let generatedColorCode = null;
+    let finalVariantList = Array.isArray(variants) ? variants : [];
+
+    try {
+      const skuAssignment = await assignProductAndVariantSKUs(supabase, {
+        categoryId: category,
+        variants: finalVariantList,
+        attributes: Array.isArray(attributes) ? attributes : []
+      });
+      generatedSku = skuAssignment.sku;
+      generatedCatCode = skuAssignment.category_code;
+      generatedSizeCode = skuAssignment.size_code;
+      generatedColorCode = skuAssignment.color_code;
+      finalVariantList = skuAssignment.variants;
+    } catch (skuErr) {
+      console.error('Vendor SKU generation warning:', skuErr);
+    }
+
     const productData = {
-      vendor_id: session.userId || session.vendorId,
+      vendor_id: session.vendorId || session.userId,
       name: name.trim(),
       nameBn: nameBn?.trim() || '',
       slug: generateSlug(name),
@@ -231,7 +254,10 @@ export async function POST(request) {
       regularPrice: parsedRegularPrice,
       original_price: parsedRegularPrice,
       oldPrice: parsedRegularPrice,
-      sku: sku?.trim() || null,
+      sku: generatedSku || sku?.trim() || null,
+      category_code: generatedCatCode,
+      size_code: generatedSizeCode,
+      color_code: generatedColorCode,
       stock: finalStockQty,
       stockQuantity: finalStockQty,
       category: category || null,
@@ -244,7 +270,7 @@ export async function POST(request) {
       isBestSeller: Boolean(isBestSeller),
       isActive: productIsActive,
       attributes: Array.isArray(attributes) ? attributes : [],
-      variants: Array.isArray(variants) ? variants : [],
+      variants: finalVariantList,
       approval_status: 'pending',   // Admin must approve before it appears in live site
     };
 

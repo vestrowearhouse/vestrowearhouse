@@ -1,11 +1,17 @@
--- STATEMENT
-CREATE OR REPLACE FUNCTION get_public_tables()
+-- ==============================================================================
+-- DATABASE EXPLORER SECURE RPC MIGRATION
+-- ==============================================================================
+
+-- 1. Function: get_public_tables()
+-- Safely lists all public base tables and their exact current row counts.
+CREATE OR REPLACE FUNCTION public.get_public_tables()
 RETURNS TABLE (
   name text,
   total_rows bigint
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   rec record;
@@ -24,9 +30,15 @@ BEGIN
 END;
 $$;
 
--- STATEMENT
-DROP FUNCTION IF EXISTS get_table_schema(text);
-CREATE OR REPLACE FUNCTION get_table_schema(target_table_name text)
+-- Revoke public execution & restrict to service_role only
+REVOKE EXECUTE ON FUNCTION public.get_public_tables() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_public_tables() TO service_role;
+
+
+-- 2. Function: get_table_schema(target_table_name text)
+-- Returns column definitions, nullability, and primary key constraints.
+DROP FUNCTION IF EXISTS public.get_table_schema(text);
+CREATE OR REPLACE FUNCTION public.get_table_schema(target_table_name text)
 RETURNS TABLE (
   name text, 
   type text, 
@@ -36,6 +48,7 @@ RETURNS TABLE (
 )
 LANGUAGE sql
 SECURITY DEFINER
+SET search_path = public
 AS $$
   SELECT 
     c.column_name::text as name, 
@@ -57,21 +70,22 @@ AS $$
   ORDER BY c.ordinal_position;
 $$;
 
--- STATEMENT
--- Allow raw execution (WARNING: SECURITY DEFINER with raw EXECUTE is dangerous. Since this is restricted to service_role in Next.js backend, we accept the risk. For production, restrict this heavily!)
-DROP FUNCTION IF EXISTS exec_sql(text);
-CREATE OR REPLACE FUNCTION exec_sql(query text)
-RETURNS jsonb
-LANGUAGE plpgsql
+-- Revoke public execution & restrict to service_role only
+REVOKE EXECUTE ON FUNCTION public.get_table_schema(text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_table_schema(text) TO service_role;
+
+
+-- 3. Function: get_database_size()
+-- Returns the actual PostgreSQL database size in bytes directly from disk storage.
+CREATE OR REPLACE FUNCTION public.get_database_size()
+RETURNS bigint
+LANGUAGE sql
 SECURITY DEFINER
+SET search_path = public
 AS $$
-DECLARE
-  result jsonb;
-BEGIN
-  -- Simple execution, doesn't handle all result types well but good for demo
-  EXECUTE format('SELECT json_agg(t) FROM (%s) t', query) INTO result;
-  RETURN COALESCE(result, '[]'::jsonb);
-EXCEPTION WHEN OTHERS THEN
-  RETURN json_build_object('error', SQLERRM)::jsonb;
-END;
+  SELECT pg_database_size(current_database());
 $$;
+
+-- Revoke public execution & restrict to service_role only
+REVOKE EXECUTE ON FUNCTION public.get_database_size() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_database_size() TO service_role;

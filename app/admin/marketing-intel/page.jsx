@@ -25,7 +25,7 @@ export default function MarketingIntelPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/admin/intelligence/marketing');
+        const res = await fetch(`/api/admin/intelligence/marketing?days=${timeRange}`);
         if (res.ok) {
           const json = await res.json();
           setData(json);

@@ -1,14 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { verifyAdminToken } from '@/lib/secureJwt';
+import { getAdminSupabase, getExcludedVisitorIds } from '@/lib/dbExplorer';
 
 // Requires service role to read analytics
 export const dynamic = 'force-dynamic';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 export async function GET(request) {
   try {
@@ -17,67 +12,131 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
+    let supabase;
+    try {
+      supabase = getAdminSupabase();
+    } catch (e) {
+      return NextResponse.json({ success: false, error: 'Server configuration error: SUPABASE_SERVICE_ROLE_KEY is required' }, { status: 500 });
+    }
+
+    const last7Days = generateLastNDays(7);
+    const excludedVisitorIds = getExcludedVisitorIds();
+    const excludedVisitorSet = new Set(excludedVisitorIds);
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // STRATEGY 1: PostgreSQL RPC get_analytics_summary (fastest & bypasses PostgREST limits)
+    // ─────────────────────────────────────────────────────────────────────────────
+    try {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_analytics_summary', {
+        days_back: 30,
+        excluded_visitors: excludedVisitorIds
+      });
+      if (!rpcError && rpcData && typeof rpcData === 'object') {
+        const trafficMap = {};
+        (rpcData.traffic || []).forEach(t => {
+          trafficMap[t.day_str] = { views: Number(t.views || 0), visitors: Number(t.visitors || 0) };
+        });
+
+        const trafficChartData = last7Days.map(d => ({
+          date: new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          views: trafficMap[d]?.views || 0,
+          visitors: trafficMap[d]?.visitors || 0
+        }));
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            totalViews: Number(rpcData.total_views || 0),
+            uniqueVisitors: Number(rpcData.unique_visitors || 0),
+            trafficChartData,
+            topPages: rpcData.top_pages || [],
+            devices: rpcData.devices || [],
+            os: rpcData.os || [],
+            browsers: rpcData.browsers || [],
+          }
+        });
+      }
+    } catch {
+      // RPC not yet migrated in database, proceed to Strategy 2
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // STRATEGY 2: Fallback Paginated Fetch with .range() (bypasses 1,000 max_rows cap)
+    // ─────────────────────────────────────────────────────────────────────────────
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const thirtyDaysAgoISO = thirtyDaysAgo.toISOString();
 
-    // In a real high-traffic app, you would use an RPC or aggregated materialized view.
-    // For this dashboard, we'll fetch the raw recent rows and aggregate in memory for simplicity.
-    // (Limits to 10k latest views to avoid memory issues)
-    const { data: views, error } = await supabase
+    let countQuery = supabase
       .from('page_views')
-      .select('*')
-      .gte('created_at', thirtyDaysAgoISO)
-      .order('created_at', { ascending: false })
-      .limit(10000);
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', thirtyDaysAgoISO);
 
-    if (error) throw error;
+    if (excludedVisitorIds.length > 0) {
+      countQuery = countQuery.not('visitor_id', 'in', `(${excludedVisitorIds.join(',')})`);
+    }
 
-    if (!views || views.length === 0) {
+    const { count: totalViewsCount } = await countQuery;
+
+    const totalExpected = totalViewsCount || 0;
+    const allViews = [];
+    const PAGE_SIZE = 1000;
+    let offset = 0;
+
+    // Paginate through full 30-day data
+    while (offset < totalExpected && offset < 50000) {
+      let pageQuery = supabase
+        .from('page_views')
+        .select('path, visitor_id, device_type, os, browser, created_at')
+        .gte('created_at', thirtyDaysAgoISO)
+        .order('created_at', { ascending: false });
+
+      if (excludedVisitorIds.length > 0) {
+        pageQuery = pageQuery.not('visitor_id', 'in', `(${excludedVisitorIds.join(',')})`);
+      }
+
+      const { data: pageRows, error: pageErr } = await pageQuery.range(offset, offset + PAGE_SIZE - 1);
+
+      if (pageErr || !pageRows || pageRows.length === 0) break;
+      allViews.push(...pageRows);
+      offset += pageRows.length;
+    }
+
+    if (allViews.length === 0) {
       return NextResponse.json({ success: true, data: getEmptyData() });
     }
 
-    // 1. Top Metrics
-    const totalViews = views.length;
-    const uniqueVisitors = new Set(views.map(v => v.visitor_id)).size;
-
-    // 2. Traffic over time (last 7 days)
-    const last7Days = generateLastNDays(7);
+    const uniqueVisitorSet = new Set();
     const trafficByDateMap = {};
-    last7Days.forEach(d => trafficByDateMap[d] = { date: d, views: 0, visitors: new Set() });
-
-    // 3. Top Pages
+    last7Days.forEach(d => trafficByDateMap[d] = { views: 0, visitors: new Set() });
     const pagesCount = {};
-    // 4. Device / OS / Browser stats
     const deviceCount = {};
     const osCount = {};
     const browserCount = {};
 
-    views.forEach(v => {
-      // Date stats
+    for (let i = 0; i < allViews.length; i++) {
+      const v = allViews[i];
+      if (v.visitor_id && !excludedVisitorSet.has(v.visitor_id)) {
+        uniqueVisitorSet.add(v.visitor_id);
+      } else if (excludedVisitorSet.has(v.visitor_id)) {
+        continue;
+      }
+
       const dString = new Date(v.created_at).toISOString().split('T')[0];
       if (trafficByDateMap[dString]) {
         trafficByDateMap[dString].views += 1;
-        trafficByDateMap[dString].visitors.add(v.visitor_id);
+        if (v.visitor_id) trafficByDateMap[dString].visitors.add(v.visitor_id);
       }
 
-      // Page stats
-      pagesCount[v.path] = (pagesCount[v.path] || 0) + 1;
-
-      // Device stats
+      pagesCount[v.path || '/'] = (pagesCount[v.path || '/'] || 0) + 1;
       const device = v.device_type || 'desktop';
       deviceCount[device] = (deviceCount[device] || 0) + 1;
-
-      // OS stats
       const os = v.os || 'Unknown';
       osCount[os] = (osCount[os] || 0) + 1;
-
-      // Browser stats
       const browser = v.browser || 'Unknown';
       browserCount[browser] = (browserCount[browser] || 0) + 1;
-    });
+    }
 
-    // Format chart data
     const trafficChartData = last7Days.map(d => ({
       date: new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       views: trafficByDateMap[d].views,
@@ -96,8 +155,8 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       data: {
-        totalViews,
-        uniqueVisitors,
+        totalViews: totalViewsCount ?? allViews.length,
+        uniqueVisitors: uniqueVisitorSet.size,
         trafficChartData,
         topPages,
         devices: formatPieData(deviceCount),

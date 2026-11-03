@@ -125,7 +125,7 @@ export default function BackupPage() {
             className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95"
           >
             <UploadCloud className="w-4 h-4 text-gray-600" />
-            Restore Database
+            Restore Instructions
           </button>
           <button
             onClick={() => handleDownload('full')}
@@ -216,12 +216,12 @@ export default function BackupPage() {
 
         <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-xs flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <Database className="w-5 h-5" />
+            <Clock className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <span className="text-xs text-gray-400 font-medium block">Estimated Size</span>
-            <span className="text-base font-bold text-gray-900 truncate block">
-              {loading ? '...' : `${((stats?.estimatedSizeKB || 1088) / 1024).toFixed(1)} MB`}
+            <span className="text-xs text-gray-400 font-medium block">Last Export Event</span>
+            <span className="text-sm font-bold text-gray-900 truncate block">
+              {loading ? '...' : stats?.lastRealExport || 'None recorded'}
             </span>
           </div>
         </div>
@@ -321,10 +321,11 @@ export default function BackupPage() {
             </div>
           </div>
           <button
-            onClick={() => handleCreateSnapshot('full')}
+            onClick={() => handleDownload('full')}
+            disabled={downloadingType === 'full'}
             className="self-start sm:self-auto text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg border border-purple-200 transition-colors"
           >
-            Trigger New Snapshot Now
+            Export Full Dataset Now
           </button>
         </div>
 
@@ -332,21 +333,19 @@ export default function BackupPage() {
           <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-100">
             <span className="text-xs text-gray-400 font-medium block">Last Cloud Backup</span>
             <span className="text-sm font-bold text-gray-800 mt-0.5 block">{stats?.lastCloudBackup || 'Today, 02:00 AM UTC'}</span>
-            <span className="text-[11px] text-emerald-600 font-medium flex items-center gap-1 mt-1">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Verified Healthy
-            </span>
+            <span className="text-[11px] text-gray-500 font-medium block mt-1">Managed by Supabase Cloud</span>
           </div>
 
           <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-100">
             <span className="text-xs text-gray-400 font-medium block">Next Scheduled Backup</span>
             <span className="text-sm font-bold text-gray-800 mt-0.5 block">{stats?.nextCloudBackup || 'Tomorrow, 02:00 AM UTC'}</span>
-            <span className="text-[11px] text-gray-500 font-medium block mt-1">Automatic 24-Hour Cycle</span>
+            <span className="text-[11px] text-gray-500 font-medium block mt-1">Automatic Daily Cycle</span>
           </div>
 
           <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-100">
             <span className="text-xs text-gray-400 font-medium block">Point-in-Time Recovery</span>
-            <span className="text-sm font-bold text-gray-800 mt-0.5 block">Enabled (7-Day WAL Retention)</span>
-            <span className="text-[11px] text-purple-600 font-medium block mt-1">Continuous Write-Ahead Logs</span>
+            <span className="text-sm font-bold text-gray-800 mt-0.5 block">Supabase Dashboard</span>
+            <span className="text-[11px] text-gray-500 font-medium block mt-1">Configured in Supabase Project Settings</span>
           </div>
         </div>
       </div>
@@ -429,12 +428,12 @@ export default function BackupPage() {
                   <UploadCloud className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-base">Restore System Database</h3>
-                  <p className="text-xs text-gray-400">Import backup dataset into StellarMart</p>
+                  <h3 className="font-bold text-gray-900 text-base">Database Restore Guidance</h3>
+                  <p className="text-xs text-gray-400">How to safely restore StellarMart database</p>
                 </div>
               </div>
               <button 
-                onClick={() => { setShowRestoreModal(false); setSelectedFile(null); }}
+                onClick={() => setShowRestoreModal(false)}
                 className="text-gray-400 hover:text-gray-600 p-1"
               >
                 <X className="w-5 h-5" />
@@ -442,56 +441,48 @@ export default function BackupPage() {
             </div>
 
             <div className="py-4 space-y-4">
-              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs leading-relaxed">
-                <strong className="font-bold block mb-1">Safety Precautions:</strong>
-                Restoring overwrites existing records or merges new tables based on primary keys. Ensure you download a fresh Full Backup before performing any restore operation.
+              <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs leading-relaxed space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-800">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  In-Browser Database Restore Disabled for Safety
+                </div>
+                <p>
+                  To prevent accidental data corruption or incomplete writes, direct full-database restoration cannot be executed from the web dashboard.
+                </p>
               </div>
 
-              <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-blue-400 transition-colors cursor-pointer relative bg-gray-50/50">
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                />
-                <FileJson className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                {selectedFile ? (
-                  <div>
-                    <p className="text-sm font-bold text-blue-600">{selectedFile.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{(selectedFile.size / 1024).toFixed(1)} KB</p>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-xs font-bold text-gray-700">Click to select or drag & drop a .json backup file</p>
-                    <p className="text-[11px] text-gray-400 mt-1">Only valid StellarMart JSON snapshots are supported</p>
-                  </div>
-                )}
+              <div className="space-y-3 text-xs text-gray-700 bg-gray-50/80 p-4 rounded-xl border border-gray-100">
+                <div className="font-bold text-gray-900 text-sm">Recommended Restore Procedure:</div>
+                <ol className="list-decimal pl-4 space-y-2 text-gray-600 leading-normal">
+                  <li>
+                    <strong className="text-gray-800">Supabase Automated Backups:</strong> Go to the{' '}
+                    <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline font-semibold">
+                      Supabase Dashboard
+                    </a>{' '}
+                    &rarr; select your project &rarr; navigate to <strong>Database &gt; Backups</strong> &rarr; choose a snapshot and click <strong>Restore</strong>.
+                  </li>
+                  <li>
+                    <strong className="text-gray-800">JSON/SQL Table Datasets:</strong> For individual table restoration, use the downloaded JSON snapshot or SQL migration script with the Supabase SQL Editor or <code>psql</code> CLI client.
+                  </li>
+                </ol>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <a
+                href="https://supabase.com/dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 underline"
+              >
+                Go to Supabase Dashboard &rarr;
+              </a>
               <button
                 type="button"
-                onClick={() => { setShowRestoreModal(false); setSelectedFile(null); }}
+                onClick={() => setShowRestoreModal(false)}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!selectedFile || isRestoring}
-                onClick={() => {
-                  setIsRestoring(true);
-                  setTimeout(() => {
-                    setIsRestoring(false);
-                    setShowRestoreModal(false);
-                    setSelectedFile(null);
-                    setActionMessage({ type: 'success', text: 'Backup file verified and schema validated successfully.' });
-                  }, 1500);
-                }}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
-              >
-                {isRestoring ? 'Validating Schema...' : 'Verify & Restore'}
+                Close
               </button>
             </div>
           </div>

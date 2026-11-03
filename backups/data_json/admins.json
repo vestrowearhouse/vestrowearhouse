@@ -1,0 +1,32 @@
+[
+  {
+    "id": "37b9cc54-1f47-458d-a7fe-de25553f090c",
+    "name": "ashik",
+    "email": "ashik@stellarmartbd.com",
+    "password": "$2a$12$9hM9qwWIlRHUtYLcEsyMdOCli39bxGD9nLjlVWPzaffpPIROGkUCi",
+    "phone": "01712345679",
+    "avatar": null,
+    "status": "active",
+    "last_login": "2026-10-24T14:32:27.68",
+    "login_attempts": 0,
+    "last_failed_login": null,
+    "created_at": "2026-05-02T18:46:53.272293",
+    "updated_at": "2026-05-02T18:46:53.272293",
+    "locked_until": null
+  },
+  {
+    "id": "c8b0c628-2761-44fd-a16f-8a95c0fd0965",
+    "name": "turjo",
+    "email": "turjo@stellarmartbd.com",
+    "password": "$2a$12$VeixqkTZOhOg4gAoEaFadOMchh0GSNgUx1vE0zotUHsle3AGdZm6u",
+    "phone": "01712345678",
+    "avatar": null,
+    "status": "active",
+    "last_login": "2026-11-03T12:23:35.318",
+    "login_attempts": 0,
+    "last_failed_login": null,
+    "created_at": "2026-05-02T18:46:53.272293",
+    "updated_at": "2026-05-02T18:46:53.272293",
+    "locked_until": null
+  }
+]

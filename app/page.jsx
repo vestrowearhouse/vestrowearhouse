@@ -79,9 +79,64 @@ const getCachedSupabaseData = unstable_cache(
       supabase.from('categories').select('custom_code, status').eq('slug', 'system-quick-channels').single()
     ]);
 
+    const rawProducts = [
+      ...(featuredRes?.data || []),
+      ...(arrivalsRes?.data || []),
+      ...(allProductsRes?.data || [])
+    ];
+    const vendorIds = [...new Set(rawProducts.map(p => p.vendor_id).filter(Boolean))];
+    let vendorMap = {};
+    if (vendorIds.length > 0) {
+      try {
+        const { data: vList } = await supabase
+          .from('vendors')
+          .select('id, user_id, shop_name, logo_url')
+          .or(`id.in.(${vendorIds.join(',')}),user_id.in.(${vendorIds.join(',')})`);
+        if (vList) {
+          for (const v of vList) {
+            if (v.id) vendorMap[v.id] = v;
+            if (v.user_id) vendorMap[v.user_id] = v;
+          }
+        }
+      } catch (vErr) {
+        console.error('Error fetching vendors for homepage:', vErr);
+      }
+    }
+
+    const enrichProduct = (p) => {
+      if (!p) return p;
+      if (p.vendor_id && vendorMap[p.vendor_id]) {
+        const v = vendorMap[p.vendor_id];
+        return {
+          ...p,
+          store_name: v.shop_name,
+          vendor_logo: v.logo_url,
+          is_official: false,
+          vendor: v
+        };
+      }
+      if (p.vendor_id) {
+        return {
+          ...p,
+          store_name: 'Vendor Store',
+          vendor_logo: null,
+          is_official: false
+        };
+      }
+      return {
+        ...p,
+        store_name: 'StellarMart Official',
+        is_official: true
+      };
+    };
+
+    if (featuredRes?.data) featuredRes.data = featuredRes.data.map(enrichProduct);
+    if (arrivalsRes?.data) arrivalsRes.data = arrivalsRes.data.map(enrichProduct);
+    if (allProductsRes?.data) allProductsRes.data = allProductsRes.data.map(enrichProduct);
+
     return { categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes, layoutRes, flashSaleRes, quickChannelsRes };
   },
-  ['homepage-data-v3'],
+  ['homepage-data-v4'],
   { revalidate: 300, tags: ['homepage-data'] }
 );
 

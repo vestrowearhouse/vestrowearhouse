@@ -398,17 +398,12 @@ export default function ProductPage({ params }) {
       : true;
 
   const displaySku = useMemo(() => {
-    if (activeVariant?.sku) return activeVariant.sku.toLowerCase();
-    if (product?.sku && product.sku.trim() && !product.sku.toUpperCase().includes('STM_PRD')) {
-      return product.sku.toLowerCase();
+    if (activeVariant?.sku) return activeVariant.sku.toUpperCase();
+    if (product?.sku && product.sku.trim()) {
+      return product.sku.toUpperCase();
     }
-    const pid = product?._id || product?.id;
-    if (pid) {
-      const numPart = String(pid).replace(/[^0-9]/g, '').slice(-4);
-      return `stm-${numPart ? numPart.padStart(4, '0') : '0001'}`;
-    }
-    return 'stm-0001';
-  }, [activeVariant?.sku, product?.sku, product?._id, product?.id]);
+    return '';
+  }, [activeVariant?.sku, product?.sku]);
 
   const selectedOptionsSummary = useMemo(() => {
     const entries = Object.entries(selectedAttrs);
@@ -733,8 +728,8 @@ export default function ProductPage({ params }) {
 
   const categoryTitle = categoryData.name || 'Products';
   const categorySlug = categoryData.slug;
-  const storeName = product.store_name || product.vendor?.shop_name || 'StellarMart Official';
-  const isOfficial = !product.vendor_id || product.is_official;
+  const isOfficial = (!product.vendor_id || product.vendor_id === 'official') && product.is_official !== false;
+  const storeName = isOfficial ? 'StellarMart Official' : (product.store_name || product.vendor?.shop_name || 'Vendor Store');
   const guaranteedDate = getGuaranteedDeliveryDates();
 
   const filteredRecs = relatedProducts.length > 0 ? relatedProducts : [];
@@ -1202,7 +1197,7 @@ export default function ProductPage({ params }) {
                     </button>
 
                     <Link
-                      href={product.vendor_id ? `/shop?vendor=${product.vendor_id}` : '/shop?vendor=official'}
+                      href={isOfficial ? '/shop?vendor=official' : `/shop?vendor=${product.vendor?.id || product.vendor_id || 'official'}`}
                       className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[#083b66] hover:bg-[#062d4d] text-white transition-colors"
                     >
                       Visit Store

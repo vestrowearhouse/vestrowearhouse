@@ -21,7 +21,7 @@ export default function UserIntelligencePage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/admin/intelligence/users');
+        const res = await fetch(`/api/admin/intelligence/users?days=${timeRange}`);
         if (res.ok) {
           const json = await res.json();
           setData(json);
@@ -84,27 +84,25 @@ export default function UserIntelligencePage() {
             <div className="p-3 bg-blue-100 rounded-lg">
               <Users className="w-6 h-6 text-blue-600" />
             </div>
-            <span className="flex items-center text-green-500 text-sm">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              +12%
-            </span>
+            {stats.deltas?.totalUsers !== null && stats.deltas?.totalUsers !== undefined ? (
+              <span className={`flex items-center text-sm ${stats.deltas.totalUsers >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {stats.deltas.totalUsers >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
+                {stats.deltas.totalUsers >= 0 ? '+' : ''}{stats.deltas.totalUsers}%
+              </span>
+            ) : null}
           </div>
-          <p className="text-sm text-gray-500">Total Users</p>
-          <p className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</p>
+          <p className="text-sm text-gray-500">Registered Users</p>
+          <p className="text-2xl font-bold">{(stats.totalUsers || 0).toLocaleString()}</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-green-100 rounded-lg">
-              <UserCheck className="w-6 h-6 text-green-600" />
+              <Eye className="w-6 h-6 text-green-600" />
             </div>
-            <span className="flex items-center text-green-500 text-sm">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              +8%
-            </span>
           </div>
-          <p className="text-sm text-gray-500">Active Users</p>
-          <p className="text-2xl font-bold">{stats.activeUsers.toLocaleString()}</p>
+          <p className="text-sm text-gray-500">Unique Visitors (Window)</p>
+          <p className="text-2xl font-bold">{(stats.uniqueVisitors || 0).toLocaleString()}</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -112,13 +110,9 @@ export default function UserIntelligencePage() {
             <div className="p-3 bg-purple-100 rounded-lg">
               <Clock className="w-6 h-6 text-purple-600" />
             </div>
-            <span className="flex items-center text-red-500 text-sm">
-              <TrendingDown className="w-4 h-4 mr-1" />
-              -2%
-            </span>
           </div>
           <p className="text-sm text-gray-500">Avg Session Duration</p>
-          <p className="text-2xl font-bold">{stats.avgSessionDuration}</p>
+          <p className="text-2xl font-bold">{stats.avgSessionDuration || 'N/A'}</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -126,13 +120,9 @@ export default function UserIntelligencePage() {
             <div className="p-3 bg-orange-100 rounded-lg">
               <AlertCircle className="w-6 h-6 text-orange-600" />
             </div>
-            <span className="flex items-center text-red-500 text-sm">
-              <TrendingDown className="w-4 h-4 mr-1" />
-              +3%
-            </span>
           </div>
           <p className="text-sm text-gray-500">Bounce Rate</p>
-          <p className="text-2xl font-bold">{stats.bounceRate}%</p>
+          <p className="text-2xl font-bold">{stats.bounceRate !== undefined ? `${stats.bounceRate}%` : 'N/A'}</p>
         </div>
       </div>
 

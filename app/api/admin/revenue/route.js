@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/secureJwt';
 import { createClient } from '@supabase/supabase-js';
+import { getAdminSupabase, adminSupabase } from '@/lib/dbExplorer';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +12,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
+    const supabase = adminSupabase;
 
     // 1. Gross Orders - fetch non-cancelled orders
     const { data: allOrders, error: ordersErr } = await supabase
@@ -151,10 +149,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
+    const supabase = getAdminSupabase();
 
     const body = await request.json();
     const { payoutId, status = 'completed' } = body;
