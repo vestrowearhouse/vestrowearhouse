@@ -258,7 +258,8 @@ export default function ProductsPage() {
       } else {
         try {
           const errorData = await res.json();
-          alert(errorData.error || 'Failed to save product');
+          const detailStr = errorData.code ? `\nCode: ${errorData.code}` : '';
+          alert(`Failed to save product: ${errorData.error || 'Server error'}${detailStr}`);
         } catch (parseError) {
           if (res.status === 413) {
             alert('Error: Image size is too large! Please upload smaller images or use image URLs.');
@@ -1488,7 +1489,7 @@ export default function ProductsPage() {
 
                 {formData.category && (() => {
                   const selectedCat = categories.find(c => (c.id || c._id || c.category_id) === formData.category);
-                  const derivedCode = deriveCategoryCode(selectedCat);
+                  const derivedCode = editingProduct?.category_code || deriveCategoryCode(selectedCat, formData.name);
                   const skuCatInfo = SKU_CATEGORIES_MAP[derivedCode];
                   return (
                     <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
@@ -1643,7 +1644,7 @@ export default function ProductsPage() {
 
                 {formData.category && (() => {
                   const selectedCat = categories.find(c => (c.id || c._id || c.category_id) === formData.category);
-                  const derivedCode = deriveCategoryCode(selectedCat);
+                  const derivedCode = editingProduct?.category_code || deriveCategoryCode(selectedCat, formData.name);
                   const skuCatInfo = SKU_CATEGORIES_MAP[derivedCode];
                   return (
                     <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">

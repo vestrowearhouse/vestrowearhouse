@@ -13,6 +13,16 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "vector";
 
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_type') THEN
+    CREATE TYPE notification_type AS ENUM ('info', 'warning', 'event', 'alert');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_recipient_type') THEN
+    CREATE TYPE notification_recipient_type AS ENUM ('all', 'all_users', 'all_vendors', 'single_user', 'single_vendor');
+  END IF;
+END $$;
+
 -- Table: public."activity_logs"
 CREATE TABLE IF NOT EXISTS public."activity_logs" (
   "id" UUID DEFAULT gen_random_uuid() NOT NULL,

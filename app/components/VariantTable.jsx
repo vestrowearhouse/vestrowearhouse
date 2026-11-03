@@ -81,12 +81,12 @@ export default function VariantTable({ variants = [], onChange, disabled = false
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200 text-left">
             <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide w-1/4">Combination</th>
-            <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">SKU</th>
+            <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">Images</th>
             <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">Price (৳)</th>
             <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">Discount (৳)</th>
             <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">Stock</th>
             <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
-            <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">Images</th>
+            <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">SKU</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -109,72 +109,6 @@ export default function VariantTable({ variants = [], onChange, disabled = false
                       </span>
                     ))}
                   </div>
-                </td>
-
-                {/* SKU - Auto-generated and read-only */}
-                <td className="px-4 py-3">
-                  {variant.sku ? (
-                    <span className="inline-block px-2 py-1 bg-slate-100 text-slate-800 border border-slate-200 rounded font-mono text-xs font-semibold tracking-wider">
-                      {variant.sku}
-                    </span>
-                  ) : (
-                    <span className="inline-block px-2 py-0.5 bg-gray-50 text-gray-400 border border-dashed border-gray-300 rounded font-mono text-[11px] italic">
-                      Auto on save
-                    </span>
-                  )}
-                </td>
-
-                {/* Price */}
-                <td className="px-4 py-3">
-                  <input
-                    type="number"
-                    value={variant.price ?? ''}
-                    onChange={(e) => updateVariant(idx, 'price', e.target.value === '' ? '' : Number(e.target.value))}
-                    disabled={disabled}
-                    placeholder="0"
-                    min="0"
-                    className="w-full min-w-[80px] text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                  />
-                </td>
-
-                {/* Discount Price */}
-                <td className="px-4 py-3">
-                  <input
-                    type="number"
-                    value={variant.discountPrice ?? ''}
-                    onChange={(e) => updateVariant(idx, 'discountPrice', e.target.value === '' ? null : Number(e.target.value))}
-                    disabled={disabled}
-                    placeholder="Optional"
-                    min="0"
-                    className="w-full min-w-[80px] text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                  />
-                </td>
-
-                {/* Stock */}
-                <td className="px-4 py-3">
-                  <input
-                    type="number"
-                    value={variant.stock ?? ''}
-                    onChange={(e) => updateVariant(idx, 'stock', e.target.value === '' ? '' : Number(e.target.value))}
-                    disabled={disabled}
-                    placeholder="0"
-                    min="0"
-                    className="w-full min-w-[60px] text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                  />
-                </td>
-
-                {/* Status */}
-                <td className="px-4 py-3">
-                  <select
-                    value={variant.status || 'active'}
-                    onChange={(e) => updateVariant(idx, 'status', e.target.value)}
-                    disabled={disabled}
-                    className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                  </select>
                 </td>
 
                 {/* Images */}
@@ -236,6 +170,72 @@ export default function VariantTable({ variants = [], onChange, disabled = false
                       </div>
                     )}
                   </div>
+                </td>
+
+                {/* Price */}
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    value={variant.price ?? ''}
+                    onChange={(e) => updateVariant(idx, 'price', e.target.value === '' ? '' : Number(e.target.value))}
+                    disabled={disabled}
+                    placeholder="0"
+                    min="0"
+                    className="w-full min-w-[80px] text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                  />
+                </td>
+
+                {/* Discount Price */}
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    value={variant.discountPrice ?? ''}
+                    onChange={(e) => updateVariant(idx, 'discountPrice', e.target.value === '' ? null : Number(e.target.value))}
+                    disabled={disabled}
+                    placeholder="Optional"
+                    min="0"
+                    className="w-full min-w-[80px] text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                  />
+                </td>
+
+                {/* Stock */}
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    value={variant.stock ?? ''}
+                    onChange={(e) => updateVariant(idx, 'stock', e.target.value === '' ? '' : Number(e.target.value))}
+                    disabled={disabled}
+                    placeholder="0"
+                    min="0"
+                    className="w-full min-w-[60px] text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                  />
+                </td>
+
+                {/* Status */}
+                <td className="px-4 py-3">
+                  <select
+                    value={variant.status || 'active'}
+                    onChange={(e) => updateVariant(idx, 'status', e.target.value)}
+                    disabled={disabled}
+                    className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:bg-gray-50"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="out_of_stock">Out of Stock</option>
+                  </select>
+                </td>
+
+                {/* SKU - Auto-generated and read-only */}
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {variant.sku ? (
+                    <span className="inline-block px-2 py-1 bg-slate-100 text-slate-800 border border-slate-200 rounded font-mono text-xs font-semibold tracking-wider">
+                      {variant.sku}
+                    </span>
+                  ) : (
+                    <span className="inline-block px-2 py-0.5 bg-gray-50 text-gray-400 border border-dashed border-gray-300 rounded font-mono text-[11px] italic">
+                      Auto on save
+                    </span>
+                  )}
                 </td>
               </tr>
             );

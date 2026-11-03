@@ -239,7 +239,13 @@ export async function PUT(request, { params }) {
 
   } catch (error) {
     console.error(`Update product error (ID: ${id}):`, error);
-    return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
+    const errorMessage = error?.message || error?.details || 'Failed to update product';
+    const errorCode = error?.code || 'DB_ERROR';
+    return NextResponse.json({
+      error: errorMessage,
+      code: errorCode,
+      details: error?.details || null
+    }, { status: 500 });
   }
 }
 

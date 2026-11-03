@@ -116,8 +116,8 @@ export async function GET(request) {
     // OPTIMIZATION: When querying by slug for product page, include full details.
     // For listing queries (category, search, pagination), omit heavy HTML description, attributes, variants, and extra gallery images to save massive bandwidth!
     const selectFields = slug
-      ? 'id, name, nameBn, description, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, sku, brand, tags, images, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, attributes, variants, created_at, slug, vendor_id, rating, review_count, sold_count'
-      : 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug, vendor_id, rating, review_count, sold_count';
+      ? 'id, name, nameBn, description, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, brand, tags, images, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, attributes, variants, created_at, slug, vendor_id, rating, review_count, sold_count'
+      : 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, variants, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug, vendor_id, rating, review_count, sold_count';
 
     let query = supabase.from('products').select(selectFields, { count: 'exact' });
     
