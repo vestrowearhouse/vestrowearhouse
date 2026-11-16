@@ -65,6 +65,9 @@ export const metadata = {
     statusBarStyle: 'default',
     title: 'Vestro Wear House',
   },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
   openGraph: {
     title: 'Vestro Wear House - Premium Fashion & Lifestyle Destination',
     description: 'Explore premium clothing, fashion, streetwear, and lifestyle apparel at Vestro Wear House.',
