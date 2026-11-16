@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import supabase from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 const execPromise = util.promisify(exec);
 
 export async function POST(request) {
