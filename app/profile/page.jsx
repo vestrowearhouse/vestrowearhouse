@@ -13,13 +13,13 @@ export default function UserProfile() {
   const { user, logout, loading, isCheckingAuth, checkAuth } = useAuth();
   const { cart, removeFromCart, updateQuantity } = useCart();
   const router = useRouter();
-  
+
   const [profileUser, setProfileUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
-  
+
   // New states for added features
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -28,12 +28,12 @@ export default function UserProfile() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
-  
+
   // Account Deletion States
   const [deleteStep, setDeleteStep] = useState(0); // 0: Default, 1: OTP Sent
   const [deleteOtp, setDeleteOtp] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
-  
+
   // Change Password States
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
@@ -46,7 +46,7 @@ export default function UserProfile() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' });
-  
+
   // Logout Modal States
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -58,11 +58,11 @@ export default function UserProfile() {
     phone: "",
     address: ""
   });
-  
+
   // State for dynamic support settings
-  const [supportSettings, setSupportSettings] = useState({ 
-    email: "support@vestrowearhouse.com", 
-    whatsapp: "+880 1345-447500" 
+  const [supportSettings, setSupportSettings] = useState({
+    email: "support@vestrowearhouse.com",
+    whatsapp: "+880 1345-447500"
   });
 
   // Redirect if not logged in
@@ -71,7 +71,7 @@ export default function UserProfile() {
       router.push("/login");
       return;
     }
-    
+
     if (user) {
       // Fetch user profile and orders from API
       fetchProfileData();
@@ -96,10 +96,10 @@ export default function UserProfile() {
 
   const markNotificationAsRead = async (notificationId, currentStatus) => {
     if (currentStatus) return; // already read
-    
+
     // Optimistic UI update
     setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
-    
+
     try {
       await fetch('/api/user/notifications', {
         method: 'PATCH',
@@ -128,7 +128,7 @@ export default function UserProfile() {
         credentials: 'include',
         cache: 'no-store',
       });
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           router.push('/login');
@@ -136,11 +136,11 @@ export default function UserProfile() {
         }
         throw new Error('Failed to fetch profile');
       }
-      
+
       const data = await res.json();
       setProfileUser(data.user);
       setOrders(data.orders || []);
-      
+
       // Update form data with properly formatted address and phone
       const addrString = parseAddressString(data.user?.address);
       setFormData({
@@ -178,14 +178,14 @@ export default function UserProfile() {
           whatsapp: parsed.whatsappNumber || parsed.whatsapp_url || parsed.contactPhone || parsed.phone || "+880 1345-447500"
         });
         return;
-      } catch(e) {}
+      } catch (e) { }
     }
 
     fetch("/api/settings")
       .then(res => res.json())
       .then(data => {
         if (data?.settings) {
-          try { sessionStorage.setItem('vestro_settings_cache', JSON.stringify(data.settings)); } catch(e) {}
+          try { sessionStorage.setItem('vestro_settings_cache', JSON.stringify(data.settings)); } catch (e) { }
           setSupportSettings({
             email: data.settings.contactEmail || data.settings.email || "support@vestrowearhouse.com",
             whatsapp: data.settings.whatsappNumber || data.settings.whatsapp_url || data.settings.contactPhone || data.settings.phone || "+880 1345-447500"
@@ -219,11 +219,11 @@ export default function UserProfile() {
     try {
       // 1. Call AuthContext logout (clears state + calls API)
       const result = await logout();
-      
+
       if (!result.success) {
         console.warn('[Profile] Logout returned error, continuing anyway:', result.error);
       }
-      
+
       // 2. Set success status
       setLogoutStatus('success');
 
@@ -232,7 +232,7 @@ export default function UserProfile() {
 
       // 4. Redirect immediately
       window.location.href = '/';
-      
+
     } catch (error) {
       console.error('[Profile] Logout error:', error);
       setLogoutStatus('error');
@@ -250,11 +250,11 @@ export default function UserProfile() {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     // Instant UI Preview
     setAvatarPreview(URL.createObjectURL(file));
     setIsUploading(true);
-    
+
     const formPayload = new FormData();
     formPayload.append("avatar", file);
 
@@ -262,9 +262,9 @@ export default function UserProfile() {
       // আপনার Supabase Storage API কল এখানে হবে
       const res = await fetch("/api/user/avatar", { method: "POST", body: formPayload });
       const data = await res.json();
-      if(data.success) {
+      if (data.success) {
         alert("Profile picture updated!");
-        if(checkAuth) checkAuth();
+        if (checkAuth) checkAuth();
       }
     } catch (err) {
       console.error("Avatar upload failed:", err);
@@ -315,8 +315,8 @@ export default function UserProfile() {
       setIsAddingAddress(false);
       alert("New address added successfully!");
       const formatted = newAddress.street + (newAddress.city ? ", " + newAddress.city : "");
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         address: formatted,
         phone: newAddress.phone || prev.phone
       }));
@@ -333,9 +333,9 @@ export default function UserProfile() {
   const handleRequestDelete = async () => {
     setDeleteLoading(true);
     try {
-      const res = await fetch("/api/auth/request-delete-otp", { 
+      const res = await fetch("/api/auth/request-delete-otp", {
         method: "POST",
-        credentials: "include" 
+        credentials: "include"
       });
       const data = await res.json();
       if (res.ok) {
@@ -433,7 +433,7 @@ export default function UserProfile() {
       setPasswordLoading(false);
     }
   };
-  
+
   useEffect(() => {
     if (activeTab === "orders" && orders.length === 0) {
       setLoadingOrders(true);
@@ -462,7 +462,7 @@ export default function UserProfile() {
         {/* Sidebar */}
         <div className="bg-white rounded-2xl shadow-md border-0 p-6 h-fit">
           <div className="flex flex-col items-center text-center">
-            
+
             {/* Profile Picture with Upload System */}
             <div className="relative w-24 h-24 mb-3 group cursor-pointer">
               <div className="w-full h-full rounded-full ring-2 ring-indigo-500 overflow-hidden bg-gray-100 flex items-center justify-center text-3xl font-bold text-indigo-500">
@@ -474,7 +474,7 @@ export default function UserProfile() {
                   (user?.name || "U").charAt(0).toUpperCase()
                 )}
               </div>
-              
+
               {/* Upload Overlay */}
               <label htmlFor="avatarUpload" className="absolute inset-0 bg-black/50 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
                 <Upload className="w-5 h-5 mb-1" />
@@ -500,9 +500,9 @@ export default function UserProfile() {
                     <span className="text-indigo-600 font-medium">{score}%</span>
                   </div>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 transition-all duration-500" 
-                      style={{ width: `${score}%` }} 
+                    <div
+                      className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 transition-all duration-500"
+                      style={{ width: `${score}%` }}
                     />
                   </div>
                 </div>
@@ -520,11 +520,10 @@ export default function UserProfile() {
                   onClick={() => {
                     setActiveTab(tab.key);
                   }}
-                  className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-all duration-200 flex items-center justify-between ${
-                    activeTab === tab.key
+                  className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-all duration-200 flex items-center justify-between ${activeTab === tab.key
                       ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow"
                       : "hover:bg-gray-100 text-gray-700"
-                  }`}
+                    }`}
                 >
                   <span>{tab.label}</span>
                   {tab.key === 'notifications' && unreadCount > 0 && (
@@ -536,7 +535,7 @@ export default function UserProfile() {
               );
             })}
 
-            <button 
+            <button
               onClick={handleLogoutClick}
               disabled={isLoggingOut}
               className="w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2 flex items-center gap-2"
@@ -566,15 +565,15 @@ export default function UserProfile() {
                     <h3 className="text-lg font-semibold text-gray-800">Profile Information</h3>
                     {edit ? (
                       <div className="flex gap-2">
-                        <button 
-                          onClick={() => setEdit(false)} 
+                        <button
+                          onClick={() => setEdit(false)}
                           disabled={savingProfile}
                           className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors shadow-sm disabled:opacity-50"
                         >
                           Cancel
                         </button>
-                        <button 
-                          onClick={handleSaveProfile} 
+                        <button
+                          onClick={handleSaveProfile}
                           disabled={savingProfile}
                           className="px-5 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors shadow-sm flex items-center gap-1.5 disabled:opacity-50"
                         >
@@ -596,31 +595,31 @@ export default function UserProfile() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ProfileField 
-                      label="Full Name" 
-                      value={formData.name} 
-                      edit={edit} 
-                      onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                    <ProfileField
+                      label="Full Name"
+                      value={formData.name}
+                      edit={edit}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="e.g. John Doe"
                     />
-                    <ProfileField 
-                      label="Email" 
-                      value={user?.email || ""} 
-                      edit={edit} 
-                      disabled={true} 
+                    <ProfileField
+                      label="Email"
+                      value={user?.email || ""}
+                      edit={edit}
+                      disabled={true}
                     />
-                    <ProfileField 
-                      label="Phone" 
-                      value={formData.phone} 
-                      edit={edit} 
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                    <ProfileField
+                      label="Phone"
+                      value={formData.phone}
+                      edit={edit}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="e.g. 01847853867"
                     />
-                    <ProfileField 
-                      label="Address" 
-                      value={formData.address} 
-                      edit={edit} 
-                      onChange={(e) => setFormData({...formData, address: e.target.value})} 
+                    <ProfileField
+                      label="Address"
+                      value={formData.address}
+                      edit={edit}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       placeholder="e.g. House 12, Road 5, Mirpur, Dhaka"
                     />
                   </div>
@@ -633,7 +632,7 @@ export default function UserProfile() {
                   <h3 className="text-lg font-semibold text-gray-800 mb-6">Order Statistics</h3>
 
                   {loadingOrders ? (
-                     <div className="animate-pulse flex gap-4 mb-6"><div className="h-24 bg-gray-200 rounded-xl flex-1"></div><div className="h-24 bg-gray-200 rounded-xl flex-1"></div><div className="h-24 bg-gray-200 rounded-xl flex-1"></div></div>
+                    <div className="animate-pulse flex gap-4 mb-6"><div className="h-24 bg-gray-200 rounded-xl flex-1"></div><div className="h-24 bg-gray-200 rounded-xl flex-1"></div><div className="h-24 bg-gray-200 rounded-xl flex-1"></div></div>
                   ) : (
                     <div className="grid grid-cols-3 gap-4 mb-6">
                       <StatCard title="Total" value={orders.length} color="blue" />
@@ -647,8 +646,8 @@ export default function UserProfile() {
                     {orders.length > 0 ? (
                       <div className="space-y-4">
                         {orders.map(order => (
-                          <div 
-                            key={order._id || order.id} 
+                          <div
+                            key={order._id || order.id}
                             onClick={() => setSelectedOrder(order)}
                             className="border border-gray-100 rounded-xl p-4 flex justify-between items-center bg-gray-50/50 hover:bg-gray-100 transition-colors cursor-pointer"
                           >
@@ -658,14 +657,13 @@ export default function UserProfile() {
                             </div>
                             <div className="text-right flex flex-col items-end">
                               <p className="font-bold text-indigo-600">৳ {order.total?.toLocaleString()}</p>
-                              <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider inline-block mt-1 ${
-                                ['confirmed', 'processing', 'shipped', 'delivered'].includes((order.status || order.orderStatus || '').toLowerCase()) ? 'bg-green-100 text-green-700' :
-                                (order.status || order.orderStatus || '').toLowerCase() === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
-                              }`}>
+                              <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider inline-block mt-1 ${['confirmed', 'processing', 'shipped', 'delivered'].includes((order.status || order.orderStatus || '').toLowerCase()) ? 'bg-green-100 text-green-700' :
+                                  (order.status || order.orderStatus || '').toLowerCase() === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
+                                }`}>
                                 {['confirmed', 'processing', 'shipped', 'delivered'].includes((order.status || order.orderStatus || '').toLowerCase()) ? 'Success' :
-                                 (order.status || order.orderStatus || '').toLowerCase() === 'cancelled' ? 'Failed' : (order.status || order.orderStatus || 'Pending')}
+                                  (order.status || order.orderStatus || '').toLowerCase() === 'cancelled' ? 'Failed' : (order.status || order.orderStatus || 'Pending')}
                               </span>
-                              <button 
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   router.push(`/orders/${order.orderNumber || order.id || order._id}`);
@@ -700,7 +698,7 @@ export default function UserProfile() {
                   ) : (
                     <p className="text-sm text-gray-500 mb-4">No addresses saved yet.</p>
                   )}
-                  
+
                   {!isAddingAddress ? (
                     <button onClick={() => setIsAddingAddress(true)} className="px-5 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md hover:bg-indigo-100 transition-colors">
                       + Add New Address
@@ -711,16 +709,16 @@ export default function UserProfile() {
                       <div className="space-y-3">
                         <div>
                           <label className="text-xs text-gray-500">Street Address</label>
-                          <input type="text" value={newAddress.street} onChange={e => setNewAddress({...newAddress, street: e.target.value})} className="w-full mt-1 px-3 py-2 border rounded-md text-sm" placeholder="House 12, Road 5..." />
+                          <input type="text" value={newAddress.street} onChange={e => setNewAddress({ ...newAddress, street: e.target.value })} className="w-full mt-1 px-3 py-2 border rounded-md text-sm" placeholder="House 12, Road 5..." />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="text-xs text-gray-500">City</label>
-                            <input type="text" value={newAddress.city} onChange={e => setNewAddress({...newAddress, city: e.target.value})} className="w-full mt-1 px-3 py-2 border rounded-md text-sm" placeholder="Dhaka" />
+                            <input type="text" value={newAddress.city} onChange={e => setNewAddress({ ...newAddress, city: e.target.value })} className="w-full mt-1 px-3 py-2 border rounded-md text-sm" placeholder="Dhaka" />
                           </div>
                           <div>
                             <label className="text-xs text-gray-500">Phone</label>
-                            <input type="text" value={newAddress.phone} onChange={e => setNewAddress({...newAddress, phone: e.target.value})} className="w-full mt-1 px-3 py-2 border rounded-md text-sm" placeholder="017..." />
+                            <input type="text" value={newAddress.phone} onChange={e => setNewAddress({ ...newAddress, phone: e.target.value })} className="w-full mt-1 px-3 py-2 border rounded-md text-sm" placeholder="017..." />
                           </div>
                         </div>
                         <div className="flex gap-2 mt-2">
@@ -747,7 +745,7 @@ export default function UserProfile() {
                       {notifications.filter(n => !n.is_read).length} Unread
                     </span>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {loadingNotifications ? (
                       <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-indigo-600" /></div>
@@ -758,8 +756,8 @@ export default function UserProfile() {
                       </div>
                     ) : (
                       notifications.map(notification => (
-                        <div 
-                          key={notification.id} 
+                        <div
+                          key={notification.id}
                           className={`p-4 rounded-xl border ${notification.is_read ? 'bg-white border-gray-100' : 'bg-indigo-50/30 border-indigo-100'} transition-colors cursor-pointer relative overflow-hidden`}
                           onClick={() => markNotificationAsRead(notification.id, notification.is_read)}
                         >
@@ -767,16 +765,15 @@ export default function UserProfile() {
                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500"></div>
                           )}
                           <div className="flex gap-4">
-                            <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                              notification.type === 'alert' ? 'bg-red-100 text-red-600' :
-                              notification.type === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                              notification.type === 'event' ? 'bg-purple-100 text-purple-600' :
-                              'bg-blue-100 text-blue-600'
-                            }`}>
+                            <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${notification.type === 'alert' ? 'bg-red-100 text-red-600' :
+                                notification.type === 'warning' ? 'bg-yellow-100 text-yellow-600' :
+                                  notification.type === 'event' ? 'bg-purple-100 text-purple-600' :
+                                    'bg-blue-100 text-blue-600'
+                              }`}>
                               {notification.type === 'alert' ? <AlertTriangle className="w-5 h-5" /> :
-                               notification.type === 'warning' ? <AlertTriangle className="w-5 h-5" /> :
-                               notification.type === 'event' ? <Star className="w-5 h-5" /> :
-                               <Bell className="w-5 h-5" />}
+                                notification.type === 'warning' ? <AlertTriangle className="w-5 h-5" /> :
+                                  notification.type === 'event' ? <Star className="w-5 h-5" /> :
+                                    <Bell className="w-5 h-5" />}
                             </div>
                             <div className="flex-1">
                               <div className="flex justify-between items-start mb-1">
@@ -805,16 +802,16 @@ export default function UserProfile() {
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Support</h3>
                   <p className="text-sm text-gray-500 mb-6">Need help with your orders or account? Our support team is available 24/7.</p>
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <a 
-                  href={`https://wa.me/${String(supportSettings.whatsapp).replace(/[^0-9]/g, '')}`} 
-                      target="_blank" 
+                    <a
+                      href={`https://wa.me/${String(supportSettings.whatsapp).replace(/[^0-9]/g, '')}`}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-[#25D366] rounded-xl hover:bg-[#1ebd5b] transition-colors shadow-sm w-full sm:w-auto"
                     >
                       <span className="text-xl">💬</span> WhatsApp Support
                     </a>
-                    <a 
-                      href={`mailto:${supportSettings.email}`} 
+                    <a
+                      href={`mailto:${supportSettings.email}`}
                       className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors w-full sm:w-auto"
                     >
                       <span className="text-xl">✉️</span> Email Support
@@ -832,7 +829,7 @@ export default function UserProfile() {
                       <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Update your password to keep your account safe and secure.</p>
                     </div>
                     {!showPasswordModal && (
-                      <button 
+                      <button
                         type="button"
                         onClick={() => { setShowPasswordModal(true); setPasswordMessage({ type: '', text: '' }); }}
                         className="px-4 py-2.5 text-xs sm:text-sm font-bold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm flex items-center justify-center gap-1.5 w-fit"
@@ -861,11 +858,10 @@ export default function UserProfile() {
                       </div>
 
                       {passwordMessage.text && (
-                        <div className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-                          passwordMessage.type === 'success' 
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                        <div className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${passwordMessage.type === 'success'
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                             : 'bg-rose-50 text-rose-800 border border-rose-200'
-                        }`}>
+                          }`}>
                           {passwordMessage.type === 'success' ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                           ) : (
@@ -973,14 +969,14 @@ export default function UserProfile() {
                       </div>
                     </form>
                   )}
-                  
+
                   <div className="mt-8 pt-6 border-t border-gray-100">
                     <h4 className="text-red-600 font-bold mb-2">Danger Zone</h4>
                     <p className="text-xs text-gray-500 mb-4">Deleting your account will permanently erase your data from Supabase database. This action cannot be undone.</p>
-                    
+
                     {deleteStep === 0 ? (
                       <button onClick={handleRequestDelete} disabled={deleteLoading} className="px-5 py-2.5 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors flex items-center gap-2">
-                        {deleteLoading && <Loader2 className="w-4 h-4 animate-spin"/>} Delete Account Permanently
+                        {deleteLoading && <Loader2 className="w-4 h-4 animate-spin" />} Delete Account Permanently
                       </button>
                     ) : (
                       <div className="p-5 border border-red-200 bg-red-50/80 rounded-2xl max-w-sm w-full">
@@ -988,34 +984,34 @@ export default function UserProfile() {
                         <p className="text-xs text-red-700 mb-3 leading-relaxed">
                           We've sent a 6-digit verification code to your email <strong>({user?.email})</strong>. Enter it below to confirm.
                         </p>
-                        <input 
-                          type="text" 
-                          value={deleteOtp} 
-                          onChange={(e) => setDeleteOtp(e.target.value)} 
-                          placeholder="Enter 6-digit Code" 
+                        <input
+                          type="text"
+                          value={deleteOtp}
+                          onChange={(e) => setDeleteOtp(e.target.value)}
+                          placeholder="Enter 6-digit Code"
                           maxLength={6}
                           className="w-full px-3 py-2.5 border-2 border-red-300 rounded-xl text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 font-mono tracking-widest text-center font-bold bg-white"
                         />
                         <div className="flex gap-2">
-                          <button 
-                            onClick={handleConfirmDelete} 
-                            disabled={deleteLoading || !deleteOtp.trim()} 
+                          <button
+                            onClick={handleConfirmDelete}
+                            disabled={deleteLoading || !deleteOtp.trim()}
                             className="px-4 py-2.5 bg-red-600 text-white text-sm rounded-xl hover:bg-red-700 font-bold flex-1 text-center transition flex items-center justify-center gap-1.5 disabled:opacity-60"
                           >
                             {deleteLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                             <span>Confirm & Delete</span>
                           </button>
-                          <button 
-                            onClick={() => setDeleteStep(0)} 
+                          <button
+                            onClick={() => setDeleteStep(0)}
                             className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 text-sm rounded-xl hover:bg-gray-50 font-medium transition"
                           >
                             Cancel
                           </button>
                         </div>
                         <div className="mt-3 text-center">
-                          <button 
-                            type="button" 
-                            onClick={handleRequestDelete} 
+                          <button
+                            type="button"
+                            onClick={handleRequestDelete}
                             disabled={deleteLoading}
                             className="text-xs text-red-700 hover:text-red-900 font-semibold underline transition"
                           >
@@ -1027,7 +1023,7 @@ export default function UserProfile() {
                   </div>
                 </div>
               )}
-          
+
               {/* Cart */}
               {activeTab === "cart" && (
                 <div className="bg-white rounded-2xl shadow-md border-0 p-6">
@@ -1054,7 +1050,7 @@ export default function UserProfile() {
                             <div className="w-20 h-20 relative flex-shrink-0 bg-white rounded-lg overflow-hidden border border-gray-100">
                               <img src={image} alt={product.name} className="w-full h-full object-cover" />
                             </div>
-                            
+
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-gray-800 text-sm md:text-base truncate pr-4">{product.name}</h4>
                               <p className="text-indigo-600 font-bold mt-1">৳ {Number(price).toLocaleString()}</p>
@@ -1062,7 +1058,7 @@ export default function UserProfile() {
 
                             <div className="flex flex-col items-end gap-2">
                               <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200">
-                                <button 
+                                <button
                                   onClick={() => updateQuantity(productId, item.quantity - 1, variantSku)}
                                   disabled={item.quantity <= 1}
                                   className="w-6 h-6 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded shadow-sm text-gray-600 disabled:opacity-50"
@@ -1070,14 +1066,14 @@ export default function UserProfile() {
                                   -
                                 </button>
                                 <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
-                                <button 
+                                <button
                                   onClick={() => updateQuantity(productId, item.quantity + 1, variantSku)}
                                   className="w-6 h-6 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded shadow-sm text-gray-600"
                                 >
                                   +
                                 </button>
                               </div>
-                              <button 
+                              <button
                                 onClick={() => removeFromCart(productId, variantSku)}
                                 className="text-xs text-red-500 font-medium hover:underline"
                               >
@@ -1093,7 +1089,7 @@ export default function UserProfile() {
                           <span className="text-gray-600 font-medium">Subtotal</span>
                           <span className="text-xl font-bold text-indigo-600">৳ {cart?.total?.toLocaleString()}</span>
                         </div>
-                        <button 
+                        <button
                           onClick={() => router.push("/checkout")}
                           className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200"
                         >
@@ -1105,7 +1101,7 @@ export default function UserProfile() {
                     <div className="text-center py-10 bg-gray-50 rounded-xl border border-gray-100 mt-4">
                       <div className="text-5xl mb-3">🛒</div>
                       <p className="text-gray-500 mb-4 font-medium">Your cart is currently empty</p>
-                      <button 
+                      <button
                         onClick={() => router.push("/shop")}
                         className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
                       >
@@ -1124,12 +1120,12 @@ export default function UserProfile() {
       {/* 🔥 Order Details Modal */}
       <AnimatePresence>
         {selectedOrder && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="bg-white rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl"
@@ -1137,17 +1133,17 @@ export default function UserProfile() {
               <button onClick={() => setSelectedOrder(null)} className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors">
                 <X className="w-5 h-5 text-gray-700" />
               </button>
-              
+
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 📦 Order Details
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-xl text-sm border border-gray-100">
-                <div><p className="text-gray-500 mb-1">Order ID</p><p className="font-bold text-indigo-600">#{selectedOrder.orderNumber || (selectedOrder._id?.substring(0,8).toUpperCase())}</p></div>
+                <div><p className="text-gray-500 mb-1">Order ID</p><p className="font-bold text-indigo-600">#{selectedOrder.orderNumber || (selectedOrder._id?.substring(0, 8).toUpperCase())}</p></div>
                 <div><p className="text-gray-500 mb-1">Ordered By</p><p className="font-bold">{user?.name || "Customer"}</p></div>
                 <div className="md:col-span-2"><p className="text-gray-500 mb-1">Shipping Address</p><p className="font-medium flex items-start gap-1"><MapPin className="w-4 h-4 text-gray-400 mt-0.5" />{selectedOrder.shipping_address?.address || selectedOrder.shipping_address?.street || "No address provided"}, {selectedOrder.shipping_address?.district || selectedOrder.shipping_address?.city}</p></div>
               </div>
-              
+
               <h3 className="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2">Items Ordered</h3>
               <div className="space-y-3 mb-6">
                 {selectedOrder.items?.map((item, idx) => (
@@ -1163,13 +1159,13 @@ export default function UserProfile() {
                   </div>
                 ))}
               </div>
-              
+
               <div className="bg-indigo-50 p-4 rounded-xl space-y-2 text-sm border border-indigo-100">
                 <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>৳{(selectedOrder.subtotal || selectedOrder.total - (selectedOrder.shipping_cost || 100)).toLocaleString()}</span></div>
                 <div className="flex justify-between text-gray-600"><span>Shipping Fee</span><span>৳{selectedOrder.shipping_cost || selectedOrder.shipping || 100}</span></div>
                 <div className="flex justify-between font-bold text-lg text-indigo-700 pt-2 border-t border-indigo-200 mt-2"><span>Total Cost</span><span>৳{(selectedOrder.total || 0).toLocaleString()}</span></div>
               </div>
-              
+
             </motion.div>
           </motion.div>
         )}
@@ -1292,11 +1288,11 @@ function ProfileField({ label, value, edit, disabled = false, onChange, placehol
     <div>
       <label className="text-xs text-gray-500 block mb-1">{label}</label>
       {edit && !disabled ? (
-        <input 
-          value={value || ""} 
-          onChange={onChange} 
+        <input
+          value={value || ""}
+          onChange={onChange}
           placeholder={placeholder || `Enter your ${label.toLowerCase()}`}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-shadow" 
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-shadow"
         />
       ) : (
         <p className={`font-medium px-3 py-2 rounded-md min-h-[38px] flex items-center border border-transparent ${value ? 'text-gray-800 bg-gray-50' : 'text-gray-400 bg-gray-50 italic text-sm'}`}>
@@ -1312,7 +1308,7 @@ function StatCard({ title, value, color }) {
     blue: "bg-blue-50 text-blue-600",
     orange: "bg-orange-50 text-orange-500",
     green: "bg-green-50 text-green-600",
-        red: "bg-red-50 text-red-600",
+    red: "bg-red-50 text-red-600",
   };
 
   return (
