@@ -16,8 +16,8 @@ const CategoryMenu = dynamic(() => import("./CategoryMenu"), { ssr: false });
 export default function UserLayoutWrapper({ children }) {
   const pathname = usePathname();
   
-  // Check if we're on an admin or vendor route
-  const isSpecialRoute = pathname?.startsWith("/admin") || pathname?.startsWith("/admin-login") || pathname?.startsWith("/vendor");
+  // Check if we're on an admin route
+  const isSpecialRoute = pathname?.startsWith("/admin") || pathname?.startsWith("/admin-login");
   
 
   return (

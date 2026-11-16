@@ -2,25 +2,10 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import ProductCard from '../components/ProductCard';
-import { 
-  Loader2, 
-  ArrowUpDown, 
-  ChevronDown, 
-  Store, 
-  ShieldCheck, 
-  Star, 
-  BadgeCheck, 
-  MapPin, 
-  RotateCcw,
-  Sparkles
-} from 'lucide-react';
+import { Loader2, ArrowUpDown, ChevronDown } from 'lucide-react';
 
 function ShopContent() {
-  const searchParams = useSearchParams();
-  const vendorParam = searchParams.get('vendor') || null;
-
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -31,10 +16,6 @@ function ShopContent() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
-
-  // Vendor Details state if filtered by vendor
-  const [vendorInfo, setVendorInfo] = useState(null);
-  const [vendorLoading, setVendorLoading] = useState(false);
 
   // Fetch categories for filter chips
   useEffect(() => {
@@ -52,347 +33,188 @@ function ShopContent() {
     loadCategories();
   }, []);
 
-  // Fetch vendor info if vendorParam is present
-  useEffect(() => {
-    if (!vendorParam) {
-      setVendorInfo(null);
-      return;
-    }
+  // Fetch products
+  const fetchProducts = useCallback(async (pageNum = 1, append = false) => {
+    if (pageNum === 1) setLoading(true);
+    else setLoadingMore(true);
 
-    if (vendorParam === 'official') {
-      setVendorInfo({
-        is_official: true,
-        shop_name: 'Stellar Mart Official Store',
-        logo_url: '/stellar-logo-mark.png',
-        description: 'Directly sourced, 100% authentic products fulfilled with express delivery from StellarMart fulfillment center.',
-        rating: 4.9,
-        total_reviews: 1250,
-        badge: 'Official Flagship Mall'
-      });
-      return;
-    }
-
-    async function loadVendor() {
-      setVendorLoading(true);
-      try {
-        const res = await fetch(`/api/vendors/${vendorParam}`);
-        if (res.ok) {
-          const data = await res.json();
-          setVendorInfo(data.vendor);
-        }
-      } catch (err) {
-        console.error('Failed to load vendor details:', err);
-      } finally {
-        setVendorLoading(false);
-      }
-    }
-
-    loadVendor();
-  }, [vendorParam]);
-
-  // Fetch products based on category, sort, page, and vendor
-  const fetchProducts = useCallback(async (pageNumber = 1, category = selectedCategory, sort = sortBy) => {
     try {
-      if (pageNumber === 1) setLoading(true);
-      else setLoadingMore(true);
-
-      let url = `/api/products?page=${pageNumber}&limit=20`;
-      if (category && category !== 'all') {
-        url += `&category=${encodeURIComponent(category)}`;
-      }
-      if (sort && sort !== 'latest') {
-        url += `&sort=${encodeURIComponent(sort)}`;
-      }
-      if (vendorParam) {
-        url += `&vendor=${encodeURIComponent(vendorParam)}`;
+      let url = `/api/products?page=${pageNum}&limit=16&sort=${sortBy}`;
+      if (selectedCategory && selectedCategory !== 'all') {
+        url += `&category=${encodeURIComponent(selectedCategory)}`;
       }
 
       const res = await fetch(url);
       const data = await res.json();
-      const fetchedProducts = data.products || [];
 
-      if (pageNumber === 1) {
-        setProducts(fetchedProducts);
+      const newProducts = data.products || [];
+      const total = data.pagination?.total || data.total || 0;
+
+      setTotalCount(total);
+      setHasMore(newProducts.length === 16);
+
+      if (append) {
+        setProducts(prev => [...prev, ...newProducts]);
       } else {
-        setProducts(prev => [...prev, ...fetchedProducts]);
+        setProducts(newProducts);
       }
-
-      if (data.totalCount !== undefined) {
-        setTotalCount(data.totalCount);
-      } else if (pageNumber === 1) {
-        setTotalCount(fetchedProducts.length);
-      }
-
-      setHasMore(data.hasMore !== undefined ? data.hasMore : fetchedProducts.length === 20);
-    } catch (error) {
-      console.error('Error fetching products:', error);
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [selectedCategory, sortBy, vendorParam]);
+  }, [selectedCategory, sortBy]);
 
-  // Refetch when category, sort, or vendor changes
   useEffect(() => {
     setPage(1);
-    fetchProducts(1, selectedCategory, sortBy);
-  }, [selectedCategory, sortBy, vendorParam, fetchProducts]);
+    fetchProducts(1, false);
+  }, [fetchProducts]);
 
   const loadMore = () => {
     if (!loadingMore && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchProducts(nextPage, selectedCategory, sortBy);
+      fetchProducts(nextPage, true);
     }
   };
 
-  const handleCategorySelect = (catName) => {
+  const handleCategoryChange = (catName) => {
     setSelectedCategory(catName);
   };
 
   const sortOptions = [
-    { value: 'latest', label: 'Latest Arrivals' },
+    { value: 'latest', label: 'Latest Drop' },
     { value: 'price_low', label: 'Price: Low to High' },
     { value: 'price_high', label: 'Price: High to Low' },
   ];
 
-  const currentSortLabel = sortOptions.find(o => o.value === sortBy)?.label || 'Sort By';
+  const currentSortLabel = sortOptions.find(o => o.value === sortBy)?.label || 'Sort';
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      {/* Sleek Minimalist Top Navigation & Header */}
-      <div className="bg-white border-b border-gray-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-5 pb-3">
+    <div className="min-h-screen bg-white">
+      {/* Page Header */}
+      <div className="border-b border-neutral-100 bg-neutral-50/50 py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-[11px] font-bold tracking-[0.26em] uppercase text-neutral-400 mb-2">
+            CATALOGUE
+          </p>
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-neutral-900">
+            ALL COLLECTIONS
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-500 mt-2 max-w-md mx-auto">
+            Explore everyday streetwear, drop-shoulder silhouettes, and premium fabric essentials.
+          </p>
+        </div>
+      </div>
 
-          {/* Breadcrumbs */}
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-500 font-medium mb-2">
-            <Link href="/" className="hover:text-[#083b66] transition-colors">Home</Link>
-            <span>/</span>
-            <Link href="/shop" className="hover:text-[#083b66] transition-colors">Shop</Link>
-            {vendorParam && (
-              <>
-                <span>/</span>
-                <span className="text-gray-800 font-semibold truncate max-w-[200px]">
-                  {vendorParam === 'official' ? 'Stellar Mart Official' : (vendorInfo?.shop_name || 'Vendor Store')}
-                </span>
-              </>
-            )}
-          </div>
-
-          {/* Store Banner (If filtered by store / vendor) */}
-          {vendorParam && (
-            <div className={`mb-4 rounded-2xl p-4 sm:p-6 text-white relative overflow-hidden shadow-sm ${
-              vendorParam === 'official'
-                ? 'bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 border border-blue-800/60'
-                : 'bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 border border-purple-800/60'
-            }`}>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
-                <div className="flex items-center gap-3.5 sm:gap-4">
-                  <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md border overflow-hidden ${
-                    vendorParam === 'official'
-                      ? 'bg-white border-white/40 p-2'
-                      : vendorInfo?.logo_url
-                        ? 'bg-white border-white/30 p-1.5'
-                        : 'bg-gradient-to-tr from-purple-600 to-indigo-500 border-white/20'
-                  }`}>
-                    {vendorParam === 'official' ? (
-                      <img
-                        src="/stellar-logo-mark.png"
-                        alt="Stellar Mart Official Store"
-                        className="w-full h-full object-contain"
-                      />
-                    ) : vendorInfo?.logo_url ? (
-                      <img
-                        src={vendorInfo.logo_url}
-                        alt={vendorInfo.shop_name || 'Vendor Logo'}
-                        className="w-full h-full object-cover rounded-xl"
-                      />
-                    ) : (
-                      <span className="text-white font-extrabold text-lg sm:text-xl">
-                        {(vendorInfo?.shop_name || 'V').slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[10px] uppercase font-extrabold px-2.5 py-0.5 rounded-full shadow-xs ${
-                        vendorParam === 'official'
-                          ? 'bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950'
-                          : 'bg-purple-200 text-purple-950'
-                      }`}>
-                        {vendorParam === 'official' ? '👑 Official Mall' : '🏬 Verified Vendor Store'}
-                      </span>
-                      <span className="text-xs text-blue-200 flex items-center gap-1 font-medium">
-                        <BadgeCheck className="w-3.5 h-3.5 inline text-emerald-400" /> 100% Genuine Products
-                      </span>
-                    </div>
-                    <h1 className="text-lg sm:text-2xl font-black text-white mt-1">
-                      {vendorParam === 'official' ? 'Stellar Mart Official Store' : (vendorInfo?.shop_name || 'Vendor Store')}
-                    </h1>
-                    {vendorInfo?.shop_address && (
-                      <p className="text-xs text-slate-300 mt-0.5 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-slate-400" /> {vendorInfo.shop_address}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <Link
-                  href="/shop"
-                  className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/15 whitespace-nowrap self-end sm:self-auto"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" /> View All Stores
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {/* Top Row: Title & Sort */}
-          <div className="flex items-center justify-between gap-3 mb-2.5">
-            <div>
-              <div className="flex items-baseline gap-2">
-                <h2 className="text-lg sm:text-2xl font-black text-gray-900 tracking-tight">
-                  {vendorParam ? 'Store Catalog' : 'All Products'}
-                </h2>
-                {!loading && (
-                  <span className="text-[11px] sm:text-xs font-semibold text-gray-500">
-                    ({totalCount > 0 ? `${totalCount} items` : `${products.length} items`})
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Modern Sort Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setSortOpen(!sortOpen)}
-                className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-2.5 sm:px-3.5 py-1.5 sm:py-2 transition-colors shadow-2xs"
-              >
-                <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" />
-                <span className="truncate max-w-[110px] sm:max-w-none">{currentSortLabel}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-gray-500 transition-transform ${sortOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {sortOpen && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setSortOpen(false)} 
-                  />
-                  <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-50 overflow-hidden">
-                    {sortOptions.map(option => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => {
-                          setSortBy(option.value);
-                          setSortOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors ${
-                          sortBy === option.value 
-                            ? 'bg-blue-50 text-[#083b66] font-bold' 
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Category Chips Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        {/* Controls Bar: Category Filter Pills + Sort Dropdown */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-8 border-b border-neutral-100">
+          
+          {/* Category Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 scrollbar-none">
             <button
-              onClick={() => handleCategorySelect('all')}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
+              onClick={() => handleCategoryChange('all')}
+              className={`rounded-full px-4 py-1.5 text-xs font-bold tracking-wider uppercase transition-all whitespace-nowrap cursor-pointer ${
                 selectedCategory === 'all'
-                  ? 'bg-[#083b66] text-white shadow-xs'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-neutral-900 text-white'
+                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
               }`}
             >
-              All Categories
+              All
             </button>
-            {categories.map(cat => {
-              const isSelected = selectedCategory === cat.name || selectedCategory === cat.slug;
+            {categories.map((c) => {
+              const isSelected = selectedCategory === c.name || selectedCategory === c.slug;
               return (
                 <button
-                  key={cat.id || cat._id || cat.slug}
-                  onClick={() => handleCategorySelect(cat.slug || cat.name)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
+                  key={c.id || c.slug}
+                  onClick={() => handleCategoryChange(c.name)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-bold tracking-wider uppercase transition-all whitespace-nowrap cursor-pointer ${
                     isSelected
-                      ? 'bg-[#083b66] text-white shadow-xs'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-neutral-900 text-white'
+                      : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                   }`}
                 >
-                  {cat.name}
+                  {c.name}
                 </button>
               );
             })}
           </div>
-        </div>
-      </div>
 
-      {/* Main Products Grid */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 animate-spin text-[#083b66] mb-3" />
-            <p className="text-gray-500 font-medium text-sm">Loading products...</p>
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-2xs max-w-lg mx-auto p-8">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-              <Store className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">No products found</h3>
-            <p className="text-gray-500 text-xs sm:text-sm mb-5">
-              There are no products available for the selected filters.
-            </p>
+          {/* Sort Dropdown */}
+          <div className="relative self-end sm:self-auto">
             <button
-              onClick={() => {
-                setSelectedCategory('all');
-                setSortBy('latest');
-              }}
-              className="bg-[#083b66] text-white text-xs sm:text-sm font-bold py-2.5 px-6 rounded-full hover:bg-[#062c4d] transition-colors"
+              onClick={() => setSortOpen(!sortOpen)}
+              className="flex items-center gap-2 px-4 py-2 border border-neutral-200 text-xs font-semibold uppercase tracking-wider text-neutral-800 hover:border-black transition-colors"
             >
-              Clear Filters
+              <ArrowUpDown className="w-3.5 h-3.5" />
+              <span>{currentSortLabel}</span>
+              <ChevronDown className="w-3.5 h-3.5" />
             </button>
+
+            {sortOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-48 bg-white border border-neutral-100 shadow-xl z-20 py-1">
+                {sortOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
+                    className={`w-full text-left px-4 py-2 text-xs font-medium uppercase tracking-wider hover:bg-neutral-50 ${
+                      sortBy === opt.value ? 'font-bold text-black bg-neutral-50' : 'text-neutral-600'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        ) : (
+        </div>
+
+        {/* Product Count Display */}
+        <div className="py-4 text-xs tracking-wider text-neutral-400 uppercase font-semibold">
+          Showing {products.length} {totalCount > 0 ? `of ${totalCount}` : ''} items
+        </div>
+
+        {/* Product Grid: 2 cols on mobile, 4 cols on desktop */}
+        {loading ? (
+          <div className="py-24 text-center">
+            <Loader2 className="w-7 h-7 animate-spin mx-auto text-neutral-400 mb-3" />
+            <p className="text-xs uppercase tracking-widest text-neutral-400">Loading collection...</p>
+          </div>
+        ) : products.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4">
-              {products.map(product => (
-                <ProductCard 
-                  key={product.id || product._id || product.slug} 
-                  product={product} 
-                />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3.5 gap-y-7 sm:gap-x-5 sm:gap-y-10">
+              {products.map((product, idx) => (
+                <ProductCard key={product.id || product._id || idx} product={product} />
               ))}
             </div>
 
             {/* Load More Button */}
             {hasMore && (
-              <div className="mt-8 sm:mt-12 text-center pb-8">
+              <div className="mt-14 text-center">
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
-                  className="bg-white hover:bg-gray-50 text-gray-800 text-xs sm:text-sm font-bold py-2.5 sm:py-3 px-8 sm:px-10 rounded-full border border-gray-300 shadow-xs hover:shadow-md active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                  className="inline-flex items-center gap-2 border border-neutral-900 px-8 py-3 text-xs font-bold uppercase tracking-[0.2em] text-neutral-900 hover:bg-neutral-900 hover:text-white transition-all disabled:opacity-50 cursor-pointer"
                 >
-                  {loadingMore ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-[#083b66]" />
-                      <span>Loading more...</span>
-                    </>
-                  ) : (
-                    <span>Load More Products</span>
-                  )}
+                  {loadingMore ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                  <span>{loadingMore ? 'Loading...' : 'Load More Apparel'}</span>
                 </button>
               </div>
             )}
           </>
+        ) : (
+          <div className="py-24 text-center">
+            <p className="text-sm font-semibold text-neutral-900 uppercase tracking-wider mb-2">No items found</p>
+            <p className="text-xs text-neutral-500 mb-6">Try selecting a different collection or filter.</p>
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className="px-6 py-2.5 bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider"
+            >
+              Reset Filters
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -402,8 +224,8 @@ function ShopContent() {
 export default function ShopPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#083b66]" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
       </div>
     }>
       <ShopContent />

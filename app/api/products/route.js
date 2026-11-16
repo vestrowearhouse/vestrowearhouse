@@ -111,37 +111,16 @@ export async function GET(request) {
       }
     }
 
-    const vendorParam = searchParams.get('vendor');
-
     // OPTIMIZATION: When querying by slug for product page, include full details.
     // For listing queries (category, search, pagination), omit heavy HTML description, attributes, variants, and extra gallery images to save massive bandwidth!
     const selectFields = slug
-      ? 'id, name, nameBn, description, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, brand, tags, images, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, attributes, variants, created_at, slug, vendor_id, rating, review_count, sold_count'
-      : 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, variants, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug, vendor_id, rating, review_count, sold_count';
+      ? 'id, name, nameBn, description, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, brand, tags, images, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, attributes, variants, created_at, slug, rating, review_count, sold_count'
+      : 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, variants, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug, rating, review_count, sold_count';
 
     let query = supabase.from('products').select(selectFields, { count: 'exact' });
     
     if (slug) query = query.eq('slug', slug);
     if (featured === 'true') query = query.or('isFeatured.eq.true,featured.eq.true');
-    if (vendorParam === 'official') {
-      query = query.is('vendor_id', null);
-    } else if (vendorParam) {
-      try {
-        const { data: vRow } = await supabase
-          .from('vendors')
-          .select('id, user_id')
-          .or(`id.eq.${vendorParam},user_id.eq.${vendorParam}`)
-          .maybeSingle();
-        if (vRow) {
-          const matchIds = [vRow.id, vRow.user_id].filter(Boolean);
-          query = query.in('vendor_id', matchIds);
-        } else {
-          query = query.eq('vendor_id', vendorParam);
-        }
-      } catch {
-        query = query.eq('vendor_id', vendorParam);
-      }
-    }
     if (categoryParam) {
       if (matchedCategoryValues && matchedCategoryValues.length > 0) {
         query = query.in('category', matchedCategoryValues);
@@ -245,86 +224,31 @@ export async function GET(request) {
       }
     }
 
-    // --- Enrich with Vendor / Store Branding ---
-    const officialVendor = {
-      id: 'official',
-      shop_name: 'StellarMart Official',
-      owner_name: 'StellarMart',
-      logo_url: '/stellar-logo-mark.png',
+    // --- Store Branding (Vestro Wear House) ---
+    const brandStore = {
+      id: 'vestro',
+      shop_name: 'Vestro Wear House',
+      owner_name: 'Vestro Wear House',
+      logo_url: '/tab-icon.png',
       is_verified: true,
-      verification_badge: 'Official Mall',
+      verification_badge: 'Official Brand Store',
       is_official: true,
       rating: 4.9,
       total_reviews: 1250,
-      shop_address: 'Dhaka, Bangladesh (Official Warehouse)',
+      shop_address: 'Dhaka, Bangladesh',
       response_rate: '100%',
       on_time_delivery: '99.9%',
-      fulfilled_by: 'Stellar Direct'
+      fulfilled_by: 'Vestro Direct'
     };
 
-    const vendorIds = [...new Set(products.map(p => p.vendor_id).filter(Boolean))];
-    let vendorMap = {};
-    if (vendorIds.length > 0) {
-      try {
-        const { data: vendorsList } = await supabase
-          .from('vendors')
-          .select('id, user_id, shop_name, owner_name, shop_address, logo_url, is_verified, verification_badge')
-          .or(`id.in.(${vendorIds.join(',')}),user_id.in.(${vendorIds.join(',')})`);
-        if (vendorsList) {
-          for (const v of vendorsList) {
-            const vData = {
-              ...v,
-              is_official: false,
-              rating: 4.8,
-              total_reviews: 24,
-              response_rate: '98%',
-              on_time_delivery: '99%'
-            };
-            if (v.id) vendorMap[v.id] = vData;
-            if (v.user_id) vendorMap[v.user_id] = vData;
-          }
-        }
-      } catch (vErr) {
-        console.error('Error enriching vendors in /api/products:', vErr);
-      }
-    }
-
-    products = products.map(p => {
-      if (p.vendor_id && vendorMap[p.vendor_id]) {
-        const v = vendorMap[p.vendor_id];
-        return {
-          ...p,
-          vendor_id: p.vendor_id,
-          store_name: v.shop_name,
-          vendor_logo: v.logo_url,
-          is_official: false,
-          vendor: v
-        };
-      }
-      if (p.vendor_id) {
-        return {
-          ...p,
-          vendor_id: p.vendor_id,
-          store_name: 'Vendor Store',
-          vendor_logo: null,
-          is_official: false,
-          vendor: {
-            id: p.vendor_id,
-            shop_name: 'Vendor Store',
-            logo_url: null,
-            is_official: false,
-            is_verified: false
-          }
-        };
-      }
-      return {
-        ...p,
-        vendor_id: null,
-        store_name: 'StellarMart Official',
-        is_official: true,
-        vendor: officialVendor
-      };
-    });
+    products = products.map(p => ({
+      ...p,
+      vendor_id: null,
+      store_name: 'Vestro Wear House',
+      vendor_logo: '/tab-icon.png',
+      is_official: true,
+      vendor: brandStore
+    }));
 
     const hasMore = from + limit < totalCount;
     const responseData = { products, hasMore, totalCount };
@@ -359,10 +283,8 @@ export async function POST(request) {
     // Prevent Supabase unique constraint errors for empty SKUs
     if (body.sku === '') body.sku = null;
 
-    // Normalize vendor_id: empty or 'official' represents Stellar Mart Official (null in DB)
-    if (body.vendor_id === '' || body.vendor_id === 'official') {
-      body.vendor_id = null;
-    }
+    // Always nullify vendor_id (Direct-to-consumer store model)
+    body.vendor_id = null;
 
     // Automatically upload any base64 images to Cloudinary to prevent database & bandwidth bloat
     if (typeof body.featuredImage === 'string' && body.featuredImage.startsWith('data:')) {

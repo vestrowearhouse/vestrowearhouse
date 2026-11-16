@@ -12,7 +12,6 @@ export default function robots() {
           '/admin',
           '/admin/',
           '/api/',
-          '/vendor/',
           '/checkout',
           '/cart',
           '/profile',
@@ -22,7 +21,7 @@ export default function robots() {
         ],
       },
     ],
-    sitemap: 'https://www.stellarmartbd.com/sitemap.xml',
-    host: 'https://www.stellarmartbd.com',
+    sitemap: 'https://www.vestrowearhouse.com/sitemap.xml',
+    host: 'https://www.vestrowearhouse.com',
   };
 }

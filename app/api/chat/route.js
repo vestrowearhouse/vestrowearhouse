@@ -1,48 +1,31 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateProductEmbedding } from '@/lib/ai-embeddings';
-import { getVendorSession } from '@/lib/vendorAuth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const BASE_SYSTEM_PROMPT = `You are the official AI Support Assistant for StellarmartBD, a premier e-commerce platform in Bangladesh.
-Your goal is to help customers with their queries regarding shopping, shipping, return policies, and basic support.
-Be extremely polite, concise, and helpful. Use a friendly tone. You can reply in English or Bangla depending on the user's language.
+const BASE_SYSTEM_PROMPT = `You are the official AI Fashion & Support Assistant for Vestro Wear House, a premier streetwear and modern fashion brand in Bangladesh.
+Your goal is to help customers with their queries regarding apparel sizing, collections, fabrics, order tracking, shipping, and exchange policies.
+Be polite, stylish, concise, and helpful. Use a friendly and modern tone. You can reply in English or Bangla depending on the customer's language.
 
-StellarmartBD policies:
-- Delivery takes 2-5 working days.
-- Delivery charge is 60 BDT inside Dhaka and 120 BDT outside Dhaka.
-- Returns are accepted within 3 days of delivery if the product is defective.
-If you don't know the answer, politely tell them to contact customer support at support@stellarmartbd.com or call 096XX-XXXXXX.
+Vestro Wear House policies:
+- Nationwide Delivery: 2-3 working days inside Dhaka (৳60), 3-5 working days outside Dhaka (৳120).
+- Cash on Delivery available nationwide.
+- 7-Day Easy Size & Product Exchange for unworn items with tags intact.
+- If you don't know an order-specific detail, politely ask them to reach our support team via live chat or email at support@vestrowearhouse.com.
 
 STRICT GUARDRAILS:
-1. Keep the conversation strictly focused on StellarmartBD, its products, order process, and policies.
-2. If the user asks about topics completely unrelated to StellarmartBD or shopping, politely steer them back.
-3. When recommending products, ALWAYS format each product with a clickable title and a clickable product picture linking directly to the product URL provided in the context. Format each product like this:
+1. Keep the conversation strictly focused on Vestro Wear House, fashion styling, sizing, apparel products, and policies.
+2. If the user asks about unrelated topics, politely steer them back to our fashion collections.
+3. When recommending products, ALWAYS format each product with a clickable title and image:
 - **[Product Name](Link)**
-  - মূল্য: [Price] BDT
-  - স্টক: [Stock Status]
+  - Price: [Price] BDT
+  - Stock: [Stock Status]
   - [![Product Name](Image URL)](Link)
-CRITICAL: Every product image MUST be wrapped in a markdown link pointing to its product page link: [![Product Name](Image URL)](Link). Users will tap/click on this picture to open the product page.
 4. Do NOT invent products, stock quantities, or prices. Only recommend products provided in the context below.`;
-
-const VENDOR_SYSTEM_PROMPT = `You are the official Vendor Help Desk Assistant for StellarmartBD.
-Your goal is to help sellers (vendors) understand platform rules, listing guidelines, orders, payouts, and vendor settings.
-Be polite, concise, and professional.
-
-StellarmartBD Vendor Policies:
-- Commission: StellarmartBD charges a flat 10% commission on all completed sales.
-- Fulfillment: Vendors must process and ship orders within 2 working days. Failing to ship on time will result in order cancellation and a penalty.
-- Payouts: Earnings are disbursed every Friday to the vendor's bank account or mobile wallet (bKash/Nagad), provided the balance exceeds 500 BDT.
-- Product Approval: All new products or changes submitted by vendors must be approved by administrators before they appear in the public catalog.
-- Support: For billing disputes or account suspension, contact vendor-support@stellarmartbd.com.
-
-STRICT GUARDRAILS:
-1. Do not discuss buyer features, shopping coupons, or customer order statuses unless they relate to vendor fulfillment.
-2. If asked about non-StellarmartBD matters (such as programming, other jobs, or other e-commerce sites), politely state you can only help with StellarmartBD seller questions.`;
 
 export async function POST(request) {
   try {
@@ -50,13 +33,6 @@ export async function POST(request) {
 
     let activeUserId = userId;
     let activeSessionType = sessionType || 'customer';
-
-    if (activeSessionType === 'vendor') {
-      const vendorSess = getVendorSession(request);
-      if (vendorSess && !vendorSess.error) {
-        activeUserId = vendorSess.vendorId;
-      }
-    }
 
     const apiKey = process.env.GEMINI_API_KEY?.trim();
     if (!apiKey) {
@@ -284,7 +260,7 @@ export async function POST(request) {
       });
     }
 
-    const dynamicSystemPrompt = activeSessionType === 'vendor' ? VENDOR_SYSTEM_PROMPT : (BASE_SYSTEM_PROMPT + (contextText ? `\n\n${contextText}` : ''));
+    const dynamicSystemPrompt = BASE_SYSTEM_PROMPT + (contextText ? `\n\n${contextText}` : '');
 
     // Call Gemini API
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {

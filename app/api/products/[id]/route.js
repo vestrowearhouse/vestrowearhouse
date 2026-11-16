@@ -37,71 +37,28 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    let product = data;
-    if (product.vendor_id) {
-      try {
-        const { data: vendorData } = await supabase
-          .from('vendors')
-          .select('id, user_id, shop_name, owner_name, shop_address, logo_url, is_verified, verification_badge')
-          .or(`id.eq.${product.vendor_id},user_id.eq.${product.vendor_id}`)
-          .maybeSingle();
-        if (vendorData) {
-          product = {
-            ...product,
-            store_name: vendorData.shop_name,
-            vendor_logo: vendorData.logo_url,
-            is_official: false,
-            vendor: {
-              ...vendorData,
-              is_official: false,
-              rating: 4.8,
-              total_reviews: 24,
-              response_rate: '98%',
-              on_time_delivery: '99%'
-            }
-          };
-        } else {
-          product = {
-            ...product,
-            store_name: 'Vendor Store',
-            vendor_logo: null,
-            is_official: false,
-            vendor: {
-              id: product.vendor_id,
-              shop_name: 'Vendor Store',
-              logo_url: null,
-              is_official: false,
-              is_verified: false
-            }
-          };
-        }
-      } catch (err) {
-        console.error('Error fetching vendor in single product API:', err);
-      }
-    }
-
-    if (!product.vendor && !product.vendor_id) {
-      product = {
-        ...product,
-        store_name: 'StellarMart Official',
+    const product = {
+      ...data,
+      store_name: 'Vestro Wear House',
+      is_official: true,
+      vendor_id: null,
+      vendor_logo: '/tab-icon.png',
+      vendor: {
+        id: 'vestro',
+        shop_name: 'Vestro Wear House',
+        owner_name: 'Vestro Wear House',
+        logo_url: '/tab-icon.png',
+        is_verified: true,
+        verification_badge: 'Official Brand Store',
         is_official: true,
-        vendor: {
-          id: 'official',
-          shop_name: 'StellarMart Official',
-          owner_name: 'StellarMart',
-          logo_url: '/stellar-logo-mark.png',
-          is_verified: true,
-          verification_badge: 'Official Mall',
-          is_official: true,
-          rating: 4.9,
-          total_reviews: 1250,
-          shop_address: 'Dhaka, Bangladesh (Official Warehouse)',
-          response_rate: '100%',
-          on_time_delivery: '99.9%',
-          fulfilled_by: 'Stellar Direct'
-        }
-      };
-    }
+        rating: 4.9,
+        total_reviews: 1250,
+        shop_address: 'Dhaka, Bangladesh',
+        response_rate: '100%',
+        on_time_delivery: '99.9%',
+        fulfilled_by: 'Vestro Direct'
+      }
+    };
 
     return NextResponse.json({ product });
 
@@ -196,9 +153,7 @@ export async function PUT(request, { params }) {
       updated_at: new Date().toISOString(),
     };
 
-    if (data.vendor_id !== undefined) {
-      updateData.vendor_id = (data.vendor_id === '' || data.vendor_id === 'official') ? null : data.vendor_id;
-    }
+    updateData.vendor_id = null;
 
 
     // Calculate discount and stock status

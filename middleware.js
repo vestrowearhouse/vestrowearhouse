@@ -142,7 +142,6 @@ function applyWAF(request) {
     path.startsWith('/reset-password') ||
     path.startsWith('/admin-login') ||
     path.startsWith('/api/auth') ||
-    path.startsWith('/api/vendor/auth') ||
     path.startsWith('/__'); // Firebase auth handler rewrite
 
   // ── 5. SQL Injection detection (skip auth routes to avoid false-positives on tokens) ─
@@ -228,8 +227,6 @@ const RATE_LIMIT_RULES = {
   '/api/auth/forgot-password': { windowMs: 15 * 60 * 1000, maxRequests: 10, lockMs: 15 * 60 * 1000 },
   '/api/auth/reset-password':  { windowMs: 15 * 60 * 1000, maxRequests: 10, lockMs: 15 * 60 * 1000 },
   '/api/auth/verify-otp':    { windowMs: 10 * 60 * 1000, maxRequests: 15, lockMs: 10 * 60 * 1000 },
-  // Vendor auth — same limits as user login
-  '/api/vendor/auth/login':  { windowMs: 15 * 60 * 1000, maxRequests: 30, lockMs: 5 * 60 * 1000 },
   // Admin endpoints — standard limits
   '/api/admin':              { windowMs: 60 * 1000,       maxRequests: 120, lockMs: 5 * 60 * 1000 },
   '/admin':                  { windowMs: 60 * 1000,       maxRequests: 60, lockMs: 5 * 60 * 1000 },
@@ -398,7 +395,6 @@ export async function middleware(request, event) {
     '/api/auth/login',
     '/api/auth/admin-login',
     '/api/auth/admin-logout',
-    '/api/vendor/auth',
   ];
   if (
     !SAFE_METHODS.has(method) &&
@@ -480,20 +476,6 @@ export async function middleware(request, event) {
       }
     } catch {
       return NextResponse.redirect(new URL('/admin-login', request.url));
-    }
-  }
-
-  // ── 5. Vendor routes — require vendor token ────────────────────────────────
-  if (path.startsWith('/vendor/')) {
-    const vendorToken = request.cookies.get('vendorToken')?.value;
-    if (!vendorToken) {
-      return NextResponse.redirect(new URL('/vendor', request.url));
-    }
-    try {
-      const secret = getJwtSecret();
-      await jwtVerify(vendorToken, secret);
-    } catch {
-      return NextResponse.redirect(new URL('/vendor', request.url));
     }
   }
 

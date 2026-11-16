@@ -46,12 +46,8 @@ export default function VariantTable({ variants = [], onChange, disabled = false
       const formData = new FormData();
       formData.append('file', file);
       
-      // Try admin media endpoint first, fallback to vendor upload endpoint
+      // Admin media endpoint
       let res = await fetch('/api/admin/media', { method: 'POST', body: formData });
-      if (!res.ok) {
-        formData.set('file', file);
-        res = await fetch('/api/vendor/upload', { method: 'POST', credentials: 'include', body: formData });
-      }
       
       if (res.ok) {
         const data = await res.json();

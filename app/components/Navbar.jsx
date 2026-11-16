@@ -6,33 +6,27 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
-import { ShoppingBag, Heart, Search, User, Headphones, Menu, X, LogOut, Home } from "lucide-react";
+import { ShoppingBag, Heart, Search, User, Menu, X, LogOut, Home, ChevronRight, Layers } from "lucide-react";
 import { useCategories } from "../context/CategoryContext";
 import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
 import BrandLogo from "./BrandLogo";
 
-// Dynamically import CartDrawer to reduce initial JS payload
+// Dynamically import CartDrawer
 const CartDrawer = dynamic(() => import("./CartDrawer"), { ssr: false });
 
 export default function Navbar() {
-  const { cartCount } = useCart();
-  const { user, loading: authLoading, isCheckingAuth, logout, openLoginModal } = useAuth();
+  const { cartCount, cartTotal } = useCart();
+  const { user, logout, openLoginModal } = useAuth();
   const { wishlistCount } = useWishlist();
-  const { isSidebarOpen, toggleSidebar } = useCategories();
+  const { categories, toggleSidebar } = useCategories();
   const router = useRouter();
   const pathname = usePathname();
   const isProductPage = pathname?.startsWith("/product/");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-
-  // Log user state only in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Navbar] Current user state:', user ? `${user.name} (${user.email})` : 'No user');
-    }
-  }, [user]);
 
   // Live Search States
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,9 +34,9 @@ export default function Navbar() {
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Prevent body scroll when mobile menu, cart, or category sidebar is open
+  // Prevent body scroll when mobile drawer or cart is open
   useEffect(() => {
-    if (mobileMenuOpen || cartOpen || isSidebarOpen) {
+    if (mobileDrawerOpen || cartOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -50,7 +44,7 @@ export default function Navbar() {
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [mobileMenuOpen, cartOpen, isSidebarOpen]);
+  }, [mobileDrawerOpen, cartOpen]);
 
   // Live Search Effect
   useEffect(() => {
@@ -63,7 +57,7 @@ export default function Navbar() {
     const fetchResults = async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`/api/products?search=${encodeURIComponent(searchQuery)}&limit=5`);
+        const res = await fetch(`/api/products?search=${encodeURIComponent(searchQuery)}&limit=6`);
         const data = await res.json();
         setSearchResults(data.products || []);
         setShowDropdown(true);
@@ -76,23 +70,20 @@ export default function Navbar() {
 
     const debounceTimer = setTimeout(() => {
       fetchResults();
-    }, 600);
+    }, 400);
 
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
   const handleLogout = async () => {
     try {
-      const result = await logout();
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await logout();
       window.location.href = "/";
-    } catch (error) {
-      if (process.env.NODE_ENV !== 'production') console.error('[Navbar] Logout error:', error);
+    } catch {
       window.location.href = "/";
     }
   };
 
-  // Search without page reload
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -104,289 +95,429 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Desktop Navigation - White/Bluish Theme - Hidden on Mobile */}
-      <nav className="hidden md:block bg-white shadow-md sticky top-0 z-50 border-b border-blue-100">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <BrandLogo size="md" />
-            
-            {/* Search */}
-            <div className="flex-1 max-w-xl mx-8 relative">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <input
-                  type="text"
-                  placeholder="Search products, brands, or categories..."
-                  className="w-full px-4 py-2.5 border-2 border-blue-200 rounded-lg focus:outline-none focus:border-[#083b66] focus:ring-2 focus:ring-blue-100 text-gray-800 font-medium"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => searchQuery.trim() && setShowDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                  autoComplete="off"
-                />
-                {searchQuery && (
-                  <button 
-                    type="button" 
-                    onClick={() => { setSearchQuery(''); setShowDropdown(false); }}
-                    aria-label="Clear Search"
-                    className="absolute right-[100px] top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 p-1 transition-colors"
-                  >
-                    <X size={18} />
-                  </button>
-                )}
-                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2 bg-[#083b66] text-white rounded-md hover:bg-[#062d4d] font-bold shadow-sm">
-                  Search
-                </button>
-              </form>
+      {/* 1. Top Announcement Bar (Onfire style) */}
+      <div className="bg-black text-white text-[11px] sm:text-[12px] font-medium tracking-[0.14em] uppercase py-2 px-4 text-center">
+        <span>Free Nationwide Delivery On Orders Over ৳3,000 · Cash On Delivery Available</span>
+      </div>
 
-              {/* Live Dropdown for Desktop */}
-              {showDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden max-h-[400px] overflow-y-auto">
-                  {isSearching ? (
-                    <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
-                  ) : searchResults.length > 0 ? (
-                    <div className="py-2">
-                      {searchResults.map(product => (
-                        <Link 
-                          key={product._id} 
-                          href={`/product/${product.slug}`}
-                          className="flex items-center gap-3 px-4 py-2 hover:bg-blue-50 transition-colors"
-                        >
-                          <div className="relative w-12 h-12 flex-shrink-0">
-                            <Image
-                              src={product.featuredImage || product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=48&h=48&fit=crop'}
-                              alt={product.name || 'Product'}
-                              width={48}
-                              height={48}
-                              className="object-cover rounded-md w-full h-full"
-                              loading="lazy"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 truncate">{product.name}</p>
-                            <p className="text-sm text-green-600 font-bold">৳{product.sellingPrice || product.price}</p>
-                          </div>
-                        </Link>
-                      ))}
-                      <Link href={`/search?q=${searchQuery}`} className="block text-center py-3 bg-gray-50 text-sm text-blue-600 font-bold hover:bg-gray-100 border-t">
-                        View all results
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-sm text-gray-500">No products found</div>
-                  )}
-                </div>
-              )}
-            </div>
+      {/* 2. Main Sticky Navigation */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-100 transition-shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
             
-            {/* Actions */}
-            <div className="flex items-center gap-4 min-w-[260px] justify-end">
-              <Link href="/wishlist" aria-label="Wishlist" className="p-2 hover:bg-blue-50 rounded-lg relative">
-                <Heart className="w-6 h-6 text-[#083b66]" />
+            {/* Mobile: Hamburger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileDrawerOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-neutral-800 hover:text-black transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+
+            {/* Brand Logo */}
+            <div className="flex-shrink-0">
+              <BrandLogo size="md" />
+            </div>
+
+            {/* Desktop Center Navigation (Onfire style) */}
+            <nav className="hidden lg:flex items-center justify-center gap-8 text-[13px] font-semibold tracking-wider uppercase text-neutral-800">
+              <Link 
+                href="/new" 
+                className={`group relative pb-1 hover:text-black transition-colors ${pathname === '/new' ? 'text-black font-bold' : ''}`}
+              >
+                New Arrival
+                <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/new' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+              </Link>
+
+              <Link 
+                href="/shop" 
+                className={`group relative pb-1 hover:text-black transition-colors ${pathname === '/shop' ? 'text-black font-bold' : ''}`}
+              >
+                Collections
+                <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/shop' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+              </Link>
+
+              <Link 
+                href="/category/t-shirts" 
+                className="group relative pb-1 hover:text-black transition-colors"
+              >
+                T-Shirts
+                <span className="absolute inset-x-0 -bottom-0.5 h-[2px] bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+              </Link>
+
+              <Link 
+                href="/category/hoodies" 
+                className="group relative pb-1 hover:text-black transition-colors"
+              >
+                Hoodies & Sweats
+                <span className="absolute inset-x-0 -bottom-0.5 h-[2px] bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+              </Link>
+
+              <Link 
+                href="/about" 
+                className={`group relative pb-1 hover:text-black transition-colors ${pathname === '/about' ? 'text-black font-bold' : ''}`}
+              >
+                Our Story
+                <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/about' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+              </Link>
+            </nav>
+
+            {/* Right Action Icons */}
+            <div className="flex items-center gap-1 sm:gap-3">
+              
+              {/* Search Toggle Icon */}
+              <button 
+                onClick={() => setSearchOpen(!searchOpen)} 
+                aria-label="Search" 
+                className="p-2.5 text-neutral-800 hover:text-black transition-colors rounded-full hover:bg-neutral-100"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+
+              {/* Wishlist */}
+              <Link 
+                href="/wishlist" 
+                aria-label="Wishlist" 
+                className="hidden sm:flex p-2.5 text-neutral-800 hover:text-black transition-colors rounded-full hover:bg-neutral-100 relative"
+              >
+                <Heart className="w-5 h-5" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-neutral-900 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
                     {wishlistCount}
                   </span>
                 )}
               </Link>
-              <button onClick={() => setCartOpen(true)} aria-label="Open Cart" className="p-2 hover:bg-blue-50 rounded-lg relative">
-                <ShoppingBag className="w-6 h-6 text-[#083b66]" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-              
-              {/* Auth Buttons - Show based on login state */}
-              {user ? (
-                // User is logged in - show profile button immediately
-                <div className="relative group">
-                  <Link href="/profile" className="flex items-center gap-2 px-4 py-2 bg-[#083b66] text-white font-bold rounded-lg hover:bg-[#062d4d] transition-colors shadow-md whitespace-nowrap">
-                    <User className="w-4 h-4" />
-                    {user.name || "Profile"}
-                  </Link>
-                    
-                    {/* Hover Bridge (যাতে মাউস সরানোর সময় ড্রপডাউন বন্ধ না হয়) */}
-                    <div className="absolute right-0 top-full h-3 w-full"></div>
 
-                    {/* Profile Dropdown Menu */}
-                    <div className="absolute right-0 top-[calc(100%+8px)] w-48 bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 flex flex-col overflow-hidden">
-                      <Link href="/profile" className="px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-[#083b66] border-b border-gray-50 flex items-center gap-3">
+              {/* Cart Button */}
+              <button 
+                onClick={() => setCartOpen(true)} 
+                aria-label="Shopping Cart" 
+                className="p-2 sm:px-3.5 sm:py-2 text-neutral-900 hover:bg-neutral-100 rounded-full transition-all flex items-center gap-2 group cursor-pointer relative"
+              >
+                <div className="relative">
+                  <ShoppingBag className="w-5 h-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 bg-black text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                      {cartCount}
+                    </span>
+                  )}
+                </div>
+                <span className="hidden xl:inline text-[13px] font-semibold text-neutral-900">
+                  {cartTotal > 0 ? `৳${cartTotal.toLocaleString()}` : 'Bag'}
+                </span>
+              </button>
+
+              {/* User Account / Profile */}
+              {user ? (
+                <div className="relative group">
+                  <Link 
+                    href="/profile" 
+                    className="p-2 text-neutral-800 hover:text-black rounded-full hover:bg-neutral-100 transition-colors flex items-center gap-1.5"
+                    aria-label="My Account"
+                  >
+                    <User className="w-5 h-5" />
+                  </Link>
+
+                  {/* Profile Dropdown */}
+                  <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div className="w-48 bg-white border border-neutral-100 shadow-xl rounded-md py-1.5 overflow-hidden">
+                      <div className="px-4 py-2 border-b border-neutral-100">
+                        <p className="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold">Signed in as</p>
+                        <p className="text-xs font-bold text-neutral-900 truncate">{user.name || user.email}</p>
+                      </div>
+                      <Link href="/profile" className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 hover:text-black">
                         <User className="w-4 h-4" /> My Profile
                       </Link>
-                      <Link href="/orders" className="px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-[#083b66] border-b border-gray-50 flex items-center gap-3">
+                      <Link href="/orders" className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 hover:text-black">
                         <ShoppingBag className="w-4 h-4" /> My Orders
                       </Link>
                       <button 
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                        onClick={handleLogout} 
+                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50 border-t border-neutral-50"
                       >
-                        <LogOut className="w-4 h-4" /> Logout
+                        <LogOut className="w-4 h-4" /> Log Out
                       </button>
                     </div>
                   </div>
-              ) : isCheckingAuth ? (
-                // Skeleton matches the Sign In button exactly: same padding, height, and width
-                <div className="px-5 py-2.5 bg-gray-200 rounded-lg w-[82px] h-[40px] animate-pulse" aria-hidden="true" />
+                </div>
               ) : (
-                // Not logged in and done checking
-                <button 
-                  onClick={openLoginModal} 
-                  className="px-5 py-2.5 bg-[#083b66] text-white font-bold rounded-lg hover:bg-[#062d4d] transition-colors shadow-md cursor-pointer"
+                <button
+                  onClick={openLoginModal}
+                  className="hidden sm:inline-flex items-center text-xs font-semibold tracking-wider uppercase text-neutral-800 hover:text-black py-2 px-3 transition-colors"
                 >
                   Sign In
+                </button>
+              )}
+
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Search Bar Dropdown Overlay */}
+        {searchOpen && (
+          <div className="border-t border-neutral-100 bg-neutral-50/95 backdrop-blur-sm px-4 py-4 sm:py-6 animate-fadeIn">
+            <div className="max-w-3xl mx-auto relative">
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+                <Search className="absolute left-4 w-5 h-5 text-neutral-400" />
+                <input
+                  type="text"
+                  placeholder="Search collections, t-shirts, jackets, shoes..."
+                  className="w-full pl-12 pr-12 py-3 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black text-sm font-medium tracking-wide"
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => searchQuery.trim() && setShowDropdown(true)}
+                  autoComplete="off"
+                />
+                {searchQuery ? (
+                  <button 
+                    type="button" 
+                    onClick={() => { setSearchQuery(''); setShowDropdown(false); }}
+                    className="absolute right-4 text-neutral-400 hover:text-black"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchOpen(false)}
+                    className="absolute right-4 text-neutral-400 hover:text-black"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </form>
+
+              {/* Live search results */}
+              {showDropdown && (
+                <div className="mt-2 bg-white border border-neutral-200 shadow-2xl max-h-[350px] overflow-y-auto">
+                  {isSearching ? (
+                    <div className="p-4 text-center text-xs tracking-wider uppercase text-neutral-400">Searching catalog...</div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="divide-y divide-neutral-100">
+                      {searchResults.map((p) => (
+                        <Link 
+                          key={p.id || p._id} 
+                          href={`/product/${p.slug}`}
+                          onClick={() => { setSearchOpen(false); setShowDropdown(false); }}
+                          className="flex items-center gap-3 p-3 hover:bg-neutral-50 transition-colors"
+                        >
+                          <div className="relative w-12 h-14 bg-neutral-100 flex-shrink-0">
+                            <Image 
+                              src={p.featuredImage || p.images?.[0] || '/tab-icon.png'} 
+                              alt={p.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-neutral-900 truncate">{p.name}</p>
+                            <p className="text-xs font-bold text-neutral-900 mt-0.5">৳ {Number(p.sellingPrice || p.price || 0).toLocaleString()}</p>
+                          </div>
+                        </Link>
+                      ))}
+                      <Link 
+                        href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                        onClick={() => { setSearchOpen(false); setShowDropdown(false); }}
+                        className="block text-center py-2.5 bg-neutral-900 text-white text-xs font-semibold tracking-wider uppercase hover:bg-black transition-colors"
+                      >
+                        View all results →
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-xs text-neutral-500">No matching apparel found.</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* 4. Mobile Drawer Menu (Onfire Style Slide-in) */}
+      {mobileDrawerOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileDrawerOpen(false)}
+          ></div>
+
+          {/* Drawer Content */}
+          <div className="relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 animate-slideRight">
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between p-4 border-b border-neutral-100">
+              <BrandLogo size="sm" />
+              <button 
+                onClick={() => setMobileDrawerOpen(false)}
+                className="p-1.5 text-neutral-400 hover:text-black rounded-full"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Drawer Navigation Links */}
+            <div className="flex-1 overflow-y-auto py-4 px-4 space-y-1">
+              <Link 
+                href="/new" 
+                onClick={() => setMobileDrawerOpen(false)}
+                className="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-100"
+              >
+                <span>New Arrival</span>
+                <ChevronRight className="w-4 h-4 text-neutral-400" />
+              </Link>
+
+              <Link 
+                href="/shop" 
+                onClick={() => setMobileDrawerOpen(false)}
+                className="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-100"
+              >
+                <span>All Collections</span>
+                <ChevronRight className="w-4 h-4 text-neutral-400" />
+              </Link>
+
+              <div className="pt-2 pb-1">
+                <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-neutral-400 mb-2">Categories</p>
+                {categories && categories.length > 0 ? (
+                  categories.slice(0, 8).map(c => (
+                    <Link
+                      key={c.id || c.slug}
+                      href={`/category/${c.slug}`}
+                      onClick={() => setMobileDrawerOpen(false)}
+                      className="block py-2 text-xs font-medium text-neutral-700 hover:text-black"
+                    >
+                      {c.name}
+                    </Link>
+                  ))
+                ) : (
+                  <>
+                    <Link href="/category/t-shirts" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700">T-Shirts</Link>
+                    <Link href="/category/hoodies" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700">Hoodies & Sweats</Link>
+                    <Link href="/category/pants" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700">Bottom Wear</Link>
+                    <Link href="/category/shoes" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700">Footwear</Link>
+                  </>
+                )}
+              </div>
+
+              <div className="pt-4 border-t border-neutral-100 space-y-2">
+                <Link 
+                  href="/about" 
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="block py-2 text-xs font-medium text-neutral-600 hover:text-black uppercase tracking-wider"
+                >
+                  Our Story
+                </Link>
+                <Link 
+                  href="/track-order" 
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="block py-2 text-xs font-medium text-neutral-600 hover:text-black uppercase tracking-wider"
+                >
+                  Track Order
+                </Link>
+                <Link 
+                  href="/contact" 
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="block py-2 text-xs font-medium text-neutral-600 hover:text-black uppercase tracking-wider"
+                >
+                  Support & Contact
+                </Link>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="p-4 border-t border-neutral-100 bg-neutral-50">
+              {user ? (
+                <div className="flex items-center justify-between">
+                  <div className="truncate">
+                    <p className="text-xs font-bold text-neutral-900">{user.name || "Member"}</p>
+                    <p className="text-[11px] text-neutral-500 truncate">{user.email}</p>
+                  </div>
+                  <button 
+                    onClick={handleLogout}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    aria-label="Logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setMobileDrawerOpen(false); openLoginModal(); }}
+                  className="w-full py-2.5 bg-black text-white text-xs font-bold uppercase tracking-wider text-center"
+                >
+                  Sign In / Register
                 </button>
               )}
             </div>
           </div>
         </div>
-      </nav>
+      )}
 
-      {/* Mobile Top Bar - Logo + Search (Sticky Top) */}
-      <div className="md:hidden sticky top-0 z-50 bg-white shadow-xs border-b border-gray-200">
-        <div className="flex items-center justify-between px-4 h-[60px]">
-          {/* Logo */}
-          <BrandLogo size="sm" />
-
-          {/* Search Toggle & Single Menu - Removed duplicate menu */}
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setSearchOpen(!searchOpen)}
-              aria-label="Toggle Search"
-              className="p-2 bg-blue-50 rounded-lg"
-            >
-              {searchOpen ? <X className="w-5 h-5 text-[#083b66]" /> : <Search className="w-5 h-5 text-[#083b66]" />}
-            </button>
-            <button 
-              onClick={toggleSidebar}
-              className="p-2 bg-blue-50 rounded-lg"
-              aria-label="Categories"
-            >
-              <Menu className="w-5 h-5 text-[#083b66]" />
-            </button>
-          </div>
-        </div>
-
-        {/* Search Bar (Expandable) */}
-        {searchOpen && (
-          <div className="px-4 pb-3 relative">
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                placeholder="Search products, brands, or categories..."
-                className="w-full px-4 py-2 text-sm border-2 border-blue-200 rounded-lg focus:outline-none focus:border-[#083b66] text-gray-800"
-                autoFocus
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => searchQuery.trim() && setShowDropdown(true)}
-                onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                autoComplete="off"
-              />
-              {searchQuery && (
-                <button 
-                  type="button" 
-                  onClick={() => { setSearchQuery(''); setShowDropdown(false); }}
-                  aria-label="Clear Search"
-                  className="absolute right-[80px] top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 p-1 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              )}
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-[#083b66] text-white rounded-md text-sm font-bold">
-                Search
-              </button>
-            </form>
-            
-            {/* Live Dropdown for Mobile */}
-            {showDropdown && (
-              <div className="absolute top-full left-4 right-4 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden max-h-[300px] overflow-y-auto">
-                {isSearching ? (
-                  <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
-                ) : searchResults.length > 0 ? (
-                  <div className="py-2">
-                    {searchResults.map(product => (
-                      <Link key={product._id} href={`/product/${product.slug}`} className="flex items-center gap-3 px-4 py-2 hover:bg-blue-50 transition-colors">
-                        <div className="relative w-10 h-10 flex-shrink-0">
-                          <Image
-                            src={product.featuredImage || product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=40&h=40&fit=crop'}
-                            alt={product.name || 'Product'}
-                            width={40}
-                            height={40}
-                            className="object-cover rounded-md w-full h-full"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-gray-800 truncate">{product.name}</p>
-                          <p className="text-xs text-green-600 font-bold">৳{product.sellingPrice || product.price}</p>
-                        </div>
-                      </Link>
-                    ))}
-                    <Link href={`/search?q=${searchQuery}`} className="block text-center py-3 bg-gray-50 text-sm text-blue-600 font-bold hover:bg-gray-100 border-t">
-                      View all results
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="p-4 text-center text-sm text-gray-500">No products found</div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Mobile Menu */}
-{/* No mobile dropdown menu - hamburger now opens categories only */}
-      </div>
-
-      {/* Mobile Bottom Bar - Profile, Support, Cart (Sticky Bottom) - Hidden on product details page */}
+      {/* 5. Mobile Sticky Bottom Navigation (Onfire style) */}
       {!isProductPage && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50">
-          <div className="flex items-center justify-around py-1.5 px-2">
-            {/* Home - Left */}
-            <Link href="/" aria-label="Go to Homepage" className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 px-1">
-              <Home className="w-5 h-5 text-[#083b66]" />
-              <span className="text-[11px] font-semibold text-[#083b66]">Home</span>
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-neutral-200 z-40 py-2 px-4 shadow-[0_-2px_10px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-around">
+            <Link 
+              href="/" 
+              className={`flex flex-col items-center gap-1 ${pathname === '/' ? 'text-black font-bold' : 'text-neutral-500'}`}
+            >
+              <Home className="w-5 h-5" />
+              <span className="text-[10px] tracking-wider uppercase font-semibold">Home</span>
             </Link>
 
-            {/* Support */}
-            <Link href="/contact" aria-label="Contact Customer Support" className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 px-1">
-              <Headphones className="w-5 h-5 text-[#083b66]" />
-              <span className="text-[11px] font-semibold text-[#083b66]">Support</span>
+            <Link 
+              href="/shop" 
+              className={`flex flex-col items-center gap-1 ${pathname === '/shop' ? 'text-black font-bold' : 'text-neutral-500'}`}
+            >
+              <Layers className="w-5 h-5" />
+              <span className="text-[10px] tracking-wider uppercase font-semibold">Shop</span>
             </Link>
 
-            {/* Wishlist */}
-            <Link href="/wishlist" aria-label="View Wishlist" className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 px-1 relative">
-              <Heart className="w-5 h-5 text-[#083b66]" />
+            <Link 
+              href="/wishlist" 
+              className={`flex flex-col items-center gap-1 relative ${pathname === '/wishlist' ? 'text-black font-bold' : 'text-neutral-500'}`}
+            >
+              <Heart className="w-5 h-5" />
               {wishlistCount > 0 && (
-                <span className="absolute top-1 right-2 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                <span className="absolute -top-1 right-1 w-3.5 h-3.5 bg-black text-white text-[9px] rounded-full flex items-center justify-center font-bold">
                   {wishlistCount}
                 </span>
               )}
-              <span className="text-[11px] font-semibold text-[#083b66]">Wishlist</span>
+              <span className="text-[10px] tracking-wider uppercase font-semibold">Wishlist</span>
             </Link>
 
-            {/* Cart - Opens Drawer */}
-            <button onClick={() => setCartOpen(true)} aria-label="Open Shopping Cart" type="button" className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 px-1 relative cursor-pointer">
-              <ShoppingBag className="w-5 h-5 text-[#083b66]" />
-              {cartCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-                  {cartCount}
-                </span>
-              )}
-              <span className="text-[11px] font-semibold text-[#083b66]">Cart</span>
+            <button 
+              onClick={() => setCartOpen(true)} 
+              className="flex flex-col items-center gap-1 relative text-neutral-500 hover:text-black cursor-pointer"
+            >
+              <div className="relative">
+                <ShoppingBag className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-black text-white text-[9px] rounded-full flex items-center justify-center font-bold">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] tracking-wider uppercase font-semibold">Bag</span>
             </button>
 
-            {/* Profile - Right */}
             {user ? (
-              <Link href="/profile" aria-label="View User Profile" className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 px-1">
-                <User className="w-5 h-5 text-[#083b66]" />
-                <span className="text-[11px] font-semibold text-[#083b66]">Profile</span>
+              <Link 
+                href="/profile" 
+                className={`flex flex-col items-center gap-1 ${pathname === '/profile' ? 'text-black font-bold' : 'text-neutral-500'}`}
+              >
+                <User className="w-5 h-5" />
+                <span className="text-[10px] tracking-wider uppercase font-semibold">Account</span>
               </Link>
             ) : (
-              <button onClick={openLoginModal} aria-label="Sign in to your account" type="button" className="flex flex-col items-center justify-center min-w-[48px] min-h-[48px] gap-1 px-1 cursor-pointer">
-                <User className="w-5 h-5 text-[#083b66]" />
-                <span className="text-[11px] font-semibold text-[#083b66]">Sign In</span>
+              <button 
+                onClick={openLoginModal} 
+                className="flex flex-col items-center gap-1 text-neutral-500 hover:text-black cursor-pointer"
+              >
+                <User className="w-5 h-5" />
+                <span className="text-[10px] tracking-wider uppercase font-semibold">Sign In</span>
               </button>
             )}
           </div>

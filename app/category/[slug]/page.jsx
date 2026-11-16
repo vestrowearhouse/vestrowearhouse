@@ -275,7 +275,7 @@ export default function CategoryPage({ params }) {
             <div className={`transition-opacity duration-300 ${loading && !initialLoad ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
               {products.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-x-3.5 gap-y-7 sm:gap-x-5 sm:gap-y-10">
                     {products.map(product => (
                       <ProductCard key={product._id || product.id} product={product} />
                     ))}
@@ -286,15 +286,15 @@ export default function CategoryPage({ params }) {
                       <button
                         onClick={loadMore}
                         disabled={loadingMore}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                        className="border border-neutral-900 bg-neutral-900 hover:bg-black text-white font-bold py-3 px-8 text-xs uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
                       >
                         {loadingMore ? (
                           <>
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             Loading...
                           </>
                         ) : (
-                          'Load More Products'
+                          'Load More Apparel'
                         )}
                       </button>
                     </div>

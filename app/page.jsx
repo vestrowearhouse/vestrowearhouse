@@ -1,29 +1,20 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Suspense } from 'react';
-import { ArrowRight as ArrowRightIcon } from 'lucide-react';
 import HeroBanner from './components/HeroBanner';
-import dynamic from 'next/dynamic';
-import { createClient } from '@supabase/supabase-js';
-import ProductCard from './components/ProductCard';
 import Features from './components/Features';
+import ProductCard from './components/ProductCard';
+import NewAndPopularSection from './components/NewAndPopularSection';
+import { createClient } from '@supabase/supabase-js';
+import { unstable_cache } from 'next/cache';
 
-// MobileHomeView is a large client-only component (23KB) — never shown on desktop
-// Lazy-load it so it doesn't block the initial page render
-const MobileHomeView = dynamic(() => import('./components/MobileHomeView'), {
-  ssr: false,
-  loading: () => null,
-});
-
-
-// JSON-LD structured data for the Organization — helps Google rich results
+// JSON-LD structured data for Vestro Wear House
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'StellarMartBD',
-  url: 'https://www.stellarmartbd.com',
-  logo: 'https://i.postimg.cc/CxQSCP22/Whats-App-Image-2026-04-29-at-9-49-48-PM.jpg',
-  description: 'Best e-commerce platform in Bangladesh.',
+  name: 'Vestro Wear House',
+  url: 'https://www.vestrowearhouse.com',
+  logo: 'https://www.vestrowearhouse.com/logo.png',
+  description: 'Premium Fashion & Urban Streetwear Destination in Bangladesh.',
   address: {
     '@type': 'PostalAddress',
     addressCountry: 'BD',
@@ -32,18 +23,13 @@ const jsonLd = {
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'customer service',
-    email: 'support@stellarmartbd.com',
-    telephone: '+880 1606-069754',
+    email: 'support@vestrowearhouse.com',
+    telephone: '+880 1345-447500',
     availableLanguage: ['English', 'Bengali'],
   },
-  sameAs: [
-    'https://www.facebook.com/stellarmartbd',
-  ],
 };
 
-export const revalidate = 300; // Cache homepage at the Edge for 5 minutes to drastically cut Supabase Egress
-
-import { unstable_cache } from 'next/cache';
+export const revalidate = 300; // Cache homepage at the Edge for 5 minutes
 
 const getCachedSupabaseData = unstable_cache(
   async () => {
@@ -57,86 +43,52 @@ const getCachedSupabaseData = unstable_cache(
         arrivalsRes: null, 
         allProductsRes: null,
         bannersRes: null, 
-        layoutRes: null, 
-        flashSaleRes: null,
-        quickChannelsRes: null,
       };
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    // OPTIMIZATION: Only fetch lightweight fields needed for product cards.
-    // Heavy columns (HTML description, attributes, variants, full image arrays) are omitted to reduce egress by >95%.
-    const PRODUCT_CARD_FIELDS = 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockStatus, featuredImage, isFeatured, isNewArrival, isBestSeller, slug, rating, review_count, sold_count, vendor_id';
+    const PRODUCT_CARD_FIELDS = 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockStatus, featuredImage, images, isFeatured, isNewArrival, isBestSeller, slug, rating, review_count, sold_count';
 
-    const [categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes, layoutRes, flashSaleRes, quickChannelsRes] = await Promise.all([
-      supabase.from('categories').select('id, name, slug, image, icon, icon_type, custom_code, sort_order, isFeatured, status').not('slug', 'in', '("system-category-layout","system-flash-sale-config","system-quick-channels")').eq('status', 'active').order('sort_order', { ascending: true }).order('created_at', { ascending: false }),
-      supabase.from('products').select(PRODUCT_CARD_FIELDS).neq('isActive', false).or('isFeatured.eq.true,featured.eq.true').order('created_at', { ascending: false }).limit(16),
-      supabase.from('products').select(PRODUCT_CARD_FIELDS).neq('isActive', false).eq('isNewArrival', true).order('created_at', { ascending: false }).limit(12),
-      supabase.from('products').select(PRODUCT_CARD_FIELDS).neq('isActive', false).order('created_at', { ascending: false }).limit(20),
-      supabase.from('banners').select('id, title, image, mobile_image, link, position, status').eq('status', 'active').order('position', { ascending: true }).limit(10),
-      supabase.from('categories').select('custom_code').eq('slug', 'system-category-layout').single(),
-      supabase.from('categories').select('custom_code, status').eq('slug', 'system-flash-sale-config').single(),
-      supabase.from('categories').select('custom_code, status').eq('slug', 'system-quick-channels').single()
+    const [categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes] = await Promise.all([
+      supabase
+        .from('categories')
+        .select('id, name, slug, image, icon, custom_code, sort_order, isFeatured, status')
+        .not('slug', 'in', '("system-category-layout","system-flash-sale-config","system-quick-channels")')
+        .eq('status', 'active')
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false })
+        .limit(12),
+      supabase
+        .from('products')
+        .select(PRODUCT_CARD_FIELDS)
+        .neq('isActive', false)
+        .or('isFeatured.eq.true,featured.eq.true')
+        .order('created_at', { ascending: false })
+        .limit(16),
+      supabase
+        .from('products')
+        .select(PRODUCT_CARD_FIELDS)
+        .neq('isActive', false)
+        .eq('isNewArrival', true)
+        .order('created_at', { ascending: false })
+        .limit(12),
+      supabase
+        .from('products')
+        .select(PRODUCT_CARD_FIELDS)
+        .neq('isActive', false)
+        .order('created_at', { ascending: false })
+        .limit(24),
+      supabase
+        .from('banners')
+        .select('id, title, description, image, mobile_image, link, position, status')
+        .eq('status', 'active')
+        .order('position', { ascending: true })
+        .limit(6),
     ]);
 
-    const rawProducts = [
-      ...(featuredRes?.data || []),
-      ...(arrivalsRes?.data || []),
-      ...(allProductsRes?.data || [])
-    ];
-    const vendorIds = [...new Set(rawProducts.map(p => p.vendor_id).filter(Boolean))];
-    let vendorMap = {};
-    if (vendorIds.length > 0) {
-      try {
-        const { data: vList } = await supabase
-          .from('vendors')
-          .select('id, user_id, shop_name, logo_url')
-          .or(`id.in.(${vendorIds.join(',')}),user_id.in.(${vendorIds.join(',')})`);
-        if (vList) {
-          for (const v of vList) {
-            if (v.id) vendorMap[v.id] = v;
-            if (v.user_id) vendorMap[v.user_id] = v;
-          }
-        }
-      } catch (vErr) {
-        console.error('Error fetching vendors for homepage:', vErr);
-      }
-    }
-
-    const enrichProduct = (p) => {
-      if (!p) return p;
-      if (p.vendor_id && vendorMap[p.vendor_id]) {
-        const v = vendorMap[p.vendor_id];
-        return {
-          ...p,
-          store_name: v.shop_name,
-          vendor_logo: v.logo_url,
-          is_official: false,
-          vendor: v
-        };
-      }
-      if (p.vendor_id) {
-        return {
-          ...p,
-          store_name: 'Vendor Store',
-          vendor_logo: null,
-          is_official: false
-        };
-      }
-      return {
-        ...p,
-        store_name: 'StellarMart Official',
-        is_official: true
-      };
-    };
-
-    if (featuredRes?.data) featuredRes.data = featuredRes.data.map(enrichProduct);
-    if (arrivalsRes?.data) arrivalsRes.data = arrivalsRes.data.map(enrichProduct);
-    if (allProductsRes?.data) allProductsRes.data = allProductsRes.data.map(enrichProduct);
-
-    return { categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes, layoutRes, flashSaleRes, quickChannelsRes };
+    return { categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes };
   },
-  ['homepage-data-v4'],
+  ['vestro-home-data-v1'],
   { revalidate: 300, tags: ['homepage-data'] }
 );
 
@@ -148,66 +100,14 @@ async function getHomePageData() {
       arrivalsRes, 
       allProductsRes,
       bannersRes, 
-      layoutRes, 
-      flashSaleRes,
-      quickChannelsRes, 
     } = await getCachedSupabaseData();
     
-    if (!categoriesRes) {
-      return { 
-        categories: [], 
-        featured: [], 
-        arrivals: [], 
-        allProducts: [], 
-        banners: [], 
-        categoryLayout: null, 
-        flashSaleConfig: null,
-        quickChannelsConfig: null
-      };
-    }
-
-    const featuredProducts = (featuredRes?.data || []);
-    const newArrivals = (arrivalsRes?.data || []);
-    const allProducts = (allProductsRes?.data || []);
-
-    let categoryLayout = null;
-    if (layoutRes?.data && layoutRes.data.custom_code) {
-      try {
-        categoryLayout = JSON.parse(layoutRes.data.custom_code);
-      } catch(e) {}
-    }
-
-    let flashSaleConfig = null;
-    if (flashSaleRes?.data && flashSaleRes.data.custom_code) {
-      try {
-        const parsed = JSON.parse(flashSaleRes.data.custom_code);
-        flashSaleConfig = {
-          ...parsed,
-          enabled: flashSaleRes.data.status !== 'inactive' && parsed.enabled !== false
-        };
-      } catch(e) {}
-    }
-
-    let quickChannelsConfig = null;
-    if (quickChannelsRes?.data && quickChannelsRes.data.custom_code) {
-      try {
-        const parsed = JSON.parse(quickChannelsRes.data.custom_code);
-        quickChannelsConfig = {
-          ...parsed,
-          enabled: quickChannelsRes.data.status !== 'inactive' && parsed.enabled !== false
-        };
-      } catch(e) {}
-    }
-
     return {
       categories: categoriesRes?.data || [],
-      featured: featuredProducts,
-      arrivals: newArrivals,
-      allProducts: allProducts,
+      featured: featuredRes?.data || [],
+      arrivals: arrivalsRes?.data || [],
+      allProducts: allProductsRes?.data || [],
       banners: bannersRes?.data || [],
-      categoryLayout,
-      flashSaleConfig,
-      quickChannelsConfig
     };
   } catch (error) {
     console.error('Error fetching homepage data:', error);
@@ -217,274 +117,184 @@ async function getHomePageData() {
       arrivals: [], 
       allProducts: [], 
       banners: [],
-      categoryLayout: null,
-      flashSaleConfig: null,
-      quickChannelsConfig: null
     };
   }
 }
 
+// Fallback curated category tiles if database has empty/no categories yet
+const defaultCategories = [
+  {
+    id: 'cat-1',
+    name: 'T-Shirts & Polos',
+    slug: 't-shirts',
+    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    id: 'cat-2',
+    name: 'Hoodies & Sweats',
+    slug: 'hoodies',
+    image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    id: 'cat-3',
+    name: 'Bottoms & Pants',
+    slug: 'pants',
+    image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    id: 'cat-4',
+    name: 'Footwear & Shoes',
+    slug: 'shoes',
+    image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=800&auto=format&fit=crop',
+  },
+];
+
 export default async function HomePage() {
   const data = await getHomePageData();
-  const categories = data.categories || [];
+  const rawCategories = data.categories || [];
+  const displayCategories = rawCategories.length > 0 ? rawCategories : defaultCategories;
+
   const featuredProducts = data.featured || [];
   const newArrivals = data.arrivals || [];
   const allProducts = data.allProducts || [];
-  let banners = data.banners || [];
+  const banners = data.banners || [];
 
-  const defaultBanners = [
-    {
-      id: 'default-1',
-      title: 'Mega Sale',
-      description: 'Up to 50% Off on Electronics',
-      image: '/banners/default_banner_1.webp',
-      link: '/flash-sale',
-      position: 0,
-    },
-    {
-      id: 'default-2',
-      title: 'New Collection',
-      description: 'Explore Latest Fashion Trends',
-      image: '/banners/default_banner_2.webp',
-      link: '/category/fashion',
-      position: 1,
-    },
-    {
-      id: 'default-3',
-      title: 'Free Shipping',
-      description: 'On Orders Over ৳500',
-      image: '/banners/default_banner_3.webp',
-      link: '/shop',
-      position: 2,
-    },
-    {
-      id: 'default-side-1',
-      title: 'Special Deals',
-      description: 'Top Electronics & Accessories',
-      image: '/banners/default_banner_4.webp',
-      link: '/category/electronics',
-      position: 100,
-    },
-    {
-      id: 'default-side-2',
-      title: 'Fashion Trends',
-      description: 'Up to 40% Off New Styles',
-      image: '/banners/default_banner_5.webp',
-      link: '/category/fashion',
-      position: 200,
-    },
-  ];
-
-  if (banners.length === 0) {
-    banners = defaultBanners;
-  }
-
-  // The API already prioritizes isFeatured categories at the top,
-  // so we just display all 12 fetched categories.
-  const displayCategories = categories;
-  const displayFeatured = featuredProducts.length > 0 ? featuredProducts : [];
-  
-  // De-duplicate: New arrivals should show items that are distinct from featured
-  const featuredIdSet = new Set(displayFeatured.map(p => p.id || p._id));
-  const uniqueArrivals = newArrivals.filter(p => !featuredIdSet.has(p.id || p._id));
-  const displayNewArrivals = uniqueArrivals.length > 0 ? uniqueArrivals : newArrivals;
-
-  const categoryLayoutPc = data.categoryLayout?.pc || [];
-  const categoryLayoutMobile = data.categoryLayout?.mobile || [];
-  const useLayout = categoryLayoutPc.length > 0 || categoryLayoutMobile.length > 0;
-
-  const getCategoryById = (id) => categories.find(c => c.id === id);
-
-  const renderCategoryCard = (categoryOrId, isMobileOnly = false, isDesktopOnly = false, indexKey = 0) => {
-    const id = typeof categoryOrId === 'object' && categoryOrId !== null && categoryOrId.id !== undefined ? categoryOrId.id : categoryOrId;
-    const category = getCategoryById(id);
-    
-    if (!category) return <div key={`empty-${indexKey}`} className={`bg-gray-50/50 border border-gray-100 border-dashed rounded-xl md:rounded-2xl min-h-[120px] ${isDesktopOnly ? 'hidden md:flex' : ''} ${isMobileOnly ? 'flex md:hidden' : ''}`}></div>;
-
-    // Check for layout overrides
-    const hasOverride = typeof categoryOrId === 'object' && categoryOrId !== null && categoryOrId.hasOverride;
-    const iconType = hasOverride ? categoryOrId.iconType : category.icon_type;
-    const image = hasOverride ? categoryOrId.image : category.image;
-    const customCode = hasOverride ? categoryOrId.customCode : category.custom_code;
-    const icon = hasOverride ? categoryOrId.icon : category.icon;
-
-    return (
-      <Link
-        key={category.id || category.slug}
-        href={`/category/${category.slug}`}
-        className={`group bg-white border border-gray-100 rounded-xl md:rounded-2xl p-4 md:p-6 flex-col items-center justify-center hover:border-blue-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 flex ${isDesktopOnly ? 'hidden md:flex' : ''} ${isMobileOnly ? 'flex md:hidden' : ''}`}
-      >
-        <div className="w-14 h-14 md:w-20 md:h-20 bg-blue-50 rounded-full flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 group-hover:bg-blue-100 transition-transform duration-300 overflow-hidden shadow-inner">
-          {iconType === 'image' && image ? (
-            <Image 
-              src={image} 
-              alt={category.name} 
-              width={80} 
-              height={80} 
-              loading="lazy"
-              className="w-full h-full object-cover" 
-            />
-          ) : iconType === 'custom' && customCode ? (
-            <div className="w-full h-full flex items-center justify-center" dangerouslySetInnerHTML={{ __html: customCode }} />
-          ) : (
-            <span className="text-2xl md:text-3xl">
-              {icon && icon !== '📦' ? icon : (
-                category.slug?.includes('game') || category.name?.toLowerCase().includes('game') ? '🎮' :
-                category.slug?.includes('headphone') ? '🎧' :
-                category.slug?.includes('sleeve') ? '🧤' :
-                category.slug?.includes('fashion') ? '👔' :
-                category.slug?.includes('home') ? '🏠' :
-                category.slug?.includes('pi') || category.slug?.includes('arduino') ? '🖥️' :
-                category.slug?.includes('sensor') ? '📡' :
-                category.slug?.includes('robot') ? '🤖' : '🎮'
-              )}
-            </span>
-          )}
-        </div>
-        <h3 className="font-bold text-gray-800 group-hover:text-blue-600 text-xs md:text-sm text-center w-full truncate">{category.name}</h3>
-      </Link>
-    );
-  };
+  // Combined product list for tabs
+  const combinedCatalog = allProducts.length > 0 
+    ? allProducts 
+    : [...featuredProducts, ...newArrivals];
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hidden H1 for SEO & Screen Readers (ensures proper descending heading hierarchy) */}
-      <h1 className="sr-only">Stellar Mart BD - Best Online Shopping Platform in Bangladesh</h1>
+      {/* Hidden H1 for SEO */}
+      <h1 className="sr-only">Vestro Wear House - Premium Fashion & Streetwear in Bangladesh</h1>
 
-      {/* JSON-LD structured data for SEO — invisible to users, read by search engines */}
+      {/* JSON-LD Schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {/* Mobile-Only App Home View */}
-      <div className="md:hidden">
-        <MobileHomeView
-          categories={categories}
-          featuredProducts={featuredProducts}
-          newArrivals={displayNewArrivals}
-          allProducts={allProducts}
-          banners={banners}
-          flashSaleConfig={data.flashSaleConfig}
-          quickChannelsConfig={data.quickChannelsConfig}
-        />
-      </div>
 
-      {/* Desktop/PC View (Preserved Exactly) */}
-      <div className="hidden md:block">
-        <HeroBanner banners={banners} />
-        <Features />
+      {/* 1. Hero Banner Slider (Onfire Fashion Style) */}
+      <HeroBanner banners={banners} />
 
-      <section className="py-6 md:py-12">
-        <div className="max-w-7xl mx-auto px-2 md:px-4">
-          <div className="flex items-center justify-between mb-4 md:mb-8">
-            <h2 className="text-lg md:text-2xl font-bold text-gray-900">Shop by Category</h2>
-            <Link href="/categories" aria-label="View all shopping categories" className="text-blue-700 hover:underline flex items-center gap-1 font-semibold text-sm md:text-base">
-              View All <ArrowRightIcon className="w-4 h-4" />
-            </Link>
-          </div>
+      {/* 2. Trust & Features Strip */}
+      <Features />
+
+      {/* 3. Featured Categories (Onfire 4:5 Portrait Grid) */}
+      <section className="py-8 sm:py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           
-          {useLayout ? (
-            <>
-              {/* PC Grid (12 items) */}
-              <div className="hidden md:grid grid-cols-4 lg:grid-cols-6 gap-4">
-                {categoryLayoutPc.slice(0, 12).map((item, index) => renderCategoryCard(item, false, true, index))}
-              </div>
-              {/* Mobile Grid (6 items) */}
-              <div className="grid md:hidden grid-cols-3 gap-2">
-                {categoryLayoutMobile.slice(0, 6).map((item, index) => renderCategoryCard(item, true, false, index))}
-              </div>
-            </>
-          ) : (
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-4">
-              {categories.length > 0 ? (
-                categories.slice(0, 12).map((category, index) => {
-                  const isDesktopOnly = index >= 6;
-                  return renderCategoryCard(category, false, isDesktopOnly, index);
-                })
-              ) : (
-                <div className="col-span-full text-center text-gray-500">No categories found.</div>
-              )}
-            </div>
-          )}
+          {/* Section Divider */}
+          <div className="mb-6 sm:mb-10 flex items-center gap-4 sm:gap-6">
+            <div className="h-px flex-1 bg-neutral-200"></div>
+            <h2 className="text-center text-[12px] sm:text-[13px] font-bold tracking-[0.24em] text-neutral-900 uppercase">
+              FEATURED CATEGORIES
+            </h2>
+            <div className="h-px flex-1 bg-neutral-200"></div>
+          </div>
+
+          {/* Category Cards: 2 cols on mobile, 4 cols on desktop */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
+            {displayCategories.slice(0, 4).map((cat, idx) => {
+              const catImage = cat.image || defaultCategories[idx % defaultCategories.length].image;
+              return (
+                <Link
+                  key={cat.id || cat.slug || idx}
+                  href={`/category/${cat.slug}`}
+                  className="group relative block aspect-[4/5] overflow-hidden bg-neutral-100"
+                >
+                  <Image
+                    src={catImage}
+                    alt={cat.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    className="object-cover h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5 text-white">
+                    <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.14em] drop-shadow-xs">
+                      {cat.name}
+                    </p>
+                    <span className="text-[10px] sm:text-[11px] text-neutral-300 tracking-wider group-hover:underline">
+                      Shop Collection →
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
         </div>
       </section>
 
-      {displayFeatured.length > 0 && (
-      <section className="py-6 md:py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-2 md:px-4">
-          <div className="flex items-center justify-between mb-4 md:mb-8">
-            <div className="flex items-center gap-2 md:gap-3">
-              <h2 className="text-lg md:text-2xl font-bold text-gray-900">Featured Products</h2>
-              <span className="px-2 md:px-3 py-0.5 md:py-1 bg-red-700 text-white text-[10px] md:text-xs font-bold rounded-full">HOT</span>
+      {/* 4. New And Popular Interactive Catalog (Onfire Tabbed Grid) */}
+      <NewAndPopularSection 
+        products={combinedCatalog} 
+        categories={displayCategories} 
+      />
+
+      {/* 5. High-Fashion Editorial Brand Statement Strip */}
+      <section className="py-12 sm:py-20 bg-neutral-900 text-white my-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-[11px] font-bold tracking-[0.26em] uppercase text-neutral-400 mb-3">
+                THE VESTRO MANIFESTO
+              </p>
+              <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight leading-tight mb-4">
+                STREET-READY SILHOUETTES · MODERN CRAFTSMANSHIP
+              </h2>
+              <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed mb-6 max-w-lg">
+                Vestro Wear House redefines everyday apparel with precision cutting, heavy GSM cotton, 
+                and drops designed for the modern lifestyle. Effortless style, supreme durability.
+              </p>
+              <Link
+                href="/about"
+                className="inline-block border border-white px-7 py-3 text-xs font-bold uppercase tracking-[0.18em] hover:bg-white hover:text-black transition-all"
+              >
+                Read Our Story →
+              </Link>
             </div>
-            <Link href="/shop" aria-label="View all featured products" className="text-blue-700 hover:underline flex items-center gap-1 font-semibold text-sm md:text-base">
-              View All <ArrowRightIcon className="w-4 h-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
-            {displayFeatured.map((product, index) => (
-              <ProductCard key={product._id || product.id || index} product={product} />
-            ))}
+            
+            <div className="relative aspect-[16/10] sm:aspect-[16/9] overflow-hidden bg-neutral-800">
+              <Image
+                src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop"
+                alt="Vestro Fashion Craftsmanship"
+                fill
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
+
+      {/* 6. New Arrivals Showcase */}
+      {newArrivals.length > 0 && (
+        <section className="py-8 sm:py-14">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            
+            <div className="mb-6 sm:mb-10 flex items-center gap-4 sm:gap-6">
+              <div className="h-px flex-1 bg-neutral-200"></div>
+              <h2 className="text-center text-[12px] sm:text-[13px] font-bold tracking-[0.24em] text-neutral-900 uppercase">
+                NEW ARRIVALS
+              </h2>
+              <div className="h-px flex-1 bg-neutral-200"></div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3.5 gap-y-7 sm:gap-x-5 sm:gap-y-10">
+              {newArrivals.slice(0, 8).map((product, idx) => (
+                <ProductCard 
+                  key={product._id || product.id || idx} 
+                  product={product} 
+                />
+              ))}
+            </div>
+
+          </div>
+        </section>
       )}
 
-      {/* Trust & Niche Focus Promotional Strip */}
-      <section className="py-6 md:py-10">
-        <div className="max-w-7xl mx-auto px-2 md:px-4">
-          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-            <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 rounded-xl md:rounded-2xl p-6 md:p-8 text-white shadow-md flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Pro Gaming & Tech Setup</span>
-                <h2 className="text-xl md:text-2xl font-bold mt-1 mb-2">Upgrade Your Battlestation</h2>
-                <p className="opacity-90 text-sm md:text-base max-w-md">Mechanical keyboards, high-precision mice, cooling pads & setup accessories.</p>
-              </div>
-              <div className="mt-6">
-                <Link href="/shop" aria-label="Shop Gaming Gear" className="inline-block px-5 py-2.5 bg-white text-blue-800 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-sm text-sm md:text-base">
-                  Explore Gaming Gear →
-                </Link>
-              </div>
-            </div>
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-cyan-800 rounded-xl md:rounded-2xl p-6 md:p-8 text-white shadow-md flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">100% Risk-Free Shopping</span>
-                <h2 className="text-xl md:text-2xl font-bold mt-1 mb-2">সারা বাংলাদেশে ক্যাশ অন ডেলিভারি</h2>
-                <p className="opacity-90 text-sm md:text-base max-w-md">পণ্য হাতে পেয়ে চেক করে মূল্য পরিশোধ করুন। ৭ দিনের সহজ রিটার্ন ও ইনস্ট্যান্ট রিপ্লেসমেন্ট সুবিধা।</p>
-              </div>
-              <div className="mt-6">
-                <Link href="/return-policy" aria-label="View Return Policy" className="inline-block px-5 py-2.5 bg-white text-emerald-800 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-sm text-sm md:text-base">
-                  আমাদের রিটার্ন পলিসি জানুন →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {displayNewArrivals.length > 0 && (
-      <section className="py-6 md:py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-2 md:px-4">
-          <div className="flex items-center justify-between mb-4 md:mb-8">
-            <div className="flex items-center gap-2 md:gap-3">
-              <h2 className="text-lg md:text-2xl font-bold text-gray-900">New Arrivals</h2>
-              <span className="px-2 md:px-3 py-0.5 md:py-1 bg-green-700 text-white text-[10px] md:text-xs font-bold rounded-full">NEW</span>
-            </div>
-            <Link href="/shop" aria-label="View all new arrival products" className="text-blue-700 hover:underline flex items-center gap-1 font-semibold text-sm md:text-base">
-              View All <ArrowRightIcon className="w-4 h-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
-            {displayNewArrivals.map((item, index) => (
-              <ProductCard key={item._id || item.id || index} product={item} />
-            ))}
-          </div>
-        </div>
-      </section>
-      )}
-      </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useDebounceQuantityUpdate } from '../hooks/useDebounceQuantityUpdate';
 
@@ -15,7 +15,6 @@ export default function CartPage() {
   const items = cart?.items || [];
   const { updateQuantityWithDebounce, isLoading } = useDebounceQuantityUpdate(updateQuantity, 300);
 
-  // Hydration error ফিক্স করার জন্য
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -32,28 +31,41 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-[70vh] bg-gray-50 flex flex-col items-center justify-center p-4">
-        <ShoppingBag className="w-24 h-24 text-gray-300 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Your cart is empty</h1>
-        <p className="text-gray-500 mb-6">Looks like you haven't added anything to your cart yet.</p>
+      <div className="min-h-[70vh] bg-white flex flex-col items-center justify-center p-4">
+        <ShoppingBag className="w-20 h-20 text-neutral-300 stroke-1 mb-4" />
+        <h1 className="text-xl font-bold uppercase tracking-widest text-neutral-900 mb-2">Your Bag Is Empty</h1>
+        <p className="text-sm text-neutral-500 mb-6">Explore our latest drops and premium streetwear essentials.</p>
         <Link 
-          href="/"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+          href="/shop"
+          className="px-8 py-3 bg-neutral-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors"
         >
-          Start Shopping
+          Explore Collection
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+    <div className="min-h-screen bg-white py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-6 mb-8 border-b border-neutral-200">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-[0.2em] text-neutral-900">Shopping Bag</h1>
+            <p className="text-xs text-neutral-500 mt-1 uppercase tracking-wider">{items.length} {items.length === 1 ? 'item' : 'items'}</p>
+          </div>
+          <Link 
+            href="/shop"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-600 hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Continue Shopping
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Cart Items List */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-8 divide-y divide-neutral-200">
             {items.map((item, index) => {
               const product = item.product || {};
               const productId = product._id || product.id || item.productId || item.id;
@@ -62,57 +74,57 @@ export default function CartPage() {
               const price = item.variantPrice || product.sellingPrice || product.price || 0;
               const image = item.variantData?.variantImage || product.featuredImage || (product.images && product.images[0]) || product.image || '';
               return (
-              <div key={itemKey} className="bg-white rounded-xl shadow-sm p-4 flex gap-4 items-center">
-                <div className="w-24 h-24 relative flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+              <div key={itemKey} className="py-6 flex gap-4 sm:gap-6 items-start">
+                <div className="w-20 sm:w-28 aspect-[3/4] relative flex-shrink-0 bg-neutral-100 rounded-lg overflow-hidden border border-neutral-200">
                   {image ? (
                     <img src={image} alt={product.name} className="object-cover w-full h-full" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>
+                    <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs">No Image</div>
                   )}
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <Link href={`/product/${product.slug}`} className="text-lg font-semibold text-gray-800 hover:text-blue-600 truncate block">
+                  <Link href={`/product/${product.slug}`} className="text-sm sm:text-base font-bold text-neutral-900 hover:text-black truncate block">
                     {product.name}
                   </Link>
                   {/* Selected Attributes & Variant */}
                   {(item.variantData?.selectedAttributes || item.selectedAttributes) && (
-                    <div className="flex flex-wrap gap-1 mt-1 mb-1.5">
+                    <div className="flex flex-wrap gap-1 mt-1.5 mb-1.5">
                       {Object.entries(item.variantData?.selectedAttributes || item.selectedAttributes).map(([k, v]) => (
-                        <span key={k} className="inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                        <span key={k} className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-neutral-100 text-neutral-800 uppercase tracking-wider">
                           {k}: {v}
                         </span>
                       ))}
                     </div>
                   )}
                   {item.variantSku && (
-                    <p className="text-[11px] text-gray-400 font-mono mb-1">SKU: {item.variantSku}</p>
+                    <p className="text-[11px] text-neutral-400 font-mono mb-1">SKU: {item.variantSku}</p>
                   )}
-                  <p className="text-gray-500 text-sm mb-2">{product.category?.name || product.category}</p>
-                  <p className="text-blue-600 font-bold font-mono">৳ {Number(price).toLocaleString()}</p>
+                  <p className="text-neutral-900 font-black text-base sm:text-lg mt-2">৳{Number(price).toLocaleString()}</p>
                 </div>
 
-                <div className="flex flex-col items-end gap-3">
+                <div className="flex flex-col items-end justify-between self-stretch">
                   <button 
                     onClick={() => removeFromCart(productId, variantSku)}
-                    className="text-red-500 hover:text-red-700 p-2 bg-red-50 hover:bg-red-100 rounded-lg transition"
+                    className="text-neutral-400 hover:text-black p-1 transition-colors"
+                    title="Remove item"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                   
-                  <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-1">
+                  <div className="flex items-center border border-neutral-300 rounded overflow-hidden mt-4">
                     <button 
                       onClick={() => updateQuantityWithDebounce(productId, item.quantity - 1, variantSku)}
                       disabled={item.quantity <= 1 || isLoading(productId, variantSku)}
-                      className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                      className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 text-neutral-700 font-bold transition-colors disabled:opacity-40"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
-                    <span className="font-medium w-4 text-center">{item.quantity}</span>
+                    <span className="font-bold w-8 text-center text-xs text-neutral-900">{item.quantity}</span>
                     <button 
                       onClick={() => updateQuantityWithDebounce(productId, item.quantity + 1, variantSku)}
                       disabled={isLoading(productId, variantSku)}
-                      className="w-8 h-8 flex items-center justify-center bg-white rounded shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                      className="w-8 h-8 flex items-center justify-center hover:bg-neutral-100 text-neutral-700 font-bold transition-colors"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
@@ -121,36 +133,43 @@ export default function CartPage() {
               </div>)
             })}
             
-            <div className="flex justify-end">
+            <div className="pt-4 flex justify-between items-center">
+              <Link href="/shop" className="sm:hidden text-xs font-bold uppercase tracking-wider text-neutral-600 hover:text-black">
+                ← Continue Shopping
+              </Link>
               <button 
                 onClick={clearCart}
-                className="text-red-600 font-medium hover:underline text-sm"
+                className="text-neutral-400 font-medium hover:text-black text-xs uppercase tracking-wider ml-auto"
               >
-                Clear All Items
+                Clear All
               </button>
             </div>
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white rounded-xl shadow-sm p-6 h-fit sticky top-24">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+          <div className="lg:col-span-4 bg-neutral-50 rounded-2xl p-6 sm:p-7 border border-neutral-200 sticky top-24">
+            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-900 mb-6 pb-3 border-b border-neutral-200">Order Summary</h2>
             
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-gray-600">
+            <div className="space-y-3 mb-6 text-xs uppercase tracking-wider">
+              <div className="flex justify-between text-neutral-600">
                 <span>Subtotal ({items.length} items)</span>
-                <span>৳ {getCartTotal().toFixed(2)}</span>
+                <span className="font-bold text-neutral-900">৳{getCartTotal().toLocaleString()}</span>
               </div>
-              <div className="border-t pt-3 mt-3">
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span className="text-blue-600">৳ {getCartTotal().toFixed(2)}</span>
+              <div className="flex justify-between text-neutral-600">
+                <span>Shipping</span>
+                <span className="text-neutral-500">Calculated at checkout</span>
+              </div>
+              <div className="border-t border-neutral-200 pt-3 mt-3">
+                <div className="flex justify-between items-baseline font-black text-base text-neutral-900">
+                  <span className="uppercase tracking-widest text-xs font-bold text-neutral-500">Total</span>
+                  <span className="text-2xl font-black">৳{getCartTotal().toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
             <Link 
               href="/checkout?source=cart"
-              className="w-full block text-center py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition shadow-sm"
+              className="w-full block text-center py-3.5 bg-neutral-900 hover:bg-black text-white rounded-xl font-bold text-xs uppercase tracking-[0.18em] transition-all shadow-sm"
             >
               Proceed to Checkout
             </Link>

@@ -37,18 +37,6 @@ const menuSections = [
     ]
   },
   {
-    title: 'Vendors',
-    items: [
-      { name: 'All Vendors', href: '/admin/vendors', icon: '🏪' },
-      { name: 'Vendor Product Requests', href: '/admin/vendor-product-requests', icon: '🧾' },
-      { name: 'Vendor Orders', href: '/admin/vendor-orders', icon: '📦' },
-      { name: 'Vendor Products', href: '/admin/vendor-products', icon: '🛍️' },
-      { name: 'Vendor Analytics', href: '/admin/vendor-analytics', icon: '📊' },
-      { name: 'Vendor Revenue', href: '/admin/vendor-revenue', icon: '💰' },
-      { name: 'Vendor Settings', href: '/admin/vendor-settings', icon: '⚙️' },
-    ]
-  },
-  {
     title: 'Community',
     items: [
       { name: 'Users', href: '/admin/users', icon: '👥' },

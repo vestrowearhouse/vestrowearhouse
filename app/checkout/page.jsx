@@ -109,7 +109,7 @@ function CheckoutContent() {
 
       let sessionVariant = null;
       try {
-        const stored = sessionStorage.getItem('stellar_buynow_variant');
+        const stored = sessionStorage.getItem('vestro_buynow_variant') || sessionStorage.getItem('stellar_buynow_variant');
         if (stored) sessionVariant = JSON.parse(stored);
       } catch (e) {}
 
@@ -443,6 +443,7 @@ function CheckoutContent() {
         setOrderId(data.order.orderNumber || data.order._id);
         clearCart();
         try {
+          sessionStorage.removeItem('vestro_buynow_variant');
           sessionStorage.removeItem('stellar_buynow_variant');
         } catch (e) {}
         setStep(3);
@@ -500,7 +501,7 @@ function CheckoutContent() {
                 <span>256-Bit SSL Encrypted & Protected</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                StellarMart Express Checkout
+                Vestro Express Checkout
               </h1>
             </div>
 
@@ -872,7 +873,7 @@ function CheckoutContent() {
                           name="couponCode"
                           value={formData.couponCode}
                           onChange={handleInputChange}
-                          placeholder="Enter coupon code (e.g. STELLAR10)"
+                          placeholder="Enter coupon code (e.g. VESTRO10)"
                           className="w-full pl-10 pr-4 py-2.5 sm:py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none text-sm uppercase tracking-wider font-semibold placeholder:normal-case placeholder:font-normal placeholder:text-slate-400"
                         />
                       </div>

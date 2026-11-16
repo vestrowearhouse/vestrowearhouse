@@ -191,16 +191,12 @@ export default function ProductPage({ params }) {
   const detailsRef = useRef(null);
   const recsRef = useRef(null);
 
-  // Load saved delivery location & follow status from localStorage
+  // Load saved delivery location from localStorage
   useEffect(() => {
     try {
-      const savedLoc = localStorage.getItem('stellar_delivery_location');
+      const savedLoc = localStorage.getItem('vestro_delivery_location') || localStorage.getItem('stellar_delivery_location');
       if (savedLoc) {
         setDeliveryLocation(JSON.parse(savedLoc));
-      }
-      const savedFollow = localStorage.getItem(`stellar_vendor_follow_${slug}`);
-      if (savedFollow) {
-        setIsStoreFollowed(JSON.parse(savedFollow));
       }
     } catch {
       // ignore
@@ -520,7 +516,7 @@ export default function ProductPage({ params }) {
       variantImage: activeVariant?.images?.[0] || null,
     };
     try {
-      sessionStorage.setItem('stellar_buynow_variant', JSON.stringify(selectedVariantPayload));
+      sessionStorage.setItem('vestro_buynow_variant', JSON.stringify(selectedVariantPayload));
     } catch (e) {}
 
     const attrParam = encodeURIComponent(JSON.stringify(selectedAttrs));
@@ -533,8 +529,8 @@ export default function ProductPage({ params }) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: product?.name || 'Stellar Mart BD',
-          text: `Check out ${product?.name} on Stellar Mart BD!`,
+          title: product?.name || 'Vestro Wear House',
+          text: `Check out ${product?.name} at Vestro Wear House!`,
           url: shareUrl,
         });
         return;
@@ -554,13 +550,7 @@ export default function ProductPage({ params }) {
   };
 
   const toggleStoreFollow = () => {
-    const nextState = !isStoreFollowed;
-    setIsStoreFollowed(nextState);
-    try {
-      localStorage.setItem(`stellar_vendor_follow_${slug}`, JSON.stringify(nextState));
-    } catch {
-      // ignore
-    }
+    setIsStoreFollowed(!isStoreFollowed);
   };
 
 
@@ -667,7 +657,7 @@ export default function ProductPage({ params }) {
     const loc = { division: div, city: ct, area: ar, cost: fee };
     setDeliveryLocation(loc);
     try {
-      localStorage.setItem('stellar_delivery_location', JSON.stringify(loc));
+      localStorage.setItem('vestro_delivery_location', JSON.stringify(loc));
     } catch {
       // ignore
     }
@@ -695,10 +685,10 @@ export default function ProductPage({ params }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-3 border-[#083b66] border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-semibold text-gray-500">Loading product details...</p>
+          <div className="w-9 h-9 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-semibold tracking-wider uppercase text-neutral-500">Loading collection...</p>
         </div>
       </div>
     );
@@ -708,18 +698,18 @@ export default function ProductPage({ params }) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <div className="text-center max-w-sm">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center text-2xl">
+          <div className="w-16 h-16 mx-auto mb-4 bg-neutral-100 rounded-2xl flex items-center justify-center text-2xl">
             📦
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Product Not Found</h1>
-          <p className="text-sm text-gray-500 mb-6">
-            The item you are looking for might have been removed or is temporarily unavailable.
+          <h1 className="text-xl font-bold text-neutral-900 mb-2">Product Not Found</h1>
+          <p className="text-sm text-neutral-500 mb-6">
+            The item you are looking for might have been moved or is currently out of stock.
           </p>
           <Link
             href="/shop"
-            className="inline-flex items-center justify-center gap-2 w-full px-5 py-2.5 bg-[#083b66] text-white text-sm font-bold rounded-xl shadow-sm hover:bg-[#062d4d] transition-colors"
+            className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm hover:bg-black transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Shop
+            <ArrowLeft className="w-4 h-4" /> Back to Collection
           </Link>
         </div>
       </div>
@@ -728,26 +718,36 @@ export default function ProductPage({ params }) {
 
   const categoryTitle = categoryData.name || 'Products';
   const categorySlug = categoryData.slug;
-  const isOfficial = (!product.vendor_id || product.vendor_id === 'official') && product.is_official !== false;
-  const storeName = isOfficial ? 'StellarMart Official' : (product.store_name || product.vendor?.shop_name || 'Vendor Store');
+  const isOfficial = true;
+  const storeName = 'Vestro Wear House';
   const guaranteedDate = getGuaranteedDeliveryDates();
 
   const filteredRecs = relatedProducts.length > 0 ? relatedProducts : [];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-24 md:pb-16 text-gray-900 selection:bg-blue-100 w-full max-w-full">
+    <div className="min-h-screen bg-white pb-24 md:pb-16 text-neutral-900 selection:bg-neutral-200 w-full max-w-full">
       
       {/* Toast notifications */}
       {copiedLink && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-[#083b66] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-black text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
           Link copied to clipboard!
         </div>
       )}
 
-      {/* ── BREADCRUMB ROW (Cleanly docked under CategoryMenu with no excess space) ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 hidden md:block">
-        <nav className="flex items-center gap-1.5 text-xs text-gray-500 truncate">
+      {/* ── BREADCRUMB ROW ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 hidden md:block">
+        <nav className="flex items-center gap-2 text-xs text-neutral-500 uppercase tracking-wider truncate">
+          <Link href="/" className="hover:text-black transition-colors">Home</Link>
+          <ChevronRight className="w-3 h-3 text-neutral-400 shrink-0" />
+          <Link href="/shop" className="hover:text-black transition-colors">Shop</Link>
+          <ChevronRight className="w-3 h-3 text-neutral-400 shrink-0" />
+          <Link
+            href={categorySlug ? `/category/${categorySlug}` : '/categories'}
+            className="hover:text-black transition-colors font-semibold text-neutral-800 truncate max-w-[200px]"
+          >
+            {categoryTitle}
+          </Link>
           <Link href="/" className="hover:text-[#083b66] transition-colors">Home</Link>
           <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
           <Link href="/shop" className="hover:text-[#083b66] transition-colors">Shop</Link>
@@ -773,8 +773,8 @@ export default function ProductPage({ params }) {
             {/* ── LEFT COLUMN: PRODUCT IMAGES (lg:col-span-5) ── */}
             <div className="lg:col-span-5 w-full p-0 sm:p-5 lg:sticky lg:top-[120px] self-start">
               
-              {/* Main Image Frame */}
-              <div className="relative aspect-square w-full bg-[#f8fafc] sm:rounded-xl overflow-hidden border-b sm:border border-gray-200/80 flex items-center justify-center">
+              {/* Main Image Frame (Fashion Portrait aspect-[3/4]) */}
+              <div className="relative aspect-[3/4] w-full bg-neutral-100 sm:rounded-xl overflow-hidden border-b sm:border border-neutral-200 flex items-center justify-center">
                 <Image
                   src={currentImage}
                   alt={product.name}
@@ -782,12 +782,12 @@ export default function ProductPage({ params }) {
                   priority
                   quality={90}
                   sizes="(max-width: 1024px) 100vw, 550px"
-                  className="object-contain p-3 sm:p-6 select-none transition-transform duration-300 md:hover:scale-105"
+                  className="object-cover select-none transition-transform duration-500 md:hover:scale-105"
                 />
 
                 {/* Discount Badge */}
                 {discount > 0 && (
-                  <div className="absolute top-3.5 left-3.5 z-10 px-2 py-0.5 bg-[#b91c1c] text-white text-[11px] font-black rounded shadow-sm">
+                  <div className="absolute top-3.5 left-3.5 z-10 px-2.5 py-1 bg-black text-white text-[11px] font-black uppercase tracking-wider rounded shadow-sm">
                     -{discount}%
                   </div>
                 )}
@@ -797,14 +797,14 @@ export default function ProductPage({ params }) {
                   <button
                     onClick={handleToggleWishlist}
                     aria-label="Wishlist"
-                    className="p-2 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full shadow-sm text-gray-600 active:scale-95 transition-transform"
+                    className="p-2 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full shadow-sm text-neutral-700 active:scale-95 transition-transform"
                   >
-                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-neutral-900 text-neutral-900' : ''}`} />
                   </button>
                   <button
                     onClick={handleShare}
                     aria-label="Share"
-                    className="p-2 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full shadow-sm text-gray-600 active:scale-95 transition-transform"
+                    className="p-2 bg-white/90 hover:bg-white backdrop-blur-sm rounded-full shadow-sm text-neutral-700 active:scale-95 transition-transform"
                   >
                     <Share2 className="w-4 h-4" />
                   </button>
@@ -812,8 +812,8 @@ export default function ProductPage({ params }) {
 
                 {/* Out of Stock Overlay */}
                 {!isInStock && (
-                  <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center z-20 pointer-events-none">
-                    <span className="bg-gray-900 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg">
+                  <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] flex items-center justify-center z-20 pointer-events-none">
+                    <span className="bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-lg">
                       Out of Stock
                     </span>
                   </div>
@@ -821,7 +821,7 @@ export default function ProductPage({ params }) {
 
                 {/* Mobile Image Counter Pill 1/3 */}
                 {allImages.length > 0 && (
-                  <div className="sm:hidden absolute bottom-3 right-3 z-10 px-2.5 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[11px] font-bold rounded-full pointer-events-none">
+                  <div className="sm:hidden absolute bottom-3 right-3 z-10 px-2.5 py-0.5 bg-black/70 backdrop-blur-sm text-white text-[11px] font-bold rounded-full pointer-events-none">
                     {selectedImage + 1}/{allImages.length}
                   </div>
                 )}
@@ -834,18 +834,18 @@ export default function ProductPage({ params }) {
                     <button
                       key={idx}
                       onClick={() => setSelectedImage(idx)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 transition-all p-1 bg-white cursor-pointer ${
+                      className={`flex-shrink-0 w-16 h-20 rounded-lg border-2 transition-all p-0.5 bg-neutral-100 cursor-pointer overflow-hidden ${
                         selectedImage === idx
-                          ? 'border-[#083b66] ring-2 ring-[#083b66]/20 shadow-xs'
-                          : 'border-gray-200 hover:border-gray-300 opacity-75 hover:opacity-100'
+                          ? 'border-neutral-900 ring-2 ring-neutral-900/20 shadow-xs'
+                          : 'border-neutral-200 hover:border-neutral-400 opacity-70 hover:opacity-100'
                       }`}
                     >
-                      <div className="relative w-full h-full">
+                      <div className="relative w-full h-full aspect-[3/4]">
                         <Image
                           src={img}
                           alt={`Thumbnail ${idx + 1}`}
                           fill
-                          className="object-contain"
+                          className="object-cover rounded"
                           sizes="64px"
                         />
                       </div>
@@ -858,36 +858,30 @@ export default function ProductPage({ params }) {
             {/* ── RIGHT COLUMN: PRODUCT INFO & DESKTOP ACTIONS (lg:col-span-7) ── */}
             <div className="lg:col-span-7 p-4 sm:p-6 lg:p-7 flex flex-col justify-start">
               
-              {/* Brand & Official Store Tag */}
+              {/* Brand & SKU Header */}
               <div className="flex items-center gap-2 flex-wrap mb-2">
-                {isOfficial ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200/70 px-2 py-0.5 rounded">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" /> StellarMart Official
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200/70 px-2 py-0.5 rounded">
-                    <Store className="w-3.5 h-3.5 text-purple-600" /> {storeName}
-                  </span>
-                )}
+                <span className="text-[11px] font-bold tracking-[0.2em] text-neutral-500 uppercase">
+                  Vestro Wear House
+                </span>
 
                 {product.brand && (
-                  <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[11px] font-semibold rounded">
-                    Brand: {product.brand}
+                  <span className="px-2 py-0.5 bg-neutral-100 text-neutral-700 text-[11px] font-semibold rounded uppercase tracking-wider">
+                    {product.brand}
                   </span>
                 )}
 
-                <span className="text-[11px] font-medium text-gray-400 font-mono ml-auto">
+                <span className="text-[11px] font-medium text-neutral-400 font-mono ml-auto">
                   SKU: {displaySku}
                 </span>
               </div>
 
               {/* Product Title */}
-              <h1 className="text-lg sm:text-2xl lg:text-[26px] font-bold text-gray-900 leading-snug tracking-tight mb-2.5">
+              <h1 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-neutral-900 leading-snug tracking-tight mb-2.5">
                 {product.name}
               </h1>
 
               {/* Rating, Reviews and Wishlist Bar */}
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 flex-wrap gap-2">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-100 flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-xs">
                   <div className="flex text-amber-400">
                     {[...Array(5)].map((_, i) => {
@@ -897,27 +891,27 @@ export default function ProductPage({ params }) {
                       return (
                         <Star
                           key={i}
-                          className={`w-4 h-4 ${
+                          className={`w-3.5 h-3.5 ${
                             i < Math.floor(curRating)
                               ? 'fill-amber-400 text-amber-400'
-                              : 'text-gray-200 fill-gray-200'
+                              : 'text-neutral-200 fill-neutral-200'
                           }`}
                         />
                       );
                     })}
                   </div>
-                  <span className="font-bold text-gray-900">
+                  <span className="font-bold text-neutral-900">
                     {reviewsList.length > 0
                       ? (reviewsList.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviewsList.length).toFixed(1)
                       : (product.rating ? Number(product.rating).toFixed(1) : '5.0')}
                   </span>
-                  <span className="text-gray-400">
+                  <span className="text-neutral-400">
                     ({reviewsList.length} {reviewsList.length === 1 ? 'review' : 'reviews'})
                   </span>
                   {Number(product.sold_count || product.sales_count || 0) > 0 && (
                     <>
-                      <span className="text-gray-300">•</span>
-                      <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-semibold">
+                      <span className="text-neutral-300">•</span>
+                      <span className="text-neutral-900 bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded text-[11px] font-semibold">
                         {product.sold_count || product.sales_count} sold
                       </span>
                     </>
@@ -930,17 +924,17 @@ export default function ProductPage({ params }) {
                     onClick={handleToggleWishlist}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
                       isWishlisted
-                        ? 'bg-rose-50 border-rose-200 text-rose-600'
-                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                        ? 'bg-neutral-900 border-neutral-900 text-white'
+                        : 'border-neutral-200 text-neutral-600 hover:border-neutral-900'
                     }`}
                   >
-                    <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
+                    <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-white text-white' : ''}`} />
                     <span>{isWishlisted ? 'Wishlisted' : 'Add to Wishlist'}</span>
                   </button>
 
                   <button
                     onClick={handleShare}
-                    className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-colors"
+                    className="p-1.5 rounded-lg border border-neutral-200 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 transition-colors"
                     title="Share product"
                   >
                     <Share2 className="w-4 h-4" />
@@ -949,21 +943,21 @@ export default function ProductPage({ params }) {
               </div>
 
               {/* Price Block */}
-              <div className="flex items-baseline gap-3 mb-4 bg-slate-50/70 p-3 sm:p-4 rounded-xl border border-slate-100">
-                <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#f85606] tracking-tight">
+              <div className="flex items-baseline gap-3 mb-4 bg-neutral-50 p-3.5 sm:p-4 rounded-xl border border-neutral-200">
+                <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight">
                   ৳{sellingPrice.toLocaleString('en-IN')}
                 </span>
                 {discount > 0 && (
                   <>
-                    <span className="text-sm sm:text-base text-gray-400 line-through font-mono">
+                    <span className="text-sm sm:text-base text-neutral-400 line-through font-mono">
                       ৳{regularPrice.toLocaleString('en-IN')}
                     </span>
-                    <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-md">
+                    <span className="px-2 py-0.5 bg-neutral-900 text-white text-xs font-bold rounded">
                       Save ৳{(regularPrice - sellingPrice).toLocaleString('en-IN')} (-{discount}%)
                     </span>
                   </>
                 )}
-                <span className="text-xs text-gray-400 ml-auto hidden sm:inline">
+                <span className="text-xs text-neutral-400 ml-auto hidden sm:inline">
                   (VAT Inclusive)
                 </span>
               </div>
@@ -974,8 +968,8 @@ export default function ProductPage({ params }) {
                   {parsedAttributes.map((attr) => (
                     <div key={attr.name}>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                          {attr.name}: <span className="text-[#083b66] font-extrabold">{selectedAttrs[attr.name] || 'Select'}</span>
+                        <span className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+                          {attr.name}: <span className="text-neutral-900 font-extrabold">{selectedAttrs[attr.name] || 'Select'}</span>
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -986,10 +980,10 @@ export default function ProductPage({ params }) {
                               key={val}
                               type="button"
                               onClick={() => handleAttrSelect(attr.name, val)}
-                              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer active:scale-95 ${
+                              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border cursor-pointer active:scale-95 ${
                                 isSelected
-                                  ? 'bg-[#083b66] text-white border-[#083b66] shadow-xs ring-2 ring-[#083b66]/20'
-                                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400'
+                                  ? 'bg-neutral-900 text-white border-neutral-900 shadow-sm ring-2 ring-neutral-900/20'
+                                  : 'bg-white text-neutral-800 border-neutral-200 hover:border-neutral-900'
                               }`}
                             >
                               {val}
@@ -1006,60 +1000,60 @@ export default function ProductPage({ params }) {
               {hasAttributes && (
                 <div
                   onClick={() => setOptionsDrawerOpen(true)}
-                  className="md:hidden flex items-center justify-between p-3.5 mb-3 bg-gray-50/80 rounded-xl border border-gray-200 cursor-pointer"
+                  className="md:hidden flex items-center justify-between p-3.5 mb-3 bg-neutral-50 rounded-xl border border-neutral-200 cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 font-medium">Product Options:</span>
-                    <span className="text-xs text-gray-900 font-bold truncate max-w-[170px]">
+                    <span className="text-xs text-neutral-500 font-medium">Product Options:</span>
+                    <span className="text-xs text-neutral-900 font-bold truncate max-w-[170px]">
                       {selectedOptionsSummary}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-[#083b66] font-bold">
+                  <div className="flex items-center gap-1.5 text-xs text-neutral-900 font-bold">
                     <span>Change</span>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 text-neutral-400" />
                   </div>
                 </div>
               )}
 
-              {/* ── DESKTOP BUTTONS & QUANTITY STEPPER (hidden on mobile, uses StellarMart theme!) ── */}
+              {/* ── DESKTOP BUTTONS & QUANTITY STEPPER (High Fashion Minimalist Aesthetic) ── */}
               <div className="hidden md:flex items-center gap-3 pt-2 mb-5">
                 
                 {/* Quantity */}
-                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white h-12 shadow-2xs">
+                <div className="flex items-center border border-neutral-300 rounded-lg overflow-hidden bg-white h-12 shadow-2xs">
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
-                    className="w-10 h-full flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                    className="w-10 h-full flex items-center justify-center hover:bg-neutral-100 disabled:opacity-40 transition-colors"
                   >
-                    <Minus className="w-4 h-4 text-gray-700" />
+                    <Minus className="w-4 h-4 text-neutral-700" />
                   </button>
-                  <span className="w-10 text-center font-bold text-sm text-gray-900">
+                  <span className="w-10 text-center font-bold text-sm text-neutral-900">
                     {quantity}
                   </span>
                   <button
                     onClick={() => handleQuantityChange(1)}
                     disabled={quantity >= stockQty}
-                    className="w-10 h-full flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                    className="w-10 h-full flex items-center justify-center hover:bg-neutral-100 disabled:opacity-40 transition-colors"
                   >
-                    <Plus className="w-4 h-4 text-gray-700" />
+                    <Plus className="w-4 h-4 text-neutral-700" />
                   </button>
                 </div>
 
-                {/* Add to Cart - Stellar Blue button matching website */}
+                {/* Add to Cart - Minimalist Black/White */}
                 <button
                   onClick={handleAddToCart}
                   disabled={!isInStock || isAdding}
-                  className={`flex-1 h-12 px-6 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-98 cursor-pointer ${
+                  className={`flex-1 h-12 px-6 rounded-lg font-bold text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 transition-all shadow-sm active:scale-98 cursor-pointer ${
                     added
-                      ? 'bg-emerald-600 text-white'
+                      ? 'bg-neutral-900 text-white'
                       : isInStock
-                      ? 'bg-[#0066cc] hover:bg-[#0052a3] text-white'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      ? 'bg-white hover:bg-neutral-100 text-neutral-900 border-2 border-neutral-900'
+                      : 'bg-neutral-100 text-neutral-400 border border-neutral-200 cursor-not-allowed'
                   }`}
                 >
                   {added ? (
                     <>
-                      <Check className="w-4 h-4" /> Added to Cart!
+                      <Check className="w-4 h-4" /> Added to Bag
                     </>
                   ) : isAdding ? (
                     <>
@@ -1069,140 +1063,97 @@ export default function ProductPage({ params }) {
                     'Out of Stock'
                   ) : (
                     <>
-                      <ShoppingBag className="w-4 h-4" /> Add to Cart
+                      <ShoppingBag className="w-4 h-4" /> Add to Bag
                     </>
                   )}
                 </button>
 
-                {/* Buy Now - Stellar Green button matching website */}
+                {/* Buy Now - Solid Black Primary Button */}
                 <button
                   onClick={handleBuyNow}
                   disabled={!isInStock || isAdding}
-                  className="flex-1 h-12 px-6 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm bg-[#15803d] hover:bg-[#166534] hover:scale-[1.01] text-white active:scale-98 cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  className="flex-1 h-12 px-6 rounded-lg font-bold text-xs uppercase tracking-[0.16em] flex items-center justify-center gap-2 transition-all shadow-sm bg-neutral-900 hover:bg-black text-white active:scale-98 cursor-pointer disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed"
                 >
-                  <Zap className="w-4 h-4 fill-current" /> Buy Now
+                  <Zap className="w-4 h-4 fill-current" /> Order Now
                 </button>
               </div>
 
               {/* ── DELIVERY & SERVICE INFO CARDS (Desktop & Mobile) ── */}
-              <div className="space-y-2.5 pt-2 border-t border-gray-100">
+              <div className="space-y-2.5 pt-2 border-t border-neutral-100">
                 
                 {/* Delivery Box */}
                 <div
                   onClick={() => setDeliveryModalOpen(true)}
-                  className="p-3.5 bg-gray-50/90 hover:bg-gray-50 border border-gray-200 rounded-xl cursor-pointer transition-all"
+                  className="p-3.5 bg-neutral-50 hover:bg-neutral-100/80 border border-neutral-200 rounded-xl cursor-pointer transition-all"
                 >
                   <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-bold text-gray-800 flex items-center gap-1.5">
-                      <Truck className="w-4 h-4 text-[#083b66]" /> হোম ডেলিভারি অপশন (Delivery)
+                    <span className="font-bold text-neutral-900 flex items-center gap-1.5">
+                      <Truck className="w-4 h-4 text-neutral-900" /> হোম ডেলিভারি (Nationwide Delivery)
                     </span>
-                    <span className="text-[#083b66] font-bold flex items-center gap-0.5 hover:underline">
+                    <span className="text-neutral-900 font-bold flex items-center gap-0.5 hover:underline">
                       লোকেশন পরিবর্তন <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-gray-600 pl-5 mb-2">
-                    <div>
-                      <p className="font-semibold text-gray-800">
-                        {deliveryLocation.area}, {deliveryLocation.city}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        স্ট্যান্ডার্ড ডেলিভারি • সম্ভাব্য তারিখ {guaranteedDate}
-                      </p>
-                    </div>
-                    <span className="font-extrabold text-gray-900 text-sm">
-                      ৳{deliveryLocation.cost}
+                  <div className="text-xs text-neutral-600 flex items-center justify-between">
+                    <span>
+                      {deliveryLocation.district === 'Dhaka' ? 'ঢাকার ভেতরে (২-৩ দিন)' : 'ঢাকার বাইরে (৩-৫ দিন)'}:{' '}
+                      <span className="font-bold text-neutral-900 font-mono">
+                        ৳{deliveryLocation.district === 'Dhaka' ? '60' : '120'}
+                      </span>
                     </span>
-                  </div>
-                  <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[11px] text-gray-600 pl-5">
-                    <span className="flex items-center gap-1 text-emerald-700 font-semibold">
-                      <span>💵</span> ক্যাশ অন ডেলিভারি প্রযোজ্য
-                    </span>
-                    <Link
-                      href="/delivery-policy"
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      ডেলিভারি পলিসি দেখুন →
-                    </Link>
+                    <span className="text-[11px] text-neutral-500">{guaranteedDate}</span>
                   </div>
                 </div>
 
-                {/* Service Box */}
-                <div className="p-3.5 bg-gradient-to-r from-emerald-50/50 via-blue-50/30 to-transparent border border-gray-200 rounded-xl text-xs text-gray-700 space-y-2">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <Link
-                      href="/return-policy"
-                      className="flex items-center gap-1.5 hover:text-emerald-700 transition"
-                    >
-                      <RotateCcw className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span className="font-bold text-gray-800">৭ দিনের সহজ রিটার্ন / রিপ্লেসমেন্ট</span>
-                      <ChevronRight className="w-3 h-3 text-gray-400" />
-                    </Link>
+                {/* Return & Warranty Strip */}
+                <div className="p-3.5 bg-white border border-neutral-200 rounded-xl space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span className="font-bold text-gray-800">১০০% আসল প্রোডাক্ট গ্যারান্টি</span>
+                      <RotateCcw className="w-4 h-4 text-neutral-900 shrink-0" />
+                      <span className="font-bold text-neutral-800">৭ দিনের সাইজ ও পণ্য এক্সচেঞ্জ পলিসি</span>
                     </div>
                   </div>
-                  <p className="text-[11px] text-gray-500 pl-5">
-                    পণ্য হাতে পাওয়ার পর রাইডারের সামনে চেক করার সুযোগ রয়েছে। কোনো সমস্যা হলে সাথে সাথে রিটার্ন করতে পারবেন।
+                  <p className="text-[11px] text-neutral-500 pl-5">
+                    সাইজ অমিল বা ত্রুটি থাকলে ডেলিভারির ৭ দিনের মধ্যে সহজ এক্সচেঞ্জ সুবিধা পাবেন।
+                  </p>
+                  
+                  <div className="flex items-center justify-between pt-1 border-t border-neutral-100">
+                    <div className="flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-neutral-900 shrink-0" />
+                      <span className="font-bold text-neutral-800">১০০% অথেনটিক কোয়ালিটি গ্যারান্টি</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-neutral-500 pl-5">
+                    প্রিমিয়াম ফেব্রিক ও পারফেক্ট স্টিচিং। রাইডারের সামনে চেক করে রিসিভ করার সুযোগ রয়েছে।
                   </p>
                 </div>
 
-                {/* Seller Store Card (Stellar Theme) */}
-                <div className="p-3.5 bg-white border border-gray-200/80 rounded-xl flex items-center justify-between gap-3">
+                {/* Vestro Brand Trust Card */}
+                <div className="p-3.5 bg-neutral-900 text-white rounded-xl flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-xs border overflow-hidden ${
-                      isOfficial
-                        ? 'bg-white border-gray-200 p-1'
-                        : (product.vendor?.logo_url || product.vendor_logo)
-                          ? 'bg-white border-gray-200 p-0.5'
-                          : 'bg-gradient-to-tr from-[#083b66] to-[#0284c7] text-white font-extrabold text-xs'
-                    }`}>
-                      {isOfficial ? (
-                        <img
-                          src="/stellar-logo-mark.png"
-                          alt="Stellar Mart Official"
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (product.vendor?.logo_url || product.vendor_logo) ? (
-                        <img
-                          src={product.vendor?.logo_url || product.vendor_logo}
-                          alt={storeName}
-                          className="w-full h-full object-cover rounded"
-                        />
-                      ) : (
-                        <span>{storeName.slice(0, 2).toUpperCase()}</span>
-                      )}
+                    <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-neutral-700 flex items-center justify-center shrink-0 overflow-hidden p-1.5">
+                      <img
+                        src="/vestro-logo-white.png"
+                        alt="Vestro Wear House"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm text-gray-900 truncate">
-                        {storeName}
+                      <h4 className="font-bold text-sm text-white truncate tracking-wide">
+                        Vestro Wear House
                       </h4>
-                      <p className="text-[11px] text-gray-500">
-                        {isOfficial ? 'Official Stellar Mall Store' : 'Verified Stellar Merchant'}
+                      <p className="text-[11px] text-neutral-400">
+                        Official Streetwear & Fashion Flagship
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={toggleStoreFollow}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all active:scale-95 ${
-                        isStoreFollowed
-                          ? 'bg-gray-100 text-gray-700 border-gray-200'
-                          : 'border-[#083b66] text-[#083b66] hover:bg-blue-50'
-                      }`}
-                    >
-                      {isStoreFollowed ? '✓ Following' : '+ Follow'}
-                    </button>
-
-                    <Link
-                      href={isOfficial ? '/shop?vendor=official' : `/shop?vendor=${product.vendor?.id || product.vendor_id || 'official'}`}
-                      className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[#083b66] hover:bg-[#062d4d] text-white transition-colors"
-                    >
-                      Visit Store
-                    </Link>
-                  </div>
+                  <Link
+                    href="/shop"
+                    className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-white text-neutral-900 hover:bg-neutral-100 transition-colors uppercase tracking-wider"
+                  >
+                    View All
+                  </Link>
                 </div>
 
               </div>
@@ -1224,7 +1175,7 @@ export default function ProductPage({ params }) {
               {product.description ? (
                 <div dangerouslySetInnerHTML={{ __html: product.description }} />
               ) : (
-                <p>Authentic quality product verified by StellarMart BD. Experience high craftsmanship, reliability, and fast shipping.</p>
+                <p>Authentic quality product crafted by Vestro Wear House. Experience premium fabric, precise tailoring, and high durability.</p>
               )}
 
               {product.tags?.length > 0 && (
@@ -1566,13 +1517,13 @@ export default function ProductPage({ params }) {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
         <div className="flex items-center h-14 px-3 gap-2">
           
-          {/* Store button */}
+          {/* Shop Catalog Link */}
           <Link
-            href={product.vendor_id ? `/shop?vendor=${product.vendor_id}` : '/shop?vendor=official'}
-            className="flex flex-col items-center justify-center w-12 h-full text-gray-600 hover:text-[#083b66] transition-colors"
+            href="/shop"
+            className="flex flex-col items-center justify-center w-12 h-full text-neutral-600 hover:text-black transition-colors"
           >
-            <Store className="w-4 h-4 text-[#083b66]" />
-            <span className="text-[10px] font-semibold mt-0.5 leading-none">Store</span>
+            <ShoppingBag className="w-4 h-4 text-neutral-800" />
+            <span className="text-[10px] font-semibold mt-0.5 leading-none">Shop</span>
           </Link>
 
           {/* Chat button */}
@@ -1584,23 +1535,23 @@ export default function ProductPage({ params }) {
                 })
               );
             }}
-            className="flex flex-col items-center justify-center w-12 h-full text-gray-600 hover:text-blue-600 transition-colors"
+            className="flex flex-col items-center justify-center w-12 h-full text-neutral-600 hover:text-black transition-colors"
           >
-            <MessageCircle className="w-4 h-4 text-gray-700" />
+            <MessageCircle className="w-4 h-4 text-neutral-700" />
             <span className="text-[10px] font-semibold mt-0.5 leading-none">Chat</span>
           </button>
 
-          {/* Buttons: Buy Now (Green) & Add to Cart (Blue) matching StellarMart */}
+          {/* Buttons: Add to Bag & Order Now */}
           <div className="flex-1 flex items-center gap-2">
             <button
               onClick={handleAddToCart}
               disabled={!isInStock || isAdding}
-              className={`flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-xs text-white ${
+              className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all active:scale-95 shadow-xs ${
                 added
-                  ? 'bg-emerald-600'
+                  ? 'bg-neutral-900 text-white'
                   : isInStock
-                  ? 'bg-[#0066cc] hover:bg-[#0052a3]'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-neutral-100 hover:bg-neutral-200 text-neutral-900 border border-neutral-300'
+                  : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
               }`}
             >
               {added ? (
@@ -1614,16 +1565,16 @@ export default function ProductPage({ params }) {
               ) : !isInStock ? (
                 'Out of Stock'
               ) : (
-                <>Add to Cart</>
+                <>Add to Bag</>
               )}
             </button>
 
             <button
               onClick={handleBuyNow}
               disabled={!isInStock || isAdding}
-              className="flex-1 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-all active:scale-95 shadow-xs bg-[#15803d] hover:bg-[#166534] text-white disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all active:scale-95 shadow-xs bg-black text-white hover:bg-neutral-900 disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed"
             >
-              <Zap className="w-3.5 h-3.5 fill-current" /> Buy Now
+              <Zap className="w-3.5 h-3.5 fill-current" /> Order Now
             </button>
           </div>
 
@@ -1819,11 +1770,11 @@ export default function ProductPage({ params }) {
               </div>
 
               <div className="flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <ShieldCheck className="w-4 h-4 text-neutral-900 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-gray-900">100% Authentic Guarantee</h4>
-                  <p className="text-gray-500 mt-0.5">
-                    Every product is directly quality verified by StellarMart BD.
+                  <h4 className="font-bold text-neutral-900">100% Authentic Guarantee</h4>
+                  <p className="text-neutral-500 mt-0.5">
+                    Every garment is directly designed and quality verified by Vestro Wear House.
                   </p>
                 </div>
               </div>
@@ -1831,7 +1782,7 @@ export default function ProductPage({ params }) {
 
             <button
               onClick={() => setServiceDrawerOpen(false)}
-              className="w-full py-2.5 bg-[#083b66] text-white text-xs font-bold rounded-lg uppercase"
+              className="w-full py-2.5 bg-neutral-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider rounded-lg"
             >
               Got it
             </button>
