@@ -174,8 +174,8 @@ export default function Sidebar() {
   return (
     <aside className="w-[280px] bg-white shadow-xl fixed h-full overflow-y-auto z-40 border-r border-gray-100 flex flex-col">
       <div className="sticky top-0 p-6 border-b border-gray-100 bg-white/95 backdrop-blur-sm z-10">
-        <Link href="/admin/dashboard" className="text-2xl font-extrabold text-blue-700 flex items-center gap-2 tracking-tight">
-          🛒 StellarMartBD
+        <Link href="/admin/dashboard" className="text-xl font-black text-gray-900 flex items-center gap-2 tracking-tight">
+          <span className="text-amber-600">⚡</span> Vestro Wear House
         </Link>
         <p className="text-xs font-semibold text-gray-400 mt-1 uppercase tracking-wider">Admin Dashboard</p>
       </div>

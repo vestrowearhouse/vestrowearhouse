@@ -4,14 +4,14 @@ import BrandLogo from './BrandLogo';
 
 // Default fallback settings shown when the DB table doesn't exist or returns no data
 const DEFAULT_SETTINGS = {
-  site_name: 'StellarMartBD',
-  site_tagline: 'আপনার বিশ্বস্ত অনলাইন গেমিং ও টেক শপ। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।',
-  email: 'support@stellarmartbd.com',
+  site_name: 'Vestro Wear House',
+  site_tagline: 'আপনার বিশ্বস্ত প্রিমিয়াম ফ্যাশন ও লাইফস্টাইল ব্র্যান্ড। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।',
+  email: 'support@vestrowearhouse.com',
   phone: '+880 1345-447500',
   address: 'House 12, Road 5, Mirpur, Dhaka, Bangladesh',
-  facebook_url: 'https://www.facebook.com/stellarmartbd',
-  instagram_url: 'https://www.instagram.com/stellarmartbd',
-  youtube_url: 'https://www.youtube.com/@stellarmartbd'
+  facebook_url: 'https://www.facebook.com/vestrowearhouse',
+  instagram_url: 'https://www.instagram.com/vestrowearhouse',
+  youtube_url: 'https://www.youtube.com/@vestrowearhouse'
 };
 
 async function getSettings() {
@@ -32,7 +32,7 @@ async function getSettings() {
       ...DEFAULT_SETTINGS,
       ...data,
       facebook_url: data.facebook_url && data.facebook_url !== '#' ? data.facebook_url : DEFAULT_SETTINGS.facebook_url,
-      site_name: data.site_name || 'StellarMartBD',
+      site_name: data.site_name || 'Vestro Wear House',
       address: data.address || DEFAULT_SETTINGS.address
     };
   } catch {

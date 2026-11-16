@@ -135,9 +135,9 @@ export default function ContactPage() {
   // Open In-App Zoho Reply Modal
   const openReplyModal = (msg) => {
     const customerName = msg.name || 'Valued Customer';
-    const cleanSubject = msg.subject || 'Your inquiry at Stellar Mart BD';
+    const cleanSubject = msg.subject || 'Your inquiry at Vestro Wear House';
     const replySubject = cleanSubject.toLowerCase().startsWith('re:') ? cleanSubject : `Re: ${cleanSubject}`;
-    const initialText = `Dear ${customerName},\n\nThank you for reaching out to Stellar Mart BD Support.\n\n\n\nWarm regards,\nCustomer Support Team\nStellar Mart BD`;
+    const initialText = `Dear ${customerName},\n\nThank you for reaching out to Vestro Wear House Support.\n\n\n\nWarm regards,\nCustomer Support Team\nVestro Wear House`;
 
     setReplyModal({
       show: true,
@@ -158,17 +158,17 @@ export default function ContactPage() {
     if (type === 'solved') {
       setReplyModal(prev => ({
         ...prev,
-        replyText: `Dear ${name},\n\nThank you for reaching out to Stellar Mart BD. We have reviewed your inquiry and have resolved the matter.\n\nIf you have any further questions or need additional support, please feel free to reply to this email anytime.\n\nWarm regards,\nCustomer Support Team\nStellar Mart BD`
+        replyText: `Dear ${name},\n\nThank you for reaching out to Vestro Wear House. We have reviewed your inquiry and have resolved the matter.\n\nIf you have any further questions or need additional support, please feel free to reply to this email anytime.\n\nWarm regards,\nCustomer Support Team\nVestro Wear House`
       }));
     } else if (type === 'order') {
       setReplyModal(prev => ({
         ...prev,
-        replyText: `Dear ${name},\n\nThank you for getting in touch regarding your order inquiry. Our fulfillment and logistics team is currently reviewing your order status and will provide a detailed update shortly.\n\nThank you for your patience and for shopping with Stellar Mart BD.\n\nWarm regards,\nCustomer Support Team\nStellar Mart BD`
+        replyText: `Dear ${name},\n\nThank you for getting in touch regarding your order inquiry. Our fulfillment and logistics team is currently reviewing your order status and will provide a detailed update shortly.\n\nThank you for your patience and for shopping with Vestro Wear House.\n\nWarm regards,\nCustomer Support Team\nVestro Wear House`
       }));
     } else if (type === 'details') {
       setReplyModal(prev => ({
         ...prev,
-        replyText: `Dear ${name},\n\nThank you for reaching out to us. To assist you as quickly and accurately as possible, could you kindly reply to this email with your order number or registered phone number?\n\nLooking forward to hearing from you.\n\nWarm regards,\nCustomer Support Team\nStellar Mart BD`
+        replyText: `Dear ${name},\n\nThank you for reaching out to us. To assist you as quickly and accurately as possible, could you kindly reply to this email with your order number or registered phone number?\n\nLooking forward to hearing from you.\n\nWarm regards,\nCustomer Support Team\nVestro Wear House`
       }));
     }
   };

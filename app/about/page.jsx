@@ -5,10 +5,10 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+      <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-4">About StellarMartBD</h1>
-          <p className="text-blue-100 text-lg">Your Trusted Online Shopping Destination in Bangladesh</p>
+          <h1 className="text-4xl font-bold mb-4">About Vestro Wear House</h1>
+          <p className="text-gray-300 text-lg">Your Trusted Fashion & Lifestyle Destination in Bangladesh</p>
         </div>
       </div>
 
@@ -17,14 +17,13 @@ export default function AboutPage() {
         <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Who We Are</h2>
           <p className="text-gray-700 leading-relaxed mb-4">
-            StellarMartBD is Bangladesh's leading online shopping platform, offering a wide range of products 
-            including electronics, fashion, home & living, sports equipment, beauty products, and books. 
-            We are committed to providing our customers with the best shopping experience possible.
+            Vestro Wear House is Bangladesh's premier fashion and apparel brand, offering contemporary designs, 
+            premium fabrics, and trendsetting lifestyle products. 
+            We are dedicated to providing our customers with an unparalleled shopping experience.
           </p>
           <p className="text-gray-700 leading-relaxed">
-            With thousands of products from trusted brands, fast delivery, secure payment options, 
-            and excellent customer support, StellarMartBD has become the go-to destination for 
-            online shoppers across Bangladesh.
+            With quality craftsmanship, seamless delivery across all 64 districts, secure payment options, 
+            and dedicated customer support, Vestro Wear House is the go-to fashion warehouse for the modern generation.
           </p>
         </div>
 
@@ -54,7 +53,7 @@ export default function AboutPage() {
 
         {/* Why Choose Us */}
         <div className="bg-white rounded-xl shadow-sm p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Why Choose StellarMartBD?</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Why Choose Vestro Wear House?</h2>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center p-4">
               <Truck className="w-12 h-12 text-blue-600 mx-auto mb-3" />

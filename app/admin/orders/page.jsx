@@ -367,7 +367,7 @@ export default function OrdersPage() {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Invoice #${orderDetails.order_number || 'Order'} - StellarMart</title>
+  <title>Invoice #${orderDetails.order_number || 'Order'} - Vestro Wear House</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     
@@ -674,11 +674,11 @@ export default function OrdersPage() {
     <!-- Header -->
     <div class="header">
       <div>
-        <div class="brand-title">StellarMart<span class="brand-accent">.</span></div>
-        <div class="brand-sub">Premier Multi-Vendor E-Commerce Platform</div>
+        <div class="brand-title">Vestro Wear House<span class="brand-accent">.</span></div>
+        <div class="brand-sub">Premium Fashion & Apparel Destination</div>
         <div class="brand-contact">
-          Website: www.stellarmartbd.com<br>
-          Support: support@stellarmartbd.com | Dhaka, Bangladesh
+          Website: www.vestrowearhouse.com<br>
+          Support: support@vestrowearhouse.com | Dhaka, Bangladesh
         </div>
       </div>
       <div class="invoice-meta">
@@ -789,11 +789,11 @@ export default function OrdersPage() {
     <!-- Footer -->
     <div class="footer">
       <div class="footer-left">
-        <strong>Thank you for choosing StellarMart BD!</strong><br>
-        For inquiries or support, visit <a href="https://www.stellarmartbd.com" style="color: #2563eb; text-decoration: none;">stellarmartbd.com</a>
+        <strong>Thank you for choosing Vestro Wear House!</strong><br>
+        For inquiries or support, visit <a href="https://www.vestrowearhouse.com" style="color: #2563eb; text-decoration: none;">vestrowearhouse.com</a>
       </div>
       <div class="footer-stamp">
-        <div class="stamp-text">STELLARMART BD</div>
+        <div class="stamp-text">VESTRO WEAR HOUSE</div>
         <div class="stamp-sub">✓ VERIFIED OFFICIAL DISPATCH</div>
       </div>
     </div>

@@ -75,7 +75,7 @@ export default function AdminLoginPage() {
             <ShieldAlert className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
-          <p className="text-blue-200 mt-1">StellarMartBD</p>
+          <p className="text-blue-200 mt-1">Vestro Wear House</p>
           <p className="text-xs text-blue-300 mt-3">Secure Administration Access</p>
         </div>
 

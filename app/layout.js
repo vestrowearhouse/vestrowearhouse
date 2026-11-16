@@ -28,19 +28,19 @@ const LoginModal = dynamic(() => import('./components/LoginModal'), { ssr: false
 // Cache the layout for 60 seconds - revalidate on-demand via API
 export const revalidate = 60;
 
-const SITE_URL = 'https://www.stellarmartbd.com';
+const SITE_URL = 'https://www.vestrowearhouse.com';
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'StellarMartBD - Your Trusted Online Shopping Destination',
-    template: '%s | StellarMartBD',
+    default: 'Vestro Wear House - Premium Fashion & Lifestyle Destination',
+    template: '%s | Vestro Wear House',
   },
-  description: 'Best e-commerce platform in Bangladesh. Shop electronics, fashion, home & living, and more with fast delivery and secure payment.',
-  keywords: 'e-commerce, online shopping, Bangladesh, electronics, fashion, home living, bKash, Nagad, fast delivery',
-  authors: [{ name: 'StellarMartBD' }],
-  creator: 'StellarMartBD',
-  publisher: 'StellarMartBD',
+  description: 'Explore premium clothing, fashion, streetwear, and lifestyle apparel at Vestro Wear House. Fast nationwide delivery and secure checkout.',
+  keywords: 'vestro wear house, fashion, apparel, clothing, streetwear, lifestyle, online shopping, Bangladesh',
+  authors: [{ name: 'Vestro Wear House' }],
+  creator: 'Vestro Wear House',
+  publisher: 'Vestro Wear House',
   formatDetection: { email: false, address: false, telephone: false },
   alternates: {
     canonical: SITE_URL,
@@ -48,35 +48,35 @@ export const metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/favicon.svg?v=6', type: 'image/svg+xml' },
-      { url: '/favicon-32x32.png?v=6', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png?v=6', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon.ico?v=6', type: 'image/x-icon' },
-      { url: '/icons/icon-192x192.png?v=6', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512x512.png?v=6', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon.svg?v=7', type: 'image/svg+xml' },
+      { url: '/favicon-32x32.png?v=7', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png?v=7', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.ico?v=7', type: 'image/x-icon' },
+      { url: '/icons/icon-192x192.png?v=7', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png?v=7', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico?v=6',
+    shortcut: '/favicon.ico?v=7',
     apple: [
-      { url: '/apple-touch-icon.png?v=6', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png?v=7', sizes: '180x180', type: 'image/png' },
     ],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'StellarMartBD',
+    title: 'Vestro Wear House',
   },
   openGraph: {
-    title: 'StellarMartBD - Your Trusted Online Shopping Destination',
-    description: 'Best e-commerce platform in Bangladesh. Shop electronics, fashion & more.',
+    title: 'Vestro Wear House - Premium Fashion & Lifestyle Destination',
+    description: 'Explore premium clothing, fashion, streetwear, and lifestyle apparel at Vestro Wear House.',
     url: SITE_URL,
-    siteName: 'StellarMartBD',
+    siteName: 'Vestro Wear House',
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'StellarMartBD',
-    description: 'Your Trusted Online Shopping Destination in Bangladesh',
+    title: 'Vestro Wear House',
+    description: 'Premium Fashion & Lifestyle Destination in Bangladesh',
   },
   robots: {
     index: true,
@@ -95,7 +95,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#083b66',
+  themeColor: '#111827',
 };
 
 export default function RootLayout({ children }) {

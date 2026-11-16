@@ -157,14 +157,15 @@ export default function BrandLogo({
   const containerSize = size === 'sm' ? 'w-8 h-8 sm:w-9 sm:h-9' : size === 'lg' ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-10 h-10 sm:w-11 sm:h-11';
   const textSize = size === 'sm' ? 'text-lg' : size === 'lg' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl';
   const isDark = textColor && textColor.includes('white');
+  const activeLogo = isDark && (logoSrc === '/tab-icon.png' || logoSrc === '/logo.png') ? '/vestro-logo-white.png' : logoSrc;
 
   const content = (
     <div className={`inline-flex items-center gap-2.5 group transition-transform active:scale-98 select-none ${className}`}>
       {/* Official Main Brand Logo Container */}
       <div className={`${containerSize} relative shrink-0`}>
         <Image
-          src={logoSrc}
-          alt="Stellar Mart Logo"
+          src={activeLogo}
+          alt="Vestro Wear House Logo"
           fill
           className="object-contain transition-transform group-hover:scale-105 duration-200"
           priority
@@ -173,17 +174,17 @@ export default function BrandLogo({
 
       {!hideText && (
         <div className="flex items-center">
-          <span className={`${textSize} font-black tracking-tight leading-none flex items-center ${isDark ? 'text-white' : 'text-[#083b66]'}`}>
-            Stellar<span className={isDark ? "text-sky-400" : "text-[#0066cc]"}>Mart</span>
+          <span className={`${textSize} font-black tracking-tight leading-none flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Vestro<span className={isDark ? "text-amber-400" : "text-amber-600"}>Wear</span>
           </span>
-          <span className={`font-black uppercase tracking-wider rounded-md self-center ml-1 ${
+          <span className={`font-black uppercase tracking-wider rounded-md self-center ml-1.5 ${
             size === 'sm' ? 'text-[9px] px-1 py-0.5' : 'text-[10px] sm:text-[11px] px-1.5 py-0.5'
           } ${
             isDark 
-              ? 'bg-blue-950/80 text-blue-300 border border-blue-800/60' 
-              : 'bg-blue-50 text-[#083b66] border border-blue-200/80'
+              ? 'bg-amber-950/80 text-amber-300 border border-amber-800/60' 
+              : 'bg-amber-50 text-amber-800 border border-amber-200/80'
           }`}>
-            BD
+            House
           </span>
         </div>
       )}
@@ -192,7 +193,7 @@ export default function BrandLogo({
 
   if (href) {
     return (
-      <Link href={href} aria-label="StellarMart Home">
+      <Link href={href} aria-label="Vestro Wear House Home">
         {content}
       </Link>
     );
