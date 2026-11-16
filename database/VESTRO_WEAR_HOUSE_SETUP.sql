@@ -432,9 +432,14 @@ ON CONFLICT (code) DO NOTHING;
 -- 5. SEED INITIAL VESTRO WEAR HOUSE DATA
 
 -- Default Settings
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS "delivery_fee_dhaka" NUMERIC DEFAULT 60;
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS "delivery_fee_outside" NUMERIC DEFAULT 120;
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS "free_shipping_threshold" NUMERIC DEFAULT 2500;
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS "whatsapp" TEXT DEFAULT '+880 1345-447500';
+
 INSERT INTO public.settings (
-  site_name, site_tagline, email, phone, whatsapp, address, 
-  delivery_fee_dhaka, delivery_fee_outside, free_shipping_threshold, logo_url
+  "site_name", "site_tagline", "email", "phone", "whatsapp", "address", 
+  "delivery_fee_dhaka", "delivery_fee_outside", "free_shipping_threshold", "logo_url"
 ) VALUES (
   'Vestro Wear House',
   'Premium Streetwear & Modern Fashion Flagship',
@@ -449,7 +454,11 @@ INSERT INTO public.settings (
 ) ON CONFLICT DO NOTHING;
 
 -- Default Categories (Streetwear Focus)
-INSERT INTO public.categories (name, slug, description, image, icon, isFeatured, sort_order, sku_category_code) VALUES
+ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS "isFeatured" BOOLEAN DEFAULT true;
+ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS "sku_category_code" TEXT;
+ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS "icon_type" TEXT DEFAULT 'emoji';
+
+INSERT INTO public.categories ("name", "slug", "description", "image", "icon", "isFeatured", "sort_order", "sku_category_code") VALUES
 ('T-Shirts', 't-shirts', 'Heavyweight, oversized, and essential graphic tees.', 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80', '👕', true, 1, '20'),
 ('Hoodies & Sweats', 'hoodies-sweats', 'French terry and fleece heavyweight streetwear hoodies.', 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&auto=format&fit=crop&q=80', '🧥', true, 2, '24'),
 ('Jackets & Outerwear', 'outerwear', 'Minimalist zip jackets, bombers, and streetwear coats.', 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&auto=format&fit=crop&q=80', '🧥', true, 3, '25'),
@@ -458,23 +467,40 @@ INSERT INTO public.categories (name, slug, description, image, icon, isFeatured,
 ON CONFLICT (slug) DO NOTHING;
 
 -- Default Hero Banner
-INSERT INTO public.banners (title, subtitle, image, link, button_text, position, status) VALUES
+INSERT INTO public.banners ("title", "subtitle", "image", "link", "button_text", "position", "status") VALUES
 ('NEW DROP: VESTRO ESSENTIALS', 'DISCOVER THE LATEST STREETWEAR SILHOUETTES CRAFTED WITH PREMIUM HEAVYWEIGHT COTTON', 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop&q=85', '/shop', 'EXPLORE COLLECTION', 1, 'active'),
 ('OVERSIZED HEAVYWEIGHT FLEECE', 'SIGNATURE RELAXED FIT HOODIES DESIGNED FOR URBAN COMFORT', 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1600&auto=format&fit=crop&q=85', '/category/hoodies-sweats', 'SHOP HOODIES', 2, 'active')
 ON CONFLICT DO NOTHING;
 
 -- Default Coupon
-INSERT INTO public.coupons (code, discount_type, discount_value, min_order_amount, usage_limit, status) VALUES
+INSERT INTO public.coupons ("code", "discount_type", "discount_value", "min_order_amount", "usage_limit", "status") VALUES
 ('VESTRO10', 'percentage', 10, 1000, 1000, 'active'),
 ('WELCOME', 'fixed', 150, 1500, 500, 'active')
 ON CONFLICT (code) DO NOTHING;
 
 -- Sample Featured Fashion Apparel
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "shortDescription" TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "regularPrice" NUMERIC DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "sellingPrice" NUMERIC DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "oldPrice" NUMERIC DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "discountPercent" INTEGER;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "featuredImage" TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "stockQuantity" INTEGER DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "stockStatus" TEXT DEFAULT 'in_stock';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "isFeatured" BOOLEAN DEFAULT false;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "isNewArrival" BOOLEAN DEFAULT true;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "isBestSeller" BOOLEAN DEFAULT false;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "isActive" BOOLEAN DEFAULT true;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "attributes" JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "variants" JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "sizes" JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS "colors" JSONB DEFAULT '[]'::jsonb;
+
 INSERT INTO public.products (
-  name, slug, description, shortDescription, price, regularPrice, sellingPrice, 
-  discountPercent, category, category_slug, category_code, sku, brand, 
-  featuredImage, images, stock, stockQuantity, stockStatus, isFeatured, isNewArrival,
-  attributes, variants
+  "name", "slug", "description", "shortDescription", "price", "regularPrice", "sellingPrice", 
+  "discountPercent", "category", "category_slug", "category_code", "sku", "brand", 
+  "featuredImage", "images", "stock", "stockQuantity", "stockStatus", "isFeatured", "isNewArrival",
+  "attributes", "variants"
 ) VALUES 
 (
   'Vestro Heavyweight Boxy Tee - Jet Black',
@@ -639,22 +665,22 @@ AS $$
 BEGIN
   RETURN QUERY
   SELECT
-    products.id,
-    products.name,
-    products.slug,
-    products.description,
-    products.price,
-    products.sellingPrice,
-    products.regularPrice,
-    products.category,
-    products.category_slug,
-    products.images,
-    products.featuredImage,
-    products.stock,
-    products.stockQuantity,
-    products.stockStatus,
-    products.status,
-    (1 - (products.embedding <=> query_embedding))::float AS similarity
+    products."id",
+    products."name",
+    products."slug",
+    products."description",
+    products."price",
+    products."sellingPrice",
+    products."regularPrice",
+    products."category",
+    products."category_slug",
+    products."images",
+    products."featuredImage",
+    products."stock",
+    products."stockQuantity",
+    products."stockStatus",
+    products."status",
+    (1 - (products."embedding" <=> query_embedding))::float AS similarity
   FROM products
   WHERE products.status = 'active'
     AND products.embedding IS NOT NULL
