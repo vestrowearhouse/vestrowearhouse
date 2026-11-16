@@ -61,8 +61,8 @@ export default function UserProfile() {
   
   // State for dynamic support settings
   const [supportSettings, setSupportSettings] = useState({ 
-    email: "support@stellarmartbd.com", 
-    whatsapp: "+880 1606-069754" 
+    email: "support@vestrowearhouse.com", 
+    whatsapp: "+880 1345-447500" 
   });
 
   // Redirect if not logged in
@@ -169,13 +169,13 @@ export default function UserProfile() {
 
   // Fetch support settings from database (cached)
   useEffect(() => {
-    const cached = typeof window !== 'undefined' ? sessionStorage.getItem('stellar_settings_cache') : null;
+    const cached = typeof window !== 'undefined' ? sessionStorage.getItem('vestro_settings_cache') || sessionStorage.getItem('stellar_settings_cache') : null;
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
         setSupportSettings({
-          email: parsed.contactEmail || parsed.email || "support@stellarmartbd.com",
-          whatsapp: parsed.whatsappNumber || parsed.whatsapp_url || parsed.contactPhone || parsed.phone || "+880 1606-069754"
+          email: parsed.contactEmail || parsed.email || "support@vestrowearhouse.com",
+          whatsapp: parsed.whatsappNumber || parsed.whatsapp_url || parsed.contactPhone || parsed.phone || "+880 1345-447500"
         });
         return;
       } catch(e) {}
@@ -185,10 +185,10 @@ export default function UserProfile() {
       .then(res => res.json())
       .then(data => {
         if (data?.settings) {
-          try { sessionStorage.setItem('stellar_settings_cache', JSON.stringify(data.settings)); } catch(e) {}
+          try { sessionStorage.setItem('vestro_settings_cache', JSON.stringify(data.settings)); } catch(e) {}
           setSupportSettings({
-            email: data.settings.contactEmail || data.settings.email || "support@stellarmartbd.com",
-            whatsapp: data.settings.whatsappNumber || data.settings.whatsapp_url || data.settings.contactPhone || data.settings.phone || "+880 1606-069754"
+            email: data.settings.contactEmail || data.settings.email || "support@vestrowearhouse.com",
+            whatsapp: data.settings.whatsappNumber || data.settings.whatsapp_url || data.settings.contactPhone || data.settings.phone || "+880 1345-447500"
           });
         }
       })

@@ -2,11 +2,11 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function generateMetadata({ params }) {
   const { slug } = params;
-  if (!slug) return { title: 'Category | Stellar Mart BD' };
+  if (!slug) return { title: 'Category | Vestro Wear House' };
 
   try {
     const supabase = getSupabaseAdmin();
-    if (!supabase) return { title: 'Category | Stellar Mart BD' };
+    if (!supabase) return { title: 'Category | Vestro Wear House' };
 
     const { data: category } = await supabase
       .from('categories')
@@ -16,13 +16,13 @@ export async function generateMetadata({ params }) {
 
     if (!category) {
       return {
-        title: 'Category | Stellar Mart BD',
+        title: 'Category | Vestro Wear House',
       };
     }
 
-    const title = `${category.name} | Stellar Mart BD`;
-    const description = category.description || `Browse the best collection of ${category.name} at Stellar Mart BD. Cash on delivery and quick shipping across Bangladesh.`;
-    const imageUrl = category.image || 'https://www.stellarmartbd.com/logo.png';
+    const title = `${category.name} | Vestro Wear House`;
+    const description = category.description || `Browse the latest collection of ${category.name} at Vestro Wear House. Cash on delivery and fast shipping across Bangladesh.`;
+    const imageUrl = category.image || 'https://www.vestrowearhouse.com/logo.png';
 
     return {
       title,
@@ -30,8 +30,8 @@ export async function generateMetadata({ params }) {
       openGraph: {
         title,
         description,
-        url: `https://www.stellarmartbd.com/category/${slug}`,
-        siteName: 'Stellar Mart BD',
+        url: `https://www.vestrowearhouse.com/category/${slug}`,
+        siteName: 'Vestro Wear House',
         images: [{ url: imageUrl, alt: category.name }],
         type: 'website',
       },
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }) {
     };
   } catch {
     return {
-      title: 'Category | Stellar Mart BD',
+      title: 'Category | Vestro Wear House',
     };
   }
 }

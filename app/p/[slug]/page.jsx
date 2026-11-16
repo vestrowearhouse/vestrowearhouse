@@ -28,14 +28,14 @@ export async function generateMetadata({ params }) {
   const page = await getPage(params.slug);
   if (!page) {
     return {
-      title: 'Page Not Found | StellarMartBD',
-      description: 'The requested page could not be found on StellarMartBD.'
+      title: 'Page Not Found | Vestro Wear House',
+      description: 'The requested page could not be found on Vestro Wear House.'
     };
   }
 
   return {
-    title: page.meta_title || `${page.title_en} | StellarMartBD`,
-    description: page.meta_description || `Read ${page.title_en} on StellarMartBD.`,
+    title: page.meta_title || `${page.title_en} | Vestro Wear House`,
+    description: page.meta_description || `Read ${page.title_en} on Vestro Wear House.`,
     openGraph: {
       title: page.meta_title || page.title_en,
       description: page.meta_description,
@@ -82,7 +82,7 @@ export default async function DynamicCMSPage({ params }) {
             </div>
             <div className="flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5" />
-              <span>StellarMartBD Verified Policy</span>
+              <span>Vestro Wear House Verified Policy</span>
             </div>
           </div>
         </div>

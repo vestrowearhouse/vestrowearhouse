@@ -100,7 +100,7 @@ export default function RegisterPage() {
               <CheckCircle className="w-8 h-8" />
             </div>
             <h2 className="text-xl font-bold text-slate-900 mb-1">অ্যাকাউন্ট তৈরি সম্পন্ন হয়েছে!</h2>
-            <p className="text-xs text-slate-500 mb-3">Welcome to StellarMart BD</p>
+            <p className="text-xs text-neutral-500 mb-3 uppercase tracking-wider font-semibold">Welcome to Vestro Wear House</p>
             <div className="inline-flex items-center gap-2 text-xs text-blue-600 font-medium bg-blue-50/60 px-3 py-1.5 rounded-lg">
               <Loader className="w-3.5 h-3.5 animate-spin" />
               <span>হোমপেজে নিয়ে যাওয়া হচ্ছে...</span>

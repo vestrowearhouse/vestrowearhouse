@@ -4,8 +4,8 @@ import CategoriesClient from './CategoriesClient';
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export const metadata = {
-  title: 'All Categories - StellarMartBD',
-  description: 'Browse all shopping departments and categories on StellarMartBD. Find electronics, fashion, lifestyle, sports, gaming and more.',
+  title: 'Categories | Vestro Wear House',
+  description: 'Explore curated fashion categories at Vestro Wear House. T-shirts, Hoodies, Sweatshirts, Cargo Pants, and Footwear.',
 };
 
 async function getCategories() {

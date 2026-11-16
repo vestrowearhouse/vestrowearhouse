@@ -138,14 +138,17 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-[#fafafa] py-16 px-4">
+      <div className="max-w-md w-full bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-neutral-200">
         
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
-          <p className="text-sm text-gray-500 mt-2">
-            {step === 1 && "Enter your email to receive an OTP"}
+          <span className="text-[11px] font-semibold tracking-[0.2em] text-neutral-400 uppercase block mb-1">
+            Vestro Wear House
+          </span>
+          <h2 className="text-2xl font-bold tracking-tight text-neutral-900 uppercase">Reset Password</h2>
+          <p className="text-xs text-neutral-500 mt-2">
+            {step === 1 && "Enter your email to receive a verification OTP"}
             {step === 2 && "Enter the OTP sent to your email"}
             {step === 3 && "Create a new strong password"}
             {step === 4 && "Password reset successful!"}
@@ -154,26 +157,28 @@ export default function ForgotPasswordPage() {
 
         {/* Messages */}
         {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" /> {error}
+          <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" /> {error}
           </div>
         )}
         {success && step !== 4 && (
-          <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" /> {success}
+          <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" /> {success}
           </div>
         )}
 
         {/* Main Form */}
         {step < 4 ? (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             
-            {/* 1. Email Box (Always visible initially, read-only after step 1) */}
+            {/* 1. Email Box */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 mb-1.5">
+                Email Address
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-4 w-4 text-neutral-400" />
                 </div>
                 <input
                   type="email"
@@ -181,19 +186,21 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={step > 1 || loading}
                   required
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                  className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black disabled:bg-neutral-100 disabled:text-neutral-500 transition-colors"
                   placeholder="Enter your email"
                 />
               </div>
             </div>
 
-            {/* 2. OTP Box (Appears after Step 1) */}
+            {/* 2. OTP Box */}
             {step >= 2 && (
               <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 mb-1.5">
+                  Enter OTP
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <KeyRound className="h-5 w-5 text-gray-400" />
+                    <KeyRound className="h-4 w-4 text-neutral-400" />
                   </div>
                   <input
                     type="text"
@@ -201,50 +208,81 @@ export default function ForgotPasswordPage() {
                     onChange={(e) => setOtp(e.target.value)}
                     disabled={step > 2 || loading}
                     required={step === 2}
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black disabled:bg-neutral-100 disabled:text-neutral-500 transition-colors"
                     placeholder="6-digit OTP"
                   />
                 </div>
               </div>
             )}
 
-            {/* 3. New Password Box (Appears after Step 2) */}
+            {/* 3. New Password Box */}
             {step === 3 && (
-              <div className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 mb-1.5">
+                    New Password
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400" />
+                      <Lock className="h-4 w-4 text-neutral-400" />
                     </div>
-                    <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={loading} required className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••" />
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      disabled={loading}
+                      required
+                      className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                      placeholder="••••••••"
+                    />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-700 mb-1.5">
+                    Confirm Password
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-gray-400" />
+                      <Lock className="h-4 w-4 text-neutral-400" />
                     </div>
-                    <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={loading} required className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••" />
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      disabled={loading}
+                      required
+                      className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+                      placeholder="••••••••"
+                    />
                   </div>
                 </div>
               </div>
             )}
 
             {/* Dynamic Submit Button */}
-            <button type="submit" disabled={loading} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400">
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : step === 1 ? 'Send OTP' : step === 2 ? 'Verify OTP' : 'Change Password'}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full mt-2 flex justify-center items-center py-3 px-4 rounded-lg text-xs font-bold uppercase tracking-widest text-white bg-black hover:bg-neutral-800 focus:outline-none transition-colors disabled:bg-neutral-400"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : step === 1 ? 'Send OTP' : step === 2 ? 'Verify OTP' : 'Change Password'}
             </button>
           </form>
         ) : (
-          <div className="text-center py-4 animate-in zoom-in duration-300">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4"><CheckCircle2 className="h-8 w-8 text-green-600" /></div>
-            <p className="text-gray-600 mb-4">{success}</p>
-            <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
+          <div className="text-center py-6 animate-in zoom-in duration-300">
+            <div className="mx-auto w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+            </div>
+            <p className="text-sm font-medium text-neutral-700 mb-4">{success}</p>
+            <Loader2 className="w-5 h-5 animate-spin text-neutral-900 mx-auto" />
           </div>
         )}
-        <div className="mt-6 text-center"><Link href="/login" className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"><ArrowLeft className="w-4 h-4 mr-1" /> Back to login</Link></div>
+
+        <div className="mt-8 pt-6 border-t border-neutral-100 text-center">
+          <Link href="/login" className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-neutral-600 hover:text-black transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Back to login
+          </Link>
+        </div>
       </div>
     </div>
   );

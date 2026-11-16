@@ -145,51 +145,56 @@ export default function CategoryPage({ params }) {
 
   if (loading && initialLoad) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading products...</p>
+          <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-xs uppercase tracking-widest text-neutral-400">Loading collection...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold mb-2">{categoryName}</h1>
+    <div className="min-h-screen bg-white">
+      {/* Category Hero Header (Onfire Minimal Aesthetic) */}
+      <div className="border-b border-neutral-100 bg-neutral-50/50 py-10 sm:py-14 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <p className="text-[11px] font-bold tracking-[0.26em] uppercase text-neutral-400 mb-2">
+            COLLECTION
+          </p>
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-neutral-900">
+            {categoryName}
+          </h1>
+          <div className="flex items-center justify-center gap-2 mt-3 text-xs tracking-wider text-neutral-400 uppercase">
+            <Link href="/" className="hover:text-black transition-colors">Home</Link>
+            <span>/</span>
+            <Link href="/categories" className="hover:text-black transition-colors">Categories</Link>
+            <span>/</span>
+            <span className="text-neutral-900 font-bold">{categoryName}</span>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex items-center gap-2 mb-6 text-sm">
-          <Link href="/" className="text-blue-600 hover:underline">Home</Link>
-          <span className="text-gray-400">/</span>
-          <Link href="/categories" className="text-blue-600 hover:underline">Categories</Link>
-          <span className="text-gray-400">/</span>
-          <span className="text-gray-700">{categoryName}</span>
-        </div>
-        
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-800">{error}</p>
+          <div className="bg-neutral-50 border border-neutral-200 p-4 mb-6 text-xs text-neutral-800 uppercase tracking-wider text-center">
+            {error}
           </div>
         )}
         
-        {/* Mobile Toolbar */}
+        {/* Mobile Filter & Sort Toolbar */}
         <div className="md:hidden flex items-center gap-2 mb-6">
           <button
             onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-            className="flex-1 flex items-center justify-center gap-2 bg-white px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 shadow-sm"
+            className="flex-1 flex items-center justify-center gap-2 bg-white px-3 py-2.5 border border-neutral-200 text-xs font-bold uppercase tracking-wider text-neutral-900"
           >
-            <Filter className="w-4 h-4" />
+            <Filter className="w-3.5 h-3.5" />
             {isMobileFilterOpen ? 'Hide Filters' : 'Filters'}
           </button>
           <select
             value={filters.sort}
             onChange={(e) => setFilters({...filters, sort: e.target.value})}
-            className="flex-[2] bg-white px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none truncate"
+            className="flex-[2] bg-white px-3 py-2.5 border border-neutral-200 text-xs font-bold uppercase tracking-wider text-neutral-900 focus:outline-none focus:border-black truncate"
           >
             <option value="newest">Sort: Newest</option>
             <option value="price_low">Price: Low to High</option>
@@ -197,37 +202,37 @@ export default function CategoryPage({ params }) {
           </select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className={`md:col-span-1 ${isMobileFilterOpen ? 'block' : 'hidden md:block'}`}>
-            <div className="bg-white rounded-lg shadow-sm p-5 md:p-6 sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto">
-              <h3 className="hidden md:flex font-bold text-gray-900 mb-4 items-center gap-2">
-                <Filter className="w-5 h-5" /> Filters
+            <div className="bg-white border border-neutral-100 p-5 sticky top-28">
+              <h3 className="hidden md:flex font-black text-xs uppercase tracking-[0.2em] text-neutral-900 mb-5 items-center gap-2">
+                <Filter className="w-3.5 h-3.5" /> FILTERS
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">Price Range</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-neutral-800 block mb-2">Price (৳)</label>
                   <div className="flex gap-2">
                     <input
                       type="number" placeholder="Min" value={filters.minPrice}
                       onChange={(e) => setFilters({...filters, minPrice: e.target.value})}
-                      className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                      className="w-1/2 px-3 py-2 border border-neutral-200 text-xs font-semibold focus:border-black focus:outline-none"
                     />
                     <input
                       type="number" placeholder="Max" value={filters.maxPrice}
                       onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
-                      className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                      className="w-1/2 px-3 py-2 border border-neutral-200 text-xs font-semibold focus:border-black focus:outline-none"
                     />
                   </div>
                 </div>
                 <div className="hidden md:block">
-                  <label className="text-sm font-medium text-gray-700 block mb-2">Sort By</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-neutral-800 block mb-2">Sort</label>
                   <select
                     value={filters.sort}
                     onChange={(e) => setFilters({...filters, sort: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-neutral-200 text-xs font-semibold focus:border-black focus:outline-none"
                   >
-                    <option value="newest">Newest</option>
+                    <option value="newest">Newest Drop</option>
                     <option value="price_low">Price: Low to High</option>
                     <option value="price_high">Price: High to Low</option>
                   </select>
@@ -236,7 +241,7 @@ export default function CategoryPage({ params }) {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={() => setFilters({minPrice: '', maxPrice: '', sort: 'newest'})}
-                    className="w-full mt-4 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+                    className="w-full mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-colors"
                   >
                     Clear Filters
                   </button>
@@ -247,31 +252,13 @@ export default function CategoryPage({ params }) {
 
           {/* Product Grid */}
           <div className="md:col-span-3 relative">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1">
-                {activeFiltersCount > 0 && (
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="text-xs text-gray-500 font-medium">Active Filters:</span>
-                    {filters.minPrice && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100">
-                        Min: ৳{filters.minPrice}
-                        <button onClick={() => setFilters({...filters, minPrice: ''})} className="hover:text-blue-900"><X size={12}/></button>
-                      </span>
-                    )}
-                    {filters.maxPrice && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100">
-                        Max: ৳{filters.maxPrice}
-                        <button onClick={() => setFilters({...filters, maxPrice: ''})} className="hover:text-blue-900"><X size={12}/></button>
-                      </span>
-                    )}
-                  </div>
-                )}
-                <p className="text-gray-600 font-medium">
-                  {products.length} product{products.length !== 1 ? 's' : ''} found
-                </p>
-              </div>
-              {loading && !initialLoad && <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>}
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                Showing {products.length} product{products.length !== 1 ? 's' : ''}
+              </p>
+              {loading && !initialLoad && <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>}
             </div>
+
             <div className={`transition-opacity duration-300 ${loading && !initialLoad ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
               {products.length > 0 ? (
                 <>
@@ -282,27 +269,28 @@ export default function CategoryPage({ params }) {
                   </div>
                   
                   {hasMore && (
-                    <div className="mt-12 text-center">
+                    <div className="mt-14 text-center">
                       <button
                         onClick={loadMore}
                         disabled={loadingMore}
-                        className="border border-neutral-900 bg-neutral-900 hover:bg-black text-white font-bold py-3 px-8 text-xs uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                        className="border border-black bg-black hover:bg-neutral-800 text-white font-bold py-3 px-8 text-xs uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 cursor-pointer"
                       >
                         {loadingMore ? (
                           <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             Loading...
                           </>
                         ) : (
-                          'Load More Apparel'
+                          'Load More'
                         )}
                       </button>
                     </div>
                   )}
                 </>
               ) : (
-                <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                  <p className="text-gray-600">No products found with the applied filters.</p>
+                <div className="border border-neutral-100 p-14 text-center">
+                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-600 mb-2">No products found in this category.</p>
+                  <p className="text-xs text-neutral-400">Try adjusting your filters or check our other collections.</p>
                 </div>
               )}
             </div>

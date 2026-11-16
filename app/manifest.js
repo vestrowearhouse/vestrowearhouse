@@ -1,14 +1,14 @@
 export default function manifest() {
   return {
     id: '/?source=pwa',
-    name: 'Stellar Mart BD',
-    short_name: 'StellarMart',
-    description: 'Best e-commerce platform in Bangladesh. Shop electronics, fashion, home & living, and more with fast delivery and secure payment.',
+    name: 'Vestro Wear House',
+    short_name: 'Vestro',
+    description: 'Vestro Wear House - Premium streetwear, apparel, and lifestyle fashion in Bangladesh.',
     start_url: '/',
     scope: '/',
     display: 'standalone',
     background_color: '#ffffff',
-    theme_color: '#083b66',
+    theme_color: '#000000',
     orientation: 'portrait-primary',
     icons: [
       {
@@ -50,21 +50,21 @@ export default function manifest() {
     ],
     screenshots: [
       {
-        src: '/icons/playstore-feature-graphic.png',
-        sizes: '1024x500',
+        src: '/icons/icon-512x512.png',
+        sizes: '512x512',
         type: 'image/png',
         form_factor: 'wide',
-        label: 'Stellar Mart BD - Best Online Shopping in Bangladesh',
+        label: 'Vestro Wear House - Streetwear & Fashion',
       },
       {
         src: '/icons/icon-512x512.png',
         sizes: '512x512',
         type: 'image/png',
         form_factor: 'narrow',
-        label: 'Stellar Mart BD Mobile Shopping',
+        label: 'Vestro Wear House Mobile Shopping',
       },
     ],
-    categories: ['shopping', 'lifestyle', 'business'],
+    categories: ['shopping', 'lifestyle', 'clothing', 'fashion'],
     shortcuts: [
       {
         name: 'Shop',

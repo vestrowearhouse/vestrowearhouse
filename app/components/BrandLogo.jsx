@@ -154,13 +154,12 @@ export default function BrandLogo({
   hideText = false,
   logoSrc = '/tab-icon.png'
 }) {
-  const containerSize = size === 'sm' ? 'w-8 h-8 sm:w-9 sm:h-9' : size === 'lg' ? 'w-12 h-12 sm:w-14 sm:h-14' : 'w-10 h-10 sm:w-11 sm:h-11';
-  const textSize = size === 'sm' ? 'text-lg' : size === 'lg' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl';
+  const containerSize = size === 'sm' ? 'w-8 h-8' : size === 'lg' ? 'w-12 h-12' : 'w-10 h-10';
   const isDark = textColor && textColor.includes('white');
   const activeLogo = isDark && (logoSrc === '/tab-icon.png' || logoSrc === '/logo.png') ? '/vestro-logo-white.png' : logoSrc;
 
   const content = (
-    <div className={`inline-flex items-center gap-2.5 group transition-transform active:scale-98 select-none ${className}`}>
+    <div className={`inline-flex items-center gap-2.5 group select-none ${className}`}>
       {/* Official Main Brand Logo Container */}
       <div className={`${containerSize} relative shrink-0`}>
         <Image
@@ -173,18 +172,16 @@ export default function BrandLogo({
       </div>
 
       {!hideText && (
-        <div className="flex items-center">
-          <span className={`${textSize} font-black tracking-tight leading-none flex items-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Vestro<span className={isDark ? "text-amber-400" : "text-amber-600"}>Wear</span>
+        <div className="flex flex-col justify-center">
+          <span className={`font-black tracking-[0.18em] uppercase leading-none ${
+            size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-xl' : 'text-base sm:text-lg'
+          } ${isDark ? 'text-white' : 'text-black'}`}>
+            VESTRO
           </span>
-          <span className={`font-black uppercase tracking-wider rounded-md self-center ml-1.5 ${
-            size === 'sm' ? 'text-[9px] px-1 py-0.5' : 'text-[10px] sm:text-[11px] px-1.5 py-0.5'
-          } ${
-            isDark 
-              ? 'bg-amber-950/80 text-amber-300 border border-amber-800/60' 
-              : 'bg-amber-50 text-amber-800 border border-amber-200/80'
+          <span className={`font-bold tracking-[0.26em] uppercase text-[8px] sm:text-[9px] mt-0.5 leading-none ${
+            isDark ? 'text-zinc-400' : 'text-zinc-600'
           }`}>
-            House
+            WEAR HOUSE
           </span>
         </div>
       )}

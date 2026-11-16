@@ -185,7 +185,7 @@ export default function MobileHomeView({
       { id: 'low-price', name: 'Low Price', icon: 'Tag', bg: 'from-yellow-400 to-amber-500', href: '/shop?sort=price-asc', enabled: true },
       { id: 'beauty-finds', name: 'Beauty Finds', icon: 'Sparkles', bg: 'from-pink-400 to-rose-500', href: '/categories', enabled: true },
       { id: 'fashion-look', name: 'Fashion Look', icon: 'Shirt', bg: 'from-purple-500 to-indigo-500', href: '/categories', enabled: true },
-      { id: 'stellar-mall', name: 'StellarMall', icon: 'ShieldCheck', bg: 'from-blue-600 to-indigo-700', href: '/shop', enabled: true },
+      { id: 'vestro-drops', name: 'New Drops', icon: 'Sparkles', bg: 'from-neutral-900 to-black', href: '/new', enabled: true },
       { id: 'flash-sale', name: 'Flash Sale', icon: 'Zap', bg: 'from-red-500 to-rose-600', href: '#mobile-flash-sale', enabled: true },
       { id: 'electronics', name: 'Electronics', icon: 'Smartphone', bg: 'from-sky-400 to-blue-600', href: '/categories', enabled: true },
       { id: 'vouchers', name: 'Vouchers', icon: 'Ticket', bg: 'from-fuchsia-500 to-pink-500', href: '/profile', enabled: true },

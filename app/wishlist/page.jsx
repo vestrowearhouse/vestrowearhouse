@@ -37,63 +37,69 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fb]">
+    <div className="min-h-screen bg-white">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-gray-900 via-slate-900 to-gray-900 text-white py-8 sm:py-12 border-b border-gray-800">
+      <div className="bg-black text-white py-12 sm:py-16 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/10 text-red-500 mb-3 border border-red-500/20">
-            <Heart className="w-6 h-6 fill-red-500" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black mb-1 tracking-tight">আমার উইশলিস্ট (My Wishlist)</h1>
-          <p className="text-gray-400 text-sm">{wishlist.length} টি পছন্দের পণ্য সংরক্ষিত আছে</p>
+          <span className="text-[11px] font-semibold tracking-[0.25em] text-neutral-400 uppercase block mb-2">
+            Vestro Wear House
+          </span>
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight uppercase mb-2">
+            Wishlist
+          </h1>
+          <p className="text-neutral-400 text-xs sm:text-sm tracking-wide">
+            {wishlist.length} {wishlist.length === 1 ? 'item saved' : 'items saved'}
+          </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 mb-6 text-xs sm:text-sm text-gray-500">
-          <Link href="/" className="hover:text-blue-600">Home</Link>
+        <div className="flex items-center gap-2 mb-8 text-xs text-neutral-500 uppercase tracking-wider">
+          <Link href="/" className="hover:text-black transition-colors">Home</Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">Wishlist</span>
+          <span className="text-black font-semibold">Wishlist</span>
         </div>
 
         {/* Guest Banner Notice */}
         {!user && wishlist.length > 0 && (
-          <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 text-sm">
+          <div className="mb-8 p-4 rounded-xl bg-neutral-50 border border-neutral-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-neutral-800 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-lg">💡</span>
+              <span className="text-base">💡</span>
               <span>
-                আপনি <strong>গেস্ট</strong> হিসেবে উইশলিস্ট দেখছেন। অ্যাকাউন্ট লগইন করলে যেকোনো ডিভাইস থেকে সংরক্ষিত পণ্য দেখতে পারবেন।
+                You are viewing your wishlist as a <strong>guest</strong>. Log in to sync saved items across all your devices.
               </span>
             </div>
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg transition whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-black hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition whitespace-nowrap"
             >
               <LogIn className="w-3.5 h-3.5" />
-              লগইন করুন
+              Log In
             </Link>
           </div>
         )}
 
         {wishlist.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-xs border border-gray-200 p-10 sm:p-14 text-center max-w-lg mx-auto">
-            <div className="w-16 h-16 rounded-full bg-red-50 text-red-400 mx-auto mb-4 flex items-center justify-center">
-              <Heart className="w-8 h-8" />
+          <div className="rounded-2xl border border-neutral-200 p-12 sm:p-16 text-center max-w-md mx-auto">
+            <div className="w-14 h-14 rounded-full bg-neutral-100 text-neutral-400 mx-auto mb-4 flex items-center justify-center">
+              <Heart className="w-6 h-6" />
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">আপনার উইশলিস্ট খালি</h2>
-            <p className="text-gray-500 text-sm mb-6">
-              পছন্দের পণ্যগুলো হৃদপিন্ড আইকনে ক্লিক করে সংরক্ষণ করুন এবং যেকোনো সময় সহজে অর্ডার করুন।
+            <h2 className="text-base sm:text-lg font-bold text-neutral-900 uppercase tracking-wider mb-2">
+              Your wishlist is empty
+            </h2>
+            <p className="text-neutral-500 text-xs sm:text-sm mb-6">
+              Save your favorite streetwear pieces by clicking the heart icon on any product.
             </p>
             <Link
               href="/shop"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-md transition active:scale-95"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-black hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-widest rounded-lg transition active:scale-95"
             >
-              শপিং শুরু করুন <ArrowRight className="w-4 h-4" />
+              Explore Collection <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {wishlist.map((product) => {
               const pId = normalizeId(product);
               const isRemoving = removingId === pId;
@@ -102,42 +108,42 @@ export default function WishlistPage() {
               return (
                 <div
                   key={pId}
-                  className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/90 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col group relative"
+                  className="group bg-white rounded-xl border border-neutral-200 overflow-hidden hover:border-black transition-colors flex flex-col justify-between"
                 >
-                  <div className="relative aspect-square bg-[#f5f6f8] overflow-hidden">
-                    <Link href={`/product/${product.slug || pId}`} className="block w-full h-full">
-                      <Image
-                        src={product.image || '/placeholder.png'}
-                        alt={product.name || 'Product'}
-                        fill
-                        className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </Link>
+                  <div>
+                    <div className="relative aspect-[3/4] bg-neutral-100 overflow-hidden">
+                      <Link href={`/product/${product.slug || pId}`} className="block w-full h-full">
+                        <Image
+                          src={product.image || '/placeholder.png'}
+                          alt={product.name || 'Product'}
+                          fill
+                          className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </Link>
 
-                    {/* Remove button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleRemoveFromWishlist(pId);
-                      }}
-                      disabled={isRemoving}
-                      title="উইশলিস্ট থেকে মুছুন"
-                      className="absolute top-2 right-2 p-2 bg-white/90 hover:bg-red-50 rounded-full shadow-sm text-gray-400 hover:text-red-600 transition disabled:opacity-50 z-10"
-                    >
-                      {isRemoving ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRemoveFromWishlist(pId);
+                        }}
+                        disabled={isRemoving}
+                        title="Remove from wishlist"
+                        className="absolute top-2.5 right-2.5 p-2 bg-white/90 hover:bg-white rounded-full shadow-sm text-neutral-400 hover:text-black transition disabled:opacity-50 z-10"
+                      >
+                        {isRemoving ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-neutral-600" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
 
-                  <div className="p-3 sm:p-4 flex flex-col flex-1 justify-between">
-                    <div>
+                    <div className="p-3 sm:p-4">
                       <Link href={`/product/${product.slug || pId}`}>
-                        <h3 className="font-semibold text-xs sm:text-sm text-gray-900 line-clamp-2 hover:text-red-600 transition-colors mb-2">
+                        <h3 className="font-semibold text-xs sm:text-sm text-neutral-900 uppercase tracking-tight line-clamp-2 hover:text-neutral-600 transition-colors mb-1.5">
                           {product.name}
                         </h3>
                       </Link>
@@ -145,34 +151,36 @@ export default function WishlistPage() {
                       <div className="flex items-center gap-2 mb-3">
                         {product.salePrice ? (
                           <>
-                            <span className="text-sm sm:text-base font-black text-red-600">৳{product.salePrice}</span>
-                            <span className="text-xs text-gray-400 line-through">৳{product.price}</span>
+                            <span className="text-sm sm:text-base font-bold text-neutral-900">৳{product.salePrice}</span>
+                            <span className="text-xs text-neutral-400 line-through">৳{product.price}</span>
                           </>
                         ) : (
-                          <span className="text-sm sm:text-base font-black text-gray-900">৳{product.price}</span>
+                          <span className="text-sm sm:text-base font-bold text-neutral-900">৳{product.price}</span>
                         )}
                       </div>
                     </div>
+                  </div>
 
+                  <div className="p-3 sm:p-4 pt-0">
                     <button
                       type="button"
                       onClick={() => handleAddToCart(product)}
                       disabled={product.inStock === false}
-                      className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs sm:text-sm font-bold transition active:scale-95 ${
+                      className={`w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition active:scale-95 ${
                         product.inStock === false
-                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                          ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
                           : isAdded
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-red-600 hover:bg-red-700 text-white'
+                          : 'bg-black hover:bg-neutral-800 text-white'
                       }`}
                     >
                       {isAdded ? (
                         <>
-                          <Check className="w-4 h-4" /> কার্টে যুক্ত হয়েছে
+                          <Check className="w-3.5 h-3.5" /> Added to Bag
                         </>
                       ) : (
                         <>
-                          <ShoppingBag className="w-4 h-4" /> কার্টে যোগ করুন
+                          <ShoppingBag className="w-3.5 h-3.5" /> Add to Bag
                         </>
                       )}
                     </button>

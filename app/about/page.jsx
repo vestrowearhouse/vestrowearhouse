@@ -1,76 +1,69 @@
 import Link from 'next/link';
-import { Truck, Shield, Star, Headphones, Store, Users, Award } from 'lucide-react';
+import { Truck, ShieldCheck, RefreshCw, Sparkles, Layers, ArrowRight } from 'lucide-react';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-4">About Vestro Wear House</h1>
-          <p className="text-gray-300 text-lg">Your Trusted Fashion & Lifestyle Destination in Bangladesh</p>
+      <div className="border-b border-neutral-100 bg-neutral-50/50 py-14 sm:py-20 text-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <p className="text-[11px] font-bold tracking-[0.26em] uppercase text-neutral-400 mb-2">
+            PHILOSOPHY & CULTURE
+          </p>
+          <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-neutral-900">
+            OUR STORY
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-500 mt-3 max-w-lg mx-auto">
+            Vestro Wear House is an urban streetwear house founded on contemporary silhouettes, premium heavy fabrics, and uncompromising detail.
+          </p>
         </div>
       </div>
 
       {/* About Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Who We Are</h2>
-          <p className="text-gray-700 leading-relaxed mb-4">
-            Vestro Wear House is Bangladesh's premier fashion and apparel brand, offering contemporary designs, 
-            premium fabrics, and trendsetting lifestyle products. 
-            We are dedicated to providing our customers with an unparalleled shopping experience.
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-20 space-y-16">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wider text-neutral-900 mb-4">
+            Contemporary Streetwear for Modern Culture
+          </h2>
+          <p className="text-sm text-neutral-600 leading-relaxed mb-4">
+            Born out of a passion for high-fashion aesthetics and everyday practicality, Vestro Wear House crafts timeless pieces designed to withstand trends. Every drop is manufactured with combed high-GSM cotton, precise stitch density, and relaxed drop-shoulder tailoring.
           </p>
-          <p className="text-gray-700 leading-relaxed">
-            With quality craftsmanship, seamless delivery across all 64 districts, secure payment options, 
-            and dedicated customer support, Vestro Wear House is the go-to fashion warehouse for the modern generation.
+          <p className="text-sm text-neutral-600 leading-relaxed">
+            We believe in honest pricing, rapid nationwide fulfillment, and hassle-free exchange so you can shop streetwear with total confidence across Bangladesh.
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <Store className="w-10 h-10 text-blue-600 mx-auto mb-3" />
-            <p className="text-3xl font-bold text-gray-900">10,000+</p>
-            <p className="text-gray-600">Products</p>
+        {/* Brand Pillars */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="p-6 border border-neutral-200 bg-neutral-50/50">
+            <Layers className="w-6 h-6 text-neutral-900 mb-3" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-1">Heavyweight Fabrics</h3>
+            <p className="text-xs text-neutral-500">Combed cotton with premium GSM for structured drop-shoulder drape.</p>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <Users className="w-10 h-10 text-green-600 mx-auto mb-3" />
-            <p className="text-3xl font-bold text-gray-900">50,000+</p>
-            <p className="text-gray-600">Customers</p>
+
+          <div className="p-6 border border-neutral-200 bg-neutral-50/50">
+            <Truck className="w-6 h-6 text-neutral-900 mb-3" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-1">64 Districts COD</h3>
+            <p className="text-xs text-neutral-500">Doorstep parcel delivery with cash on delivery across Bangladesh.</p>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <Truck className="w-10 h-10 text-orange-600 mx-auto mb-3" />
-            <p className="text-3xl font-bold text-gray-900">64</p>
-            <p className="text-gray-600">Districts</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <Award className="w-10 h-10 text-purple-600 mx-auto mb-3" />
-            <p className="text-3xl font-bold text-gray-900">4.8+</p>
-            <p className="text-gray-600">Rating</p>
+
+          <div className="p-6 border border-neutral-200 bg-neutral-50/50">
+            <RefreshCw className="w-6 h-6 text-neutral-900 mb-3" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-1">7-Day Exchange</h3>
+            <p className="text-xs text-neutral-500">Hassle-free size and product replacement guarantee.</p>
           </div>
         </div>
 
-        {/* Why Choose Us */}
-        <div className="bg-white rounded-xl shadow-sm p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Why Choose Vestro Wear House?</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-4">
-              <Truck className="w-12 h-12 text-blue-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Fast Delivery</h3>
-              <p className="text-gray-600 text-sm">Free shipping on orders over ৳500 with express delivery options</p>
-            </div>
-            <div className="text-center p-4">
-              <Shield className="w-12 h-12 text-green-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">Secure Payment</h3>
-              <p className="text-gray-600 text-sm">Multiple payment methods including bKash, Nagad, and cards</p>
-            </div>
-            <div className="text-center p-4">
-              <Headphones className="w-12 h-12 text-orange-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900 mb-2">24/7 Support</h3>
-              <p className="text-gray-600 text-sm">Round-the-clock customer support for any queries</p>
-            </div>
-          </div>
+        {/* CTA */}
+        <div className="bg-black text-white p-8 sm:p-12 text-center">
+          <h3 className="text-xl sm:text-2xl font-black uppercase tracking-wider mb-2">Explore The Latest Drop</h3>
+          <p className="text-xs text-neutral-400 mb-6">Discover the new season streetwear collection.</p>
+          <Link
+            href="/shop"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-neutral-200 transition-colors"
+          >
+            Shop Now <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </div>

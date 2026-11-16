@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase';
 
-const BASE_URL = 'https://www.stellarmartbd.com';
+const BASE_URL = 'https://www.vestrowearhouse.com';
 
 // Cache generated sitemap for 24 hours to prevent repeated DB egress on bot crawls
 export const revalidate = 86400;

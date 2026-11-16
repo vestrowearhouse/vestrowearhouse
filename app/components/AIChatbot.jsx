@@ -16,7 +16,7 @@ export default function AIChatbot() {
   const [sessionStatus, setSessionStatus] = useState('ai'); // 'ai' | 'human' | 'closed'
   const [productContext, setProductContext] = useState(null); // { id, name }
   const [messages, setMessages] = useState([
-    { role: 'model', content: 'Hello! I am here to provide **StellarmartBD AI Support**. How can I help you today?' }
+    { role: 'model', content: 'Hello! I am here to provide **Vestro Wear House Support**. How can I help you today?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,10 +28,10 @@ export default function AIChatbot() {
 
   // ── Initialize Session ID & Load History ──
   useEffect(() => {
-    let savedId = sessionStorage.getItem('stellarmart_chat_session_id');
+    let savedId = sessionStorage.getItem('vestro_chat_session_id') || sessionStorage.getItem('stellarmart_chat_session_id');
     if (!savedId) {
       savedId = 'sess_' + Math.random().toString(36).substring(2, 15) + '_' + Date.now();
-      sessionStorage.setItem('stellarmart_chat_session_id', savedId);
+      sessionStorage.setItem('vestro_chat_session_id', savedId);
     }
     setSessionId(savedId);
 
@@ -205,10 +205,10 @@ export default function AIChatbot() {
         <button
           onClick={() => setIsOpen(true)}
           aria-label="Toggle AI Chatbot"
-          className="w-12 h-12 md:w-14 md:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-[0_4px_20px_rgba(37,99,235,0.4)] hover:shadow-[0_6px_25px_rgba(37,99,235,0.6)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative group cursor-pointer"
+          className="w-12 h-12 md:w-14 md:h-14 bg-black hover:bg-neutral-800 text-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_25px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center relative group cursor-pointer"
         >
           <MessageCircle className="w-6 h-6 md:w-7 md:h-7" />
-          <span className="hidden md:block absolute right-full mr-3 bg-gray-900 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg pointer-events-none">
+          <span className="hidden md:block absolute right-full mr-3 bg-black text-white text-xs px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg pointer-events-none">
             Need Help? Chat here
           </span>
         </button>
@@ -216,19 +216,19 @@ export default function AIChatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="bg-white rounded-2xl shadow-2xl w-80 sm:w-96 overflow-hidden flex flex-col border border-gray-100 transition-all origin-bottom-right" style={{ height: '500px' }}>
+        <div className="bg-white rounded-2xl shadow-2xl w-80 sm:w-96 overflow-hidden flex flex-col border border-neutral-200 transition-all origin-bottom-right" style={{ height: '500px' }}>
           {/* Header */}
-          <div className="bg-blue-600 p-4 text-white flex justify-between items-center shadow-md">
+          <div className="bg-black p-4 text-white flex justify-between items-center shadow-md">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-blue-600">
+              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-black">
                 {sessionStatus === 'human' ? <Headset className="w-5 h-5" /> : <ShoppingBag className="w-5 h-5" />}
               </div>
               <div>
-                <h3 className="font-semibold text-sm">
-                  {sessionStatus === 'human' ? 'Live Support' : 'AI Support'}
+                <h3 className="font-bold text-xs uppercase tracking-wider">
+                  {sessionStatus === 'human' ? 'Live Support' : 'AI Assistant'}
                 </h3>
-                <p className="text-xs text-blue-200">
-                  {sessionStatus === 'human' ? 'Connecting to Agent' : 'StellarmartBD AI'}
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400">
+                  {sessionStatus === 'human' ? 'Connecting to Agent' : 'Vestro Wear House AI'}
                 </p>
               </div>
             </div>
@@ -282,9 +282,9 @@ export default function AIChatbot() {
                     <div 
                       className={`rounded-2xl px-4 py-2.5 text-sm overflow-hidden ${
                         isUser 
-                          ? 'bg-blue-600 text-white rounded-br-sm' 
+                          ? 'bg-black text-white rounded-br-sm' 
                           : isAdmin
-                          ? 'bg-indigo-50 text-indigo-900 border border-indigo-100 rounded-bl-sm shadow-sm'
+                          ? 'bg-neutral-100 text-neutral-900 border border-neutral-200 rounded-bl-sm shadow-sm'
                           : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'
                       }`}
                     >

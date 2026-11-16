@@ -2,8 +2,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'Admin Login - StellarMartBD',
-  description: 'Admin Login',
+  title: 'Admin Login - Vestro Wear House',
+  description: 'Vestro Wear House Admin Login',
 };
 
 export default function AdminLoginLayout({ children }) {

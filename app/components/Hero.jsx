@@ -2,46 +2,31 @@ import Link from 'next/link';
 
 export default function Hero() {
   return (
-    <section className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-16">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-              Welcome to StellarMart
-            </h1>
-            <p className="text-xl mb-8 opacity-95">
-              Your one-stop shop for all your needs. Best products, best prices, best service in Bangladesh.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link href="/shop" className="px-8 py-3.5 bg-white text-blue-700 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-lg">
-                Shop Now
-              </Link>
-              <Link href="/categories" className="px-8 py-3.5 border-2 border-white rounded-lg font-bold hover:bg-white/20 transition-colors">
-                Browse Categories
-              </Link>
-            </div>
-          </div>
-          <div className="hidden md:block">
-            <div className="bg-white/10 rounded-2xl p-8 backdrop-blur">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/20 rounded-xl p-5 text-center">
-                  <div className="text-4xl font-extrabold">10K+</div>
-                  <div className="text-sm opacity-90">Products</div>
-                </div>
-                <div className="bg-white/20 rounded-xl p-5 text-center">
-                  <div className="text-4xl font-extrabold">50K+</div>
-                  <div className="text-sm opacity-90">Customers</div>
-                </div>
-                <div className="bg-white/20 rounded-xl p-5 text-center">
-                  <div className="text-4xl font-extrabold">500+</div>
-                  <div className="text-sm opacity-90">Brands</div>
-                </div>
-                <div className="bg-white/20 rounded-xl p-5 text-center">
-                  <div className="text-4xl font-extrabold">24/7</div>
-                  <div className="text-sm opacity-90">Support</div>
-                </div>
-              </div>
-            </div>
+    <section className="bg-black text-white py-16 sm:py-24 border-b border-neutral-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-3xl">
+          <p className="text-[11px] font-bold tracking-[0.28em] uppercase text-neutral-400 mb-3">
+            CONTEMPORARY STREETWEAR
+          </p>
+          <h1 className="text-3xl sm:text-6xl font-black uppercase tracking-tight text-white leading-tight mb-4">
+            VESTRO WEAR HOUSE
+          </h1>
+          <p className="text-xs sm:text-base text-neutral-400 mb-8 max-w-xl leading-relaxed">
+            Engineered silhouettes, combed heavyweight cotton, and minimal aesthetics. Designed for the streets of Dhaka and beyond.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Link 
+              href="/new" 
+              className="px-8 py-3.5 bg-white text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-neutral-200 transition-colors"
+            >
+              Explore Drops
+            </Link>
+            <Link 
+              href="/shop" 
+              className="px-8 py-3.5 border border-white text-white text-xs font-bold uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors"
+            >
+              All Collections
+            </Link>
           </div>
         </div>
       </div>

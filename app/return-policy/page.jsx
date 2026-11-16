@@ -2,124 +2,120 @@ import Link from 'next/link';
 import { ArrowLeft, RefreshCw, ShieldCheck, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const metadata = {
-  title: 'রিটার্ন ও রিফান্ড পলিসি | StellarMartBD',
-  description: 'StellarMartBD-এর সহজ ৭ দিনের রিটার্ন, রিপ্লেসমেন্ট ও রিফান্ড পলিসি। ঝামেলাহীন পণ্য পরিবর্তনের সুবিধা।',
+  title: 'Return & Exchange Policy | Vestro Wear House',
+  description: 'Vestro Wear House hassle-free 7-day return and size exchange policy for premium streetwear and apparel.',
 };
 
 export default function ReturnPolicyPage() {
   return (
-    <div className="min-h-screen bg-gray-50/60 py-8 md:py-14">
+    <div className="min-h-screen bg-white py-10 md:py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 mb-6 text-sm text-gray-500">
-          <Link href="/" className="hover:text-blue-600 flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" /> হোমপেজ
+        <div className="flex items-center gap-2 mb-6 text-xs uppercase tracking-wider text-neutral-400">
+          <Link href="/" className="hover:text-black flex items-center gap-1 transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5" /> Home
           </Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">রিটার্ন ও রিফান্ড পলিসি</span>
+          <span className="text-neutral-900 font-bold">Return & Exchange</span>
         </div>
 
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-[#083b66] to-[#0d5c9e] text-white p-6 sm:p-10 rounded-2xl shadow-sm mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-white/10 rounded-xl">
-              <RefreshCw className="w-6 h-6 text-emerald-400" />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">১০০% গ্রাহক সন্তুষ্টি গ্যারান্টি</span>
+        <div className="bg-black text-white p-8 sm:p-12 mb-10">
+          <div className="flex items-center gap-3 mb-3">
+            <RefreshCw className="w-5 h-5 text-white" />
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-300">100% Satisfaction Guarantee</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">৭ দিনের সহজ রিটার্ন ও রিফান্ড পলিসি</h1>
-          <p className="mt-2 text-sm sm:text-base text-blue-100 max-w-2xl leading-relaxed">
-            StellarMartBD-তে কেনাকাটা সম্পূর্ণ ঝুঁকিমুক্ত। পণ্য হাতে পাওয়ার পর কোনো সমস্যা বা ত্রুটি থাকলে আপনি ৭ দিনের মধ্যে সহজে রিটার্ন বা রিপ্লেসমেন্ট নিতে পারবেন।
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white">7-Day Return & Exchange</h1>
+          <p className="mt-3 text-xs sm:text-sm text-neutral-400 max-w-2xl leading-relaxed">
+            Shopping at Vestro Wear House is risk-free. If you need a size exchange or receive a defective item, our 7-day exchange process is seamless and quick.
           </p>
         </div>
 
         {/* Core Pillars */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-xs flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-3">
-              <Clock className="w-6 h-6" />
+        <div className="grid sm:grid-cols-3 gap-4 mb-10">
+          <div className="p-6 border border-neutral-200 bg-neutral-50/50 flex flex-col items-center text-center">
+            <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center mb-3">
+              <Clock className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-gray-900 text-sm">৭ দিনের রিপ্লেসমেন্ট</h3>
-            <p className="text-xs text-gray-500 mt-1">পণ্য ডেলিভারির ৭ দিনের মধ্যে রিকোয়েস্ট জানান</p>
+            <h3 className="font-bold text-neutral-900 text-xs uppercase tracking-wider">7 Days Exchange</h3>
+            <p className="text-xs text-neutral-500 mt-1">Request within 7 days of package delivery</p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-xs flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3">
-              <ShieldCheck className="w-6 h-6" />
+          <div className="p-6 border border-neutral-200 bg-neutral-50/50 flex flex-col items-center text-center">
+            <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center mb-3">
+              <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-gray-900 text-sm">১০০% আসল প্রোডাক্ট</h3>
-            <p className="text-xs text-gray-500 mt-1">অরিজিনাল কোয়ালিটি ও ব্র্যান্ড ওয়ারেন্টি</p>
+            <h3 className="font-bold text-neutral-900 text-xs uppercase tracking-wider">Authentic Apparel</h3>
+            <p className="text-xs text-neutral-500 mt-1">100% genuine combed cotton & high GSM fabrics</p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-xs flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-3">
-              <RefreshCw className="w-6 h-6" />
+          <div className="p-6 border border-neutral-200 bg-neutral-50/50 flex flex-col items-center text-center">
+            <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center mb-3">
+              <RefreshCw className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-gray-900 text-sm">ইনস্ট্যান্ট রিফান্ড</h3>
-            <p className="text-xs text-gray-500 mt-1">বিকাশ/নগদ-এ ৩-৫ কার্যদিবসে টাকা ফেরত</p>
+            <h3 className="font-bold text-neutral-900 text-xs uppercase tracking-wider">Rapid Processing</h3>
+            <p className="text-xs text-neutral-500 mt-1">Instant replacement or bKash refund in 3-5 days</p>
           </div>
         </div>
 
         {/* Detailed Sections */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-xs p-6 sm:p-8 space-y-8 text-gray-700 leading-relaxed">
+        <div className="border border-neutral-100 p-6 sm:p-10 space-y-8 text-neutral-700 leading-relaxed text-sm">
           
-          {/* Section 1 */}
           <section>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full text-xs font-bold flex items-center justify-center">১</span>
-              যেসব ক্ষেত্রে রিটার্ন বা রিপ্লেসমেন্ট প্রযোজ্য
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-neutral-900 mb-3 flex items-center gap-2">
+              <span className="w-6 h-6 bg-black text-white text-xs font-bold flex items-center justify-center">1</span>
+              Eligible Reasons for Exchange
             </h2>
-            <ul className="space-y-2.5 text-sm pl-2">
+            <ul className="space-y-2.5 text-xs text-neutral-600 pl-2">
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>ডেলিভারি পাওয়ার পর পণ্যটি ভাঙা, ত্রুটিযুক্ত বা অকার্যকর (Defective/Damaged) পাওয়া গেলে।</span>
+                <CheckCircle2 className="w-4 h-4 text-black shrink-0 mt-0.5" />
+                <span>Size mismatch (need a smaller or larger size).</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>অর্ডারকৃত পণ্যের সাথে প্রাপ্ত পণ্যের মডেল, সাইজ, কালার বা স্পেসিফিকেশনে অমিল থাকলে।</span>
+                <CheckCircle2 className="w-4 h-4 text-black shrink-0 mt-0.5" />
+                <span>Manufacturing defect or stitching flaws.</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>প্যাকেটের ভেতরে কোনো প্রয়োজনীয় পার্টস বা এক্সেসরিজ অনুপস্থিত থাকলে।</span>
+                <CheckCircle2 className="w-4 h-4 text-black shrink-0 mt-0.5" />
+                <span>Received wrong product or wrong color variant.</span>
               </li>
             </ul>
           </section>
 
-          {/* Section 2 */}
           <section>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full text-xs font-bold flex items-center justify-center">২</span>
-              রিটার্ন করার শর্তাবলী
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-neutral-900 mb-3 flex items-center gap-2">
+              <span className="w-6 h-6 bg-black text-white text-xs font-bold flex items-center justify-center">2</span>
+              Conditions for Return
             </h2>
-            <div className="bg-gray-50 rounded-xl p-4 text-sm space-y-2 border border-gray-100">
-              <p>• পণ্যটির মূল প্যাকেজিং, ইউজার ম্যানুয়াল, ওয়ারেন্টি কার্ড এবং ইনভয়েস অক্ষত থাকতে হবে।</p>
-              <p>• অসাবধানতাবশত নিজে ভেঙে ফেলা বা বৈদ্যুতিক শর্ট সার্কিটের কারণে ক্ষতিগ্রস্ত পণ্যের ক্ষেত্রে রিটার্ন প্রযোজ্য হবে না।</p>
-              <p>• ডেলিভারি পাওয়ার পর আনবক্সিং করার সময় একটি ছোট ভিডিও বা ছবি তুলে রাখা উৎসাহিত করা হয়।</p>
+            <div className="bg-neutral-50 border border-neutral-200 p-4 text-xs space-y-2 text-neutral-800">
+              <p>• The item must be unwashed, unworn, and with original brand tags attached.</p>
+              <p>• Items damaged by misuse or deliberate tearing are not eligible for exchange.</p>
+              <p>• Please inform our support team via WhatsApp with your order number.</p>
             </div>
           </section>
 
           {/* Section 3 */}
           <section>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full text-xs font-bold flex items-center justify-center">৩</span>
-              কীভাবে রিটার্ন বা রিপ্লেসমেন্ট রিকোয়েস্ট করবেন?
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-neutral-900 mb-3 flex items-center gap-2">
+              <span className="w-6 h-6 bg-black text-white text-xs font-bold flex items-center justify-center">3</span>
+              How to Request an Exchange or Return
             </h2>
-            <div className="space-y-3 text-sm">
+            <div className="space-y-3 text-xs text-neutral-700">
               <p>
-                আপনার অর্ডার আইডি এবং সমস্যার ছবি/ভিডিও সহ আমাদের সরাসরি WhatsApp নাম্বারে (<strong>+880 1345-447500</strong>) মেসেজ দিন।
+                Send a message to our official WhatsApp support at <strong>+880 1345-447500</strong> with your Order ID and photos/videos of the item.
               </p>
               <p>
-                আমাদের সাপোর্ট টিম তথ্য যাচাই করে দ্রুত পিকআপ অথবা ড্রপ-অফের মাধ্যমে রিপ্লেসমেন্ট পণ্য পাঠিয়ে দেবে।
+                Our quality check team will approve the exchange and dispatch the replacement piece via doorstep courier.
               </p>
               <div className="pt-2">
                 <a
-                  href="https://wa.me/8801345447500?text=Hello%20StellarMartBD,%20I%20want%20to%20request%20a%20return/replacement."
+                  href="https://wa.me/8801345447500?text=Hello%20Vestro%20Wear%20House,%20I%20want%20to%20request%20an%20exchange."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors text-sm shadow-sm"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-black hover:bg-neutral-800 text-white font-bold uppercase tracking-wider rounded-lg transition-colors text-xs"
                 >
-                  💬 WhatsApp-এ রিটার্ন রিকোয়েস্ট করুন
+                  Message Support on WhatsApp →
                 </a>
               </div>
             </div>
@@ -127,12 +123,12 @@ export default function ReturnPolicyPage() {
 
           {/* Section 4 */}
           <section>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full text-xs font-bold flex items-center justify-center">৪</span>
-              রিফান্ড প্রক্রিয়া ও সময়সীমা
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-neutral-900 mb-3 flex items-center gap-2">
+              <span className="w-6 h-6 bg-black text-white text-xs font-bold flex items-center justify-center">4</span>
+              Refund Process & Timeline
             </h2>
-            <p className="text-sm">
-              যদি রিপ্লেসমেন্ট স্টক না থাকে বা আপনি টাকা ফেরত চান, তবে পণ্যটি আমাদের কাছে পৌঁছানোর এবং কোয়ালিটি যাচাইয়ের পর <strong>৩ থেকে ৫ কার্যদিবসের মধ্যে</strong> আপনার বিকাশ, নগদ বা ব্যাংক অ্যাকাউন্টে রিফান্ডের পুরো টাকা পাঠিয়ে দেওয়া হবে।
+            <p className="text-xs text-neutral-600">
+              In cases where the replacement size is out of stock or you request a full refund, our accounts department will process the refund to your bKash, Nagad, or Bank account within <strong>3 to 5 business days</strong> after receiving the returned parcel.
             </p>
           </section>
 

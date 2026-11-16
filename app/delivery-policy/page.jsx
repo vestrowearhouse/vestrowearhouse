@@ -2,118 +2,116 @@ import Link from 'next/link';
 import { ArrowLeft, Truck, Banknote, ShieldCheck, Clock, MapPin, PackageCheck } from 'lucide-react';
 
 export const metadata = {
-  title: 'শিপিং ও ডেলিভারি পলিসি | StellarMartBD',
-  description: 'StellarMartBD-এর ডেলিভারি চার্জ, ক্যাশ অন ডেলিভারি (COD) পলিসি ও ডেলিভারি সময়সীমা। সারা বাংলাদেশে দ্রুত হোম ডেলিভারি।',
+  title: 'Shipping & Delivery Policy | Vestro Wear House',
+  description: 'Vestro Wear House shipping charges, Cash on Delivery (COD) policy, and delivery timeline across Bangladesh.',
 };
 
 export default function DeliveryPolicyPage() {
   return (
-    <div className="min-h-screen bg-gray-50/60 py-8 md:py-14">
+    <div className="min-h-screen bg-white py-10 md:py-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         
         {/* Navigation Breadcrumb */}
-        <div className="flex items-center gap-2 mb-6 text-sm text-gray-500">
-          <Link href="/" className="hover:text-blue-600 flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" /> হোমপেজ
+        <div className="flex items-center gap-2 mb-6 text-xs uppercase tracking-wider text-neutral-400">
+          <Link href="/" className="hover:text-black flex items-center gap-1 transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5" /> Home
           </Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">শিপিং ও ডেলিভারি পলিসি</span>
+          <span className="text-neutral-900 font-bold">Shipping & Delivery</span>
         </div>
 
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6 sm:p-10 rounded-2xl shadow-sm mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-white/10 rounded-xl">
-              <Truck className="w-6 h-6 text-yellow-300" />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-yellow-300">সারা বাংলাদেশে ক্যাশ অন ডেলিভারি</span>
+        <div className="bg-black text-white p-8 sm:p-12 mb-10">
+          <div className="flex items-center gap-3 mb-3">
+            <Truck className="w-5 h-5 text-white" />
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-300">Nationwide Cash On Delivery</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">শিপিং ও ডেলিভারি পলিসি</h1>
-          <p className="mt-2 text-sm sm:text-base text-blue-100 max-w-2xl leading-relaxed">
-            StellarMartBD গ্রাহকদের দ্রুততম সময়ে নিখুঁতভাবে পণ্য পৌঁছে দিতে নির্ভরযোগ্য কুরিয়ার পার্টনারদের মাধ্যমে সারা দেশে হোম ডেলিভারি সেবা প্রদান করে থাকে।
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white">Shipping & Delivery Policy</h1>
+          <p className="mt-3 text-xs sm:text-sm text-neutral-400 max-w-2xl leading-relaxed">
+            Vestro Wear House delivers nationwide across all 64 districts in Bangladesh with reliable courier partners and full parcel inspection on delivery.
           </p>
         </div>
 
         {/* Quick Charge Cards */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-xs flex items-start gap-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-              <MapPin className="w-6 h-6" />
+        <div className="grid sm:grid-cols-2 gap-4 mb-10">
+          <div className="p-6 border border-neutral-200 bg-neutral-50/50 flex items-start gap-4">
+            <div className="p-3 bg-black text-white">
+              <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xs font-bold uppercase text-blue-600 tracking-wider">ঢাকার ভিতরে</span>
-              <h3 className="text-2xl font-black text-gray-900 mt-0.5">৳ ৬০</h3>
-              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-gray-400" /> ডেলিভারি সময়: ২৪ থেকে ৪৮ ঘণ্টা
+              <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Inside Dhaka</span>
+              <h3 className="text-2xl font-black text-neutral-900 mt-0.5">৳ ৭০</h3>
+              <p className="text-xs text-neutral-500 mt-1 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-neutral-400" /> Delivery: 24 to 48 Hours
               </p>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-xs flex items-start gap-4">
-            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-              <Truck className="w-6 h-6" />
+          <div className="p-6 border border-neutral-200 bg-neutral-50/50 flex items-start gap-4">
+            <div className="p-3 bg-black text-white">
+              <Truck className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xs font-bold uppercase text-indigo-600 tracking-wider">ঢাকার বাইরে (সারা দেশ)</span>
-              <h3 className="text-2xl font-black text-gray-900 mt-0.5">৳ ১২০</h3>
-              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-gray-400" /> ডেলিভারি সময়: ২ থেকে ৪ কার্যদিবস
+              <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Outside Dhaka (Nationwide)</span>
+              <h3 className="text-2xl font-black text-neutral-900 mt-0.5">৳ ১৩০</h3>
+              <p className="text-xs text-neutral-500 mt-1 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-neutral-400" /> Delivery: 2 to 4 Business Days
               </p>
             </div>
           </div>
         </div>
 
         {/* Detailed Sections */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-xs p-6 sm:p-8 space-y-8 text-gray-700 leading-relaxed">
+        <div className="border border-neutral-100 p-6 sm:p-10 space-y-8 text-neutral-700 leading-relaxed text-sm">
           
           {/* Section 1: Cash On Delivery */}
           <section>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Banknote className="w-5 h-5 text-emerald-600" />
-              ক্যাশ অন ডেলিভারি (Cash on Delivery)
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-neutral-900 mb-3 flex items-center gap-2">
+              <Banknote className="w-5 h-5 text-neutral-900" />
+              Cash on Delivery (COD)
             </h2>
-            <p className="text-sm">
-              বাংলাদেশের যেকোনো প্রান্ত থেকে আপনি ক্যাশ অন ডেলিভারিতে অর্ডার করতে পারবেন। কোনো অগ্রিম পেমেন্টের ঝুঁকি ছাড়া ডেলিভারি রাইডার আপনার ঠিকানায় পণ্য পৌঁছে দিলে আপনি দেখে মূল্য পরিশোধ করবেন।
+            <p>
+              You can place orders with 100% Cash on Delivery from anywhere in Bangladesh. Pay the rider upon receiving and checking your apparel package at your doorstep.
             </p>
           </section>
 
           {/* Section 2: Parcel Inspection */}
           <section>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <PackageCheck className="w-5 h-5 text-blue-600" />
-              রাইডারের সামনে পার্সেল চেক করার সুযোগ
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-neutral-900 mb-3 flex items-center gap-2">
+              <PackageCheck className="w-5 h-5 text-neutral-900" />
+              Doorstep Parcel Checking
             </h2>
-            <div className="bg-emerald-50/70 border border-emerald-100 rounded-xl p-4 text-sm text-emerald-950 space-y-1.5">
-              <p className="font-semibold text-emerald-900">ডেলিভারির সময় করণীয়:</p>
-              <p>১. ডেলিভারি রাইডারের উপস্থিতিতে পার্সেলের বাইরের অবস্থা ও সঠিক পণ্য এসেছে কি না চেক করুন।</p>
-              <p>২. কোনো দৃশ্যমান ক্ষতি বা ত্রুটি দেখলে সাথে সাথে রাইডারের কাছে পার্সেল ফেরত দিন অথবা আমাদের হটলাইনে কল করুন।</p>
+            <div className="bg-neutral-50 border border-neutral-200 p-4 space-y-1.5 text-xs text-neutral-800">
+              <p className="font-bold uppercase tracking-wider text-neutral-900">Delivery Guidelines:</p>
+              <p>1. Check the exterior parcel and size/color of the apparel in the presence of the delivery rider.</p>
+              <p>2. If you notice any damage or incorrect size, you can instantly hand it back to the rider or message our helpline.</p>
             </div>
           </section>
 
           {/* Section 3: Delivery Partners */}
           <section>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-indigo-600" />
-              আমাদের ডেলিভারি পার্টনার্স
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-neutral-900 mb-3 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-neutral-900" />
+              Trusted Logistics Partners
             </h2>
-            <p className="text-sm">
-              আমরা স্টেডফাস্ট (Steadfast), রেডএক্স (RedX), এবং সুন্দরবন কুরিয়ারের মাধ্যমে নিরাপদে পণ্য ডেলিভারি করে থাকি। অর্ডার নিশ্চিত হওয়ার পর এসএমএস ও ট্র্যাকিং কোড পাঠিয়ে দেওয়া হয় যাতে আপনি আপনার অর্ডারের রিয়েল-টাইম অবস্থান ট্র্যাক করতে পারেন।
+            <p>
+              We partner with Steadfast, Pathao, and RedX for rapid, insured nationwide deliveries. You receive real-time SMS updates with live tracking links once your package is dispatched.
             </p>
           </section>
 
           {/* Contact Box */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-5 text-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <p className="font-bold text-gray-900">ডেলিভারি সংক্রান্ত কোনো জিজ্ঞাসা আছে?</p>
-              <p className="text-xs text-gray-500 mt-0.5">আমাদের সাপোর্ট টিম প্রতিদিন সকাল ১০টা থেকে রাত ১০টা পর্যন্ত সক্রিয়।</p>
+              <p className="font-bold uppercase tracking-wider text-neutral-900">Need Delivery Assistance?</p>
+              <p className="text-neutral-500 mt-0.5">Our support team is available everyday from 10:00 AM to 10:00 PM.</p>
             </div>
             <a
-              href="https://wa.me/8801345447500?text=Hello%20StellarMartBD,%20I%20have%20a%20delivery%20query."
+              href="https://wa.me/8801345447500?text=Hello%20Vestro%20Wear%20House,%20I%20have%20a%20delivery%20query."
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 bg-[#083b66] hover:bg-[#062d4d] text-white font-semibold rounded-lg text-xs transition-colors shrink-0"
+              className="px-4 py-2 bg-black hover:bg-neutral-800 text-white font-bold uppercase tracking-wider rounded-lg text-xs transition-colors shrink-0"
             >
-              সাপোর্টে কথা বলুন →
+              Contact Support →
             </a>
           </div>
 

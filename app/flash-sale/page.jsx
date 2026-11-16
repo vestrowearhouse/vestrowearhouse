@@ -5,14 +5,14 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'Flash Sale - Limited Time Deals & Discounts | StellarMartBD',
-  description: 'Shop exclusive, limited-time flash deals on mechanical keyboards, gaming mice, audio gear, and electronics with lightning-fast delivery across Bangladesh at StellarMartBD.',
-  keywords: ['flash sale', 'bangladesh online shopping', 'gaming gear sale', 'electronics discount', 'stellarmartbd deals'],
+  title: 'Limited Drops & Offers | Vestro Wear House',
+  description: 'Shop exclusive, limited-time fashion drops and streetwear discounts with fast nationwide cash on delivery across Bangladesh at Vestro Wear House.',
+  keywords: ['flash sale', 'bangladesh online shopping', 'streetwear sale', 'clothing discount', 'vestro wear house deals'],
   openGraph: {
-    title: 'Flash Sale - Limited Time Deals | StellarMartBD',
-    description: 'Grab huge discounts on top-rated electronics and gaming gear before the timer runs out!',
-    url: 'https://www.stellarmartbd.com/flash-sale',
-    siteName: 'StellarMartBD',
+    title: 'Limited Drops & Offers | Vestro Wear House',
+    description: 'Exclusive streetwear discounts and limited drops before the timer runs out!',
+    url: 'https://www.vestrowearhouse.com/flash-sale',
+    siteName: 'Vestro Wear House',
     locale: 'en_US',
     type: 'website',
   },

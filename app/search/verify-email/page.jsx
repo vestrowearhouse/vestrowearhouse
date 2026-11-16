@@ -128,7 +128,7 @@ function VerifyEmailContent() {
                 {email || 'Your email'}
               </p>
               <p className="text-sm text-blue-800">
-                Check your inbox and spam folder for a verification link from StellarMartBD.
+                Check your inbox and spam folder for a verification link from Vestro Wear House.
               </p>
             </div>
 

@@ -122,11 +122,11 @@ export default function BuyNowModal({
 
   // Handle WhatsApp Order Click
   const handleWhatsAppOrder = () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://stellarmartbd.com';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://vestrowearhouse.com';
     const prodSlug = product?.slug || product?.id || product?._id || '';
     const prodUrl = prodSlug ? `${origin}/product/${prodSlug}` : (typeof window !== 'undefined' ? window.location.href : '');
 
-    let msg = `*🛍️ নতুন অর্ডার অনুরোধ (Stellar Mart BD)*\n\n`;
+    let msg = `*🛍️ নতুন অর্ডার অনুরোধ (Vestro Wear House)*\n\n`;
     msg += `📦 *পণ্য:* ${productName}\n`;
     if (variantLabel) {
       msg += `🎨 *ভেরিয়েন্ট/সাইজ:* ${variantLabel}\n`;

@@ -102,7 +102,7 @@ export default function OrderTrackingPage({ params }) {
 
   const statuses = [
     { key: 'pending', label: 'Order Placed', icon: Clock, desc: 'We have received your order request' },
-    { key: 'confirmed', label: 'Confirmed', icon: CheckCircle, desc: 'Order verified by StellarMart team' },
+    { key: 'confirmed', label: 'Confirmed', icon: CheckCircle, desc: 'Order verified by Vestro Wear House team' },
     { key: 'processing', label: 'Processing & Packed', icon: Package, desc: 'Items inspected and packed safely' },
     { key: 'shipped', label: 'Handed to Courier', icon: Truck, desc: 'Rider is en route to your address' },
     { key: 'delivered', label: 'Delivered', icon: MapPin, desc: 'Successfully delivered to your doorstep' },
@@ -217,7 +217,7 @@ export default function OrderTrackingPage({ params }) {
             </button>
 
             <a
-              href={`https://wa.me/8801345447500?text=${encodeURIComponent(`Hi StellarMart, I have a question regarding my order #${order.orderNumber || order.id}`)}`}
+              href={`https://wa.me/8801345447500?text=${encodeURIComponent(`Hi Vestro Wear House, I have a question regarding my order #${order.orderNumber || order.id}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3.5 py-2 rounded-xl border border-emerald-200 transition shadow-2xs"

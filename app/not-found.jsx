@@ -23,31 +23,34 @@ export default function NotFound() {
   }, []);
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-16 bg-[#f8fafc]">
+    <div className="min-h-[75vh] flex items-center justify-center px-4 py-20 bg-white">
       <div className="max-w-md w-full text-center">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-blue-50 text-blue-600 mb-6 font-black text-4xl shadow-sm border border-blue-100">
+        <span className="text-[11px] font-semibold tracking-[0.25em] text-neutral-400 uppercase block mb-3">
+          Vestro Wear House
+        </span>
+        <div className="font-mono text-7xl font-extrabold text-neutral-900 tracking-tighter mb-4">
           404
         </div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
-          পৃষ্ঠাটি পাওয়া যায়নি
+        <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider text-neutral-900 mb-2">
+          Page Not Found
         </h1>
-        <p className="text-sm md:text-base text-gray-500 mb-8 leading-relaxed">
-          দুঃখিত! আপনি যে লিঙ্কটিতে প্রবেশ করার চেষ্টা করছেন তা সরানো হয়েছে অথবা লিংকটি ভুল।
+        <p className="text-xs md:text-sm text-neutral-500 mb-8 max-w-sm mx-auto">
+          The page you are looking for doesn't exist or has been relocated in our archive.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
           <Link
-            href="/"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#083b66] hover:bg-[#062c4d] text-white font-medium rounded-xl transition-all shadow-sm hover:shadow"
-          >
-            <Home className="w-4 h-4" />
-            হোম পেজে ফিরুন
-          </Link>
-          <Link
             href="/shop"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl border border-gray-200 transition-all shadow-sm"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-widest rounded-lg transition-colors"
           >
             <ShoppingBag className="w-4 h-4" />
-            কেনাকাটা চালিয়ে যান
+            Explore Collection
+          </Link>
+          <Link
+            href="/"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-neutral-50 text-neutral-900 font-bold text-xs uppercase tracking-widest rounded-lg border border-neutral-300 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            Back to Home
           </Link>
         </div>
       </div>

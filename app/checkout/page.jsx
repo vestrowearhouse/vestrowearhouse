@@ -489,29 +489,29 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/70 pb-28 sm:pb-16 text-slate-800">
+    <div className="min-h-screen bg-neutral-50/70 pb-28 sm:pb-16 text-neutral-800">
       
       {/* ── Top Header & Professional Stepper ── */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-b border-slate-800 shadow-md">
+      <div className="bg-black text-white border-b border-neutral-800">
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
-              <div className="flex items-center gap-2 text-[11px] sm:text-xs font-semibold text-blue-400 uppercase tracking-wider mb-1">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-2 text-[11px] sm:text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-1">
+                <ShieldCheck className="w-4 h-4 text-white" />
                 <span>256-Bit SSL Encrypted & Protected</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Vestro Express Checkout
+              <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white">
+                VESTRO WEAR HOUSE · CHECKOUT
               </h1>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-slate-300 bg-slate-800/80 px-3.5 py-1.5 rounded-full border border-slate-700/60 w-fit backdrop-blur-sm">
-              <span className="flex items-center gap-1.5 text-blue-300">
-                <Truck className="w-3.5 h-3.5 text-blue-400" /> Fast Delivery
+            <div className="flex items-center gap-3 text-xs text-neutral-300 bg-neutral-900 px-3.5 py-1.5 rounded-full border border-neutral-800 w-fit">
+              <span className="flex items-center gap-1.5 text-white">
+                <Truck className="w-3.5 h-3.5" /> Nationwide Delivery
               </span>
-              <span className="w-1 h-1 bg-slate-500 rounded-full" />
-              <span className="flex items-center gap-1.5 text-emerald-300">
-                <RotateCcw className="w-3.5 h-3.5 text-emerald-400" /> 7 Days Return
+              <span className="w-1 h-1 bg-neutral-600 rounded-full" />
+              <span className="flex items-center gap-1.5 text-neutral-300">
+                <RotateCcw className="w-3.5 h-3.5" /> 7 Days Exchange
               </span>
             </div>
           </div>
@@ -520,9 +520,9 @@ function CheckoutContent() {
           <div className="max-w-xl mx-auto relative pt-2">
             <div className="flex items-center justify-between relative">
               {/* Background connector line */}
-              <div className="absolute top-1/2 left-8 right-8 -translate-y-1/2 h-1 bg-slate-800 -z-0 rounded-full" />
+              <div className="absolute top-1/2 left-8 right-8 -translate-y-1/2 h-0.5 bg-neutral-800 -z-0" />
               <div 
-                className="absolute top-1/2 left-8 -translate-y-1/2 h-1 bg-blue-500 transition-all duration-500 -z-0 rounded-full"
+                className="absolute top-1/2 left-8 -translate-y-1/2 h-0.5 bg-white transition-all duration-500 -z-0"
                 style={{ 
                   width: step === 1 ? '0%' : step === 2 ? '50%' : 'calc(100% - 4rem)' 
                 }}
@@ -535,46 +535,46 @@ function CheckoutContent() {
                 disabled={step !== 2}
                 className={`flex flex-col items-center gap-1.5 relative z-10 transition group ${step === 2 ? 'cursor-pointer' : 'cursor-default'}`}
               >
-                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 shadow-md ${
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 ${
                   step > 1 
-                    ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/20' 
+                    ? 'bg-white text-black' 
                     : step === 1 
-                    ? 'bg-blue-600 text-white ring-4 ring-blue-500/30 scale-105' 
-                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    ? 'bg-white text-black ring-4 ring-white/20 scale-105' 
+                    : 'bg-neutral-800 text-neutral-400 border border-neutral-700'
                 }`}>
                   {step > 1 ? <Check className="w-5 h-5 stroke-[2.5]" /> : '1'}
                 </div>
-                <span className={`text-xs font-semibold tracking-wide ${step >= 1 ? 'text-white' : 'text-slate-400'}`}>
+                <span className={`text-xs font-bold uppercase tracking-wider ${step >= 1 ? 'text-white' : 'text-neutral-400'}`}>
                   Shipping
                 </span>
               </button>
 
               {/* Step 2 Button */}
               <div className="flex flex-col items-center gap-1.5 relative z-10">
-                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 shadow-md ${
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 ${
                   step > 2 
-                    ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/20' 
+                    ? 'bg-white text-black' 
                     : step === 2 
-                    ? 'bg-blue-600 text-white ring-4 ring-blue-500/30 scale-105' 
-                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    ? 'bg-white text-black ring-4 ring-white/20 scale-105' 
+                    : 'bg-neutral-800 text-neutral-400 border border-neutral-700'
                 }`}>
                   {step > 2 ? <Check className="w-5 h-5 stroke-[2.5]" /> : '2'}
                 </div>
-                <span className={`text-xs font-semibold tracking-wide ${step >= 2 ? 'text-white' : 'text-slate-400'}`}>
+                <span className={`text-xs font-bold uppercase tracking-wider ${step >= 2 ? 'text-white' : 'text-neutral-400'}`}>
                   Payment
                 </span>
               </div>
 
               {/* Step 3 Indicator */}
               <div className="flex flex-col items-center gap-1.5 relative z-10">
-                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 shadow-md ${
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all duration-300 ${
                   step === 3 
-                    ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/30 scale-105' 
-                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    ? 'bg-white text-black ring-4 ring-white/20 scale-105' 
+                    : 'bg-neutral-800 text-neutral-400 border border-neutral-700'
                 }`}>
                   {step === 3 ? <Check className="w-5 h-5 stroke-[2.5]" /> : '3'}
                 </div>
-                <span className={`text-xs font-semibold tracking-wide ${step === 3 ? 'text-white' : 'text-slate-400'}`}>
+                <span className={`text-xs font-bold uppercase tracking-wider ${step === 3 ? 'text-white' : 'text-neutral-400'}`}>
                   Confirmed
                 </span>
               </div>

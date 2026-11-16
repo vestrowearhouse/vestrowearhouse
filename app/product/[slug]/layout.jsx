@@ -2,11 +2,11 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function generateMetadata({ params }) {
   const { slug } = params;
-  if (!slug) return { title: 'Product | Stellar Mart BD' };
+  if (!slug) return { title: 'Product | Vestro Wear House' };
 
   try {
     const supabase = getSupabaseAdmin();
-    if (!supabase) return { title: 'Product | Stellar Mart BD' };
+    if (!supabase) return { title: 'Product | Vestro Wear House' };
 
     const { data: product } = await supabase
       .from('products')
@@ -16,14 +16,14 @@ export async function generateMetadata({ params }) {
 
     if (!product) {
       return {
-        title: 'Product | Stellar Mart BD',
+        title: 'Product | Vestro Wear House',
       };
     }
 
-    const title = `${product.name} | Stellar Mart BD`;
-    const rawDesc = product.shortDescription || product.description || 'Shop authentic products at the best prices on Stellar Mart BD with fast cash on delivery across Bangladesh.';
+    const title = `${product.name} | Vestro Wear House`;
+    const rawDesc = product.shortDescription || product.description || 'Shop premium streetwear and fashion apparel at Vestro Wear House with nationwide cash on delivery across Bangladesh.';
     const cleanDesc = rawDesc.replace(/<[^>]*>/g, '').trim().slice(0, 160);
-    const imageUrl = product.featuredImage || (Array.isArray(product.images) && product.images[0]) || 'https://www.stellarmartbd.com/logo.png';
+    const imageUrl = product.featuredImage || (Array.isArray(product.images) && product.images[0]) || 'https://www.vestrowearhouse.com/logo.png';
 
     return {
       title,
@@ -31,8 +31,8 @@ export async function generateMetadata({ params }) {
       openGraph: {
         title,
         description: cleanDesc,
-        url: `https://www.stellarmartbd.com/product/${slug}`,
-        siteName: 'Stellar Mart BD',
+        url: `https://www.vestrowearhouse.com/product/${slug}`,
+        siteName: 'Vestro Wear House',
         images: [
           {
             url: imageUrl,
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }) {
     };
   } catch {
     return {
-      title: 'Product | Stellar Mart BD',
+      title: 'Product | Vestro Wear House',
     };
   }
 }

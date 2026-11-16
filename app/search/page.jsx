@@ -116,35 +116,35 @@ function SearchContent() {
 
   if (loading && initialLoad) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Searching products...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-black border-t-transparent mx-auto mb-4"></div>
+          <p className="text-neutral-500 text-xs uppercase tracking-widest font-semibold">Searching catalog...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-8 relative overflow-hidden">
-        {/* Subtle decorative background for AI Mode */}
-        {aiMode && (
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-0 right-10 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-            <div className="absolute top-0 right-40 w-64 h-64 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-          </div>
-        )}
+      <div className="bg-black text-white py-10 sm:py-14 border-b border-neutral-800 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+              <span className="text-[11px] font-semibold tracking-[0.25em] text-neutral-400 uppercase block mb-1">
+                Vestro Wear House
+              </span>
+              <h1 className="text-2xl sm:text-4xl font-extrabold uppercase tracking-tight mb-2 flex items-center gap-3">
                 Search Results
-                {aiMode && <span className="px-2 py-1 bg-white/20 rounded-lg text-sm font-bold flex items-center gap-1 backdrop-blur-sm"><Sparkles className="w-4 h-4 text-purple-300" /> AI Active</span>}
+                {aiMode && (
+                  <span className="px-2.5 py-1 bg-white/10 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1 border border-white/20">
+                    <Sparkles className="w-3.5 h-3.5 text-neutral-300" /> AI
+                  </span>
+                )}
               </h1>
-              <p className="text-blue-100">
-                {query ? `Showing results for "${query}"` : 'Enter a search term to find products'}
+              <p className="text-neutral-400 text-xs sm:text-sm">
+                {query ? `Showing results for "${query}"` : 'Enter keywords to browse products'}
               </p>
             </div>
             
@@ -157,14 +157,14 @@ function SearchContent() {
                    setFilters({category: '', minPrice: '', maxPrice: '', sort: 'relevance'});
                 }
               }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all duration-300 border shadow-lg ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
                 aiMode 
-                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white border-transparent hover:shadow-purple-500/30' 
-                : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                ? 'bg-white text-black border-white' 
+                : 'bg-neutral-900 text-white border-neutral-700 hover:bg-neutral-800'
               }`}
             >
-              <Sparkles className={`w-5 h-5 ${aiMode ? 'text-purple-200 animate-pulse' : ''}`} />
-              {aiMode ? 'AI Search Assistant ON' : 'Enable AI Assistant'}
+              <Sparkles className={`w-4 h-4 ${aiMode ? 'text-black' : 'text-neutral-400'}`} />
+              {aiMode ? 'AI Search Active' : 'Enable AI Search'}
             </button>
           </div>
         </div>
@@ -175,15 +175,15 @@ function SearchContent() {
         <div className="md:hidden flex items-center gap-2 mb-6">
           <button
             onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-            className="flex-1 flex items-center justify-center gap-2 bg-white px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 shadow-sm"
+            className="flex-1 flex items-center justify-center gap-2 bg-white px-3 py-2.5 rounded-lg border border-neutral-300 text-xs font-bold uppercase tracking-wider text-neutral-800"
           >
-            <Filter className="w-4 h-4" />
+            <Filter className="w-3.5 h-3.5" />
             {isMobileFilterOpen ? 'Hide Filters' : 'Filters'}
           </button>
           <select
             value={filters.sort}
             onChange={(e) => setFilters({...filters, sort: e.target.value})}
-            className="flex-[2] bg-white px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none truncate"
+            className="flex-[2] bg-white px-3 py-2.5 rounded-lg border border-neutral-300 text-xs font-bold uppercase tracking-wider text-neutral-800 focus:outline-none focus:border-black truncate"
           >
             <option value="relevance">Sort: Relevance</option>
             <option value="price_low">Price: Low to High</option>
@@ -195,20 +195,20 @@ function SearchContent() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Filters Sidebar */}
           <div className={`md:col-span-1 ${isMobileFilterOpen ? 'block' : 'hidden md:block'}`}>
-            <div className="bg-white rounded-lg shadow-sm p-5 md:p-6 sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
-              <h3 className="hidden md:flex font-bold text-gray-900 mb-4 items-center gap-2">
-                <Filter className="w-5 h-5" />
+            <div className="bg-white rounded-xl border border-neutral-200 p-5 sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
+              <h3 className="hidden md:flex font-bold uppercase tracking-wider text-xs text-neutral-900 mb-4 items-center gap-2">
+                <Filter className="w-4 h-4" />
                 Filters
               </h3>
               
               <div className="space-y-4">
                 {/* Category Filter */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">Category</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-neutral-700 block mb-1.5">Category</label>
                   <select
                     value={filters.category}
                     onChange={(e) => setFilters({...filters, category: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-xs uppercase tracking-wider focus:outline-none focus:border-black"
                   >
                     <option value="">All Categories</option>
                     {categories.map(cat => (
@@ -219,32 +219,32 @@ function SearchContent() {
 
                 {/* Price Range */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">Price Range</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-neutral-700 block mb-1.5">Price Range (৳)</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
                       placeholder="Min"
                       value={filters.minPrice}
                       onChange={(e) => setFilters({...filters, minPrice: e.target.value})}
-                      className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                      className="w-1/2 px-3 py-2 border border-neutral-300 rounded-lg text-xs focus:outline-none focus:border-black"
                     />
                     <input
                       type="number"
                       placeholder="Max"
                       value={filters.maxPrice}
                       onChange={(e) => setFilters({...filters, maxPrice: e.target.value})}
-                      className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                      className="w-1/2 px-3 py-2 border border-neutral-300 rounded-lg text-xs focus:outline-none focus:border-black"
                     />
                   </div>
                 </div>
 
-                {/* Sort (Hidden on mobile since it's in the top bar) */}
+                {/* Sort (Desktop) */}
                 <div className="hidden md:block">
-                  <label className="text-sm font-medium text-gray-700 block mb-2">Sort By</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-neutral-700 block mb-1.5">Sort By</label>
                   <select
                     value={filters.sort}
                     onChange={(e) => setFilters({...filters, sort: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-xs uppercase tracking-wider focus:outline-none focus:border-black"
                   >
                     <option value="relevance">Relevance</option>
                     <option value="price_low">Price: Low to High</option>
@@ -256,7 +256,7 @@ function SearchContent() {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={() => setFilters({category: '', minPrice: '', maxPrice: '', sort: 'relevance'})}
-                    className="w-full mt-4 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+                    className="w-full mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-neutral-300 rounded-lg hover:bg-neutral-100 text-neutral-800 transition-colors"
                   >
                     Clear Filters
                   </button>
@@ -269,29 +269,26 @@ function SearchContent() {
           <div className="md:col-span-3">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p className="text-red-800">{error}</p>
+                <p className="text-red-800 text-xs">{error}</p>
               </div>
             )}
 
             {/* AI Message Banner */}
             {aiMode && (aiMessage || aiLoading) && (
-              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl p-6 mb-6 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-                  <Bot className="w-24 h-24 text-purple-600" />
-                </div>
-                <div className="flex items-start gap-4 relative z-10">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                    <Sparkles className="w-5 h-5 text-white" />
+              <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-5 mb-6 relative">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-1">AI Assistant</h3>
+                    <h3 className="font-bold uppercase tracking-wider text-xs text-neutral-900 mb-1">AI Assistant</h3>
                     {aiLoading ? (
-                      <div className="flex items-center gap-2 text-purple-600 font-medium">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Analyzing your intent to find the perfect matches...
+                      <div className="flex items-center gap-2 text-neutral-600 text-xs font-medium">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Analyzing your intent to match pieces...
                       </div>
                     ) : (
-                      <p className="text-gray-700 leading-relaxed font-medium">{aiMessage}</p>
+                      <p className="text-neutral-700 text-xs sm:text-sm font-medium leading-relaxed">{aiMessage}</p>
                     )}
                   </div>
                 </div>
@@ -304,53 +301,53 @@ function SearchContent() {
                   <div className="flex-1">
                     {activeFiltersCount > 0 && (
                       <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <span className="text-xs text-gray-500 font-medium">Active Filters:</span>
+                        <span className="text-xs text-neutral-400 font-medium uppercase tracking-wider">Active:</span>
                         {filters.category && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100">
-                            Category: {categories.find(c => (c.slug || c.id || c._id) === filters.category)?.name || filters.category}
-                            <button onClick={() => setFilters({...filters, category: ''})} className="hover:text-blue-900"><X size={12}/></button>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-100 text-neutral-800 text-xs font-semibold rounded-full border border-neutral-300">
+                            {categories.find(c => (c.slug || c.id || c._id) === filters.category)?.name || filters.category}
+                            <button onClick={() => setFilters({...filters, category: ''})} className="hover:text-black"><X size={12}/></button>
                           </span>
                         )}
                         {filters.minPrice && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-100 text-neutral-800 text-xs font-semibold rounded-full border border-neutral-300">
                             Min: ৳{filters.minPrice}
-                            <button onClick={() => setFilters({...filters, minPrice: ''})} className="hover:text-blue-900"><X size={12}/></button>
+                            <button onClick={() => setFilters({...filters, minPrice: ''})} className="hover:text-black"><X size={12}/></button>
                           </span>
                         )}
                         {filters.maxPrice && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-neutral-100 text-neutral-800 text-xs font-semibold rounded-full border border-neutral-300">
                             Max: ৳{filters.maxPrice}
-                            <button onClick={() => setFilters({...filters, maxPrice: ''})} className="hover:text-blue-900"><X size={12}/></button>
+                            <button onClick={() => setFilters({...filters, maxPrice: ''})} className="hover:text-black"><X size={12}/></button>
                           </span>
                         )}
                       </div>
                     )}
-                    <p className="text-gray-600 font-medium">
-                      {results.length} product{results.length !== 1 ? 's' : ''} found
+                    <p className="text-neutral-500 font-medium text-xs uppercase tracking-wider">
+                      {results.length} {results.length === 1 ? 'product' : 'products'} found
                     </p>
                   </div>
-                  {loading && <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>}
+                  {loading && <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>}
                 </div>
                 <div className={`transition-opacity duration-300 ${loading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                   {results.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
                     {results.map(product => (
                       <ProductCard key={product._id || product.id} product={product} />
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                    <SearchIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-600 text-lg mb-2">No products found</p>
-                    <p className="text-gray-500">Try searching with different keywords</p>
+                  <div className="rounded-2xl border border-neutral-200 p-12 text-center">
+                    <SearchIcon className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                    <p className="text-neutral-900 font-bold uppercase tracking-wider text-sm mb-1">No products found</p>
+                    <p className="text-neutral-500 text-xs">Try searching with different fashion keywords</p>
                   </div>
                 )}
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                <SearchIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 text-lg">No search query entered</p>
+              <div className="rounded-2xl border border-neutral-200 p-12 text-center">
+                <SearchIcon className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                <p className="text-neutral-900 font-bold uppercase tracking-wider text-sm">Enter search keywords</p>
               </div>
             )}
           </div>
@@ -362,7 +359,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-2 border-black border-t-transparent"></div></div>}>
       <SearchContent />
     </Suspense>
   );

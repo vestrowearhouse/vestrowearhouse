@@ -13,7 +13,7 @@ export default function WhatsAppFloatingButton() {
 
   const phoneNumber = '+880 1345-447500';
   const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
-  const message = encodeURIComponent('Hello StellarMartBD, I want to inquire about a product.');
+  const message = encodeURIComponent('Hello Vestro Wear House, I want to inquire about a product.');
   const whatsappUrl = `https://wa.me/${cleanNumber}?text=${message}`;
 
   return (

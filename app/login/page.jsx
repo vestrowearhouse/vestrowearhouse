@@ -133,61 +133,61 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-180px)] py-8 sm:py-12 px-4 flex items-center justify-center bg-gradient-to-b from-slate-50/80 via-white to-blue-50/20">
-      <div className="w-full max-w-[410px]">
+    <div className="min-h-[calc(100vh-180px)] py-10 sm:py-16 px-4 flex items-center justify-center bg-white">
+      <div className="w-full max-w-[420px]">
         {/* Compact Card Container */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xl shadow-slate-100/90 p-6 sm:p-7 transition-all">
+        <div className="bg-white border border-neutral-200 p-7 sm:p-8 transition-all">
           
           {/* Header & Logo */}
-          <div className="text-center mb-5">
-            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 mb-3">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-black text-white mb-3">
               <ShoppingBag className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">স্বাগতম!</h1>
-            <p className="text-xs text-slate-500 mt-0.5">আপনার স্টেলারমার্ট অ্যাকাউন্টে সাইন ইন করুন</p>
+            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider text-neutral-900">SIGN IN</h1>
+            <p className="text-xs text-neutral-500 mt-1 uppercase tracking-wider">Access your Vestro Wear House account</p>
           </div>
 
           {/* Quick Tab Switcher */}
-          <div className="flex p-1 bg-slate-100/80 rounded-xl mb-5 text-xs font-semibold">
+          <div className="flex p-1 bg-neutral-100 rounded-lg mb-6 text-xs font-bold uppercase tracking-wider">
             <button
               type="button"
-              className="flex-1 py-1.5 rounded-lg bg-white text-blue-600 shadow-sm transition"
+              className="flex-1 py-2 rounded-md bg-black text-white shadow-xs transition"
             >
-              সাইন ইন (Sign In)
+              Sign In
             </button>
             <Link
               href="/register"
-              className="flex-1 py-1.5 text-center rounded-lg text-slate-600 hover:text-slate-900 transition"
+              className="flex-1 py-2 text-center rounded-md text-neutral-600 hover:text-black transition"
             >
-              রেজিস্ট্রেশন (Register)
+              Register
             </Link>
           </div>
 
           {/* Error Banner */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200/80 rounded-xl flex items-start gap-2 text-xs text-red-700 animate-in fade-in duration-200">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-xs text-red-700 animate-in fade-in duration-200">
               <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
               <span className="font-medium flex-1">{error}</span>
             </div>
           )}
 
           {/* Main Login Form */}
-          <form onSubmit={handleEmailLogin} className="space-y-3.5">
+          <form onSubmit={handleEmailLogin} className="space-y-4">
             {/* Email or Phone */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                ইমেইল বা ফোন নম্বর
+              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-800 mb-1">
+                Email or Phone Number
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                <Mail className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
                 <input
                   type="text"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="your@email.com বা 017xxxxxxxx"
+                  placeholder="your@email.com or 017xxxxxxxx"
                   disabled={loading}
                   required
-                  className="w-full pl-9 pr-3.5 py-2 text-sm bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition disabled:bg-slate-100 text-slate-800 placeholder:text-slate-400"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-xs font-semibold bg-white border border-neutral-300 rounded-lg focus:outline-none focus:border-black transition disabled:bg-neutral-100 text-neutral-900 placeholder:text-neutral-400"
                 />
               </div>
             </div>
@@ -243,26 +243,26 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2 text-sm disabled:opacity-60 mt-1"
+              className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-3 px-4 rounded-lg transition-all active:scale-[0.99] flex items-center justify-center gap-2 text-xs uppercase tracking-[0.2em] disabled:opacity-60 mt-2 cursor-pointer"
             >
               {loading ? (
                 <>
                   <Loader className="w-4 h-4 animate-spin" />
-                  <span>লগইন হচ্ছে...</span>
+                  <span>Signing in...</span>
                 </>
               ) : (
-                <span>লগইন করুন</span>
+                <span>Sign In</span>
               )}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="relative my-4">
+          <div className="relative my-5">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
+              <div className="w-full border-t border-neutral-200" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-2.5 bg-white text-slate-400 uppercase tracking-wider font-medium">অথবা</span>
+              <span className="px-3 bg-white text-neutral-400 uppercase tracking-wider font-semibold">OR</span>
             </div>
           </div>
 
@@ -271,7 +271,7 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium py-2 px-3.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2.5 text-xs sm:text-sm disabled:opacity-60"
+            className="w-full border border-neutral-300 hover:border-black bg-white hover:bg-neutral-50 text-neutral-800 font-semibold py-2.5 px-4 rounded-lg transition shadow-xs flex items-center justify-center gap-2.5 text-xs uppercase tracking-wider disabled:opacity-60 cursor-pointer"
           >
             <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
