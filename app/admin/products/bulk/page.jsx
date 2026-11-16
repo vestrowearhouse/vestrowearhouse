@@ -358,7 +358,7 @@ export default function BulkProductsPage() {
           regularPrice: photoImportPrice ? String(photoImportPrice) : '',
           stockQuantity: 10,
           category: photoImportCategory || (categories.length > 0 ? categories[0].id : ''),
-          sku: `SKU-${Date.now().toString(36).toUpperCase()}-${i + 1}`,
+          sku: '',
           brand: '',
           images: [base64],
           description: '',
@@ -671,7 +671,7 @@ export default function BulkProductsPage() {
         regularPrice: item.regularPrice !== '' ? parseFloat(item.regularPrice) : parseFloat(item.sellingPrice),
         stockQuantity: item.stockQuantity !== '' ? parseInt(item.stockQuantity) : 0,
         category: item.category || null,
-        sku: item.sku ? item.sku.trim() : null,
+        sku: null,
         brand: item.brand ? item.brand.trim() : null,
         images: parseImagesToArray(item.images),
         description: item.description ? item.description.trim() : null,
@@ -1480,10 +1480,10 @@ export default function BulkProductsPage() {
                       <td className="py-2.5 px-3">
                         <input
                           type="text"
-                          value={item.sku || ''}
-                          onChange={(e) => handleUpdateRow(item.id, 'sku', e.target.value)}
-                          placeholder="SKU-123"
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-mono focus:ring-1 focus:ring-blue-500 focus:outline-none uppercase"
+                          value="Auto"
+                          readOnly
+                          disabled
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-400 text-xs font-mono select-none cursor-not-allowed"
                         />
                       </td>
 

@@ -17,3 +17,5 @@ fix-api.js
 fix-layout-db.js
 test-embedding.js
 *backup*.json
+backups/
+scripts/

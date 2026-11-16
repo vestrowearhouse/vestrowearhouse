@@ -35,4 +35,5 @@ apis.txt
 security_scan_report.md
 scratch/
 *backup*.json
+backups/
 Result.txt

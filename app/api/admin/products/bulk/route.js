@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { updateProductEmbedding } from '@/lib/ai-embeddings';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { adminSupabase } from '@/lib/dbExplorer';
+import { assignProductAndVariantSKUs } from '@/lib/skuServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,9 +97,6 @@ export async function POST(request) {
         categoryId = matched || catStr;
       }
 
-      // SKU handling (null if blank to avoid unique constraint)
-      const sku = item.sku && String(item.sku).trim() ? String(item.sku).trim() : null;
-
       // Images formatting & automatic Cloudinary upload for base64
       let rawImages = [];
       if (Array.isArray(item.images)) {
@@ -178,7 +176,9 @@ export async function POST(request) {
         stock: stockQuantity,
         stockStatus: stockQuantity > 0 ? 'in_stock' : 'out_of_stock',
         category: categoryId,
-        sku,
+        sku: null,
+        category_code: null,
+        legacy_sku: null,
         brand: item.brand ? String(item.brand).trim() : null,
         tags,
         images,
@@ -188,7 +188,9 @@ export async function POST(request) {
         isBestSeller: Boolean(item.isBestSeller),
         isActive: item.isActive !== undefined ? Boolean(item.isActive) : true,
         attributes: Array.isArray(item.attributes) ? item.attributes : [],
-        variants: Array.isArray(item.variants) ? item.variants : []
+        variants: Array.isArray(item.variants)
+          ? item.variants.map(({ sku: _vSku, legacy_sku: _vLeg, ...restVar }) => restVar)
+          : []
       });
     }
 
@@ -211,36 +213,57 @@ export async function POST(request) {
 
     for (let i = 0; i < validProducts.length; i += CHUNK_SIZE) {
       const chunk = validProducts.slice(i, i + CHUNK_SIZE);
-      const cleanChunk = chunk.map(({ _originalIndex, ...clean }) => clean);
+      const readyToInsert = [];
 
-      const { data, error } = await supabase
-        .from('products')
-        .insert(cleanChunk)
-        .select('id, name, slug, sku');
+      // Assign standard immutable SKUs and category codes before bulk insertion.
+      // Ignore any client-sent sku/category_code/legacy_sku fields.
+      // If SKU assignment throws for a product, do NOT insert it; add it to the failed list.
+      for (const item of chunk) {
+        const { _originalIndex, sku: _ignoredSku, category_code: _ignoredCatCode, legacy_sku: _ignoredLegacySku, ...clean } = item;
+        try {
+          const processed = await assignProductAndVariantSKUs(clean, true);
+          readyToInsert.push({ ...processed, _originalIndex });
+        } catch (skuErr) {
+          console.error(`SKU assignment failed for row ${_originalIndex} (${item.name}):`, skuErr);
+          insertionErrors.push({
+            row: _originalIndex,
+            name: item.name,
+            reason: `SKU assignment failed: ${skuErr.message || 'Unknown SKU error'}`
+          });
+        }
+      }
 
-      if (!error && data) {
-        successfullyInserted.push(...data);
-        data.forEach(p => insertedIds.push(p.id));
-      } else {
-        // Fallback: If chunk failed, insert individually to rescue valid items
-        for (const singleItem of chunk) {
-          const { _originalIndex, ...cleanSingle } = singleItem;
-          const { data: singleData, error: singleError } = await supabase
-            .from('products')
-            .insert([cleanSingle])
-            .select('id, name, slug, sku')
-            .single();
+      if (readyToInsert.length > 0) {
+        const cleanInsertChunk = readyToInsert.map(({ _originalIndex, ...clean }) => clean);
+        const { data, error } = await supabase
+          .from('products')
+          .insert(cleanInsertChunk)
+          .select('id, name, slug, sku');
 
-          if (!singleError && singleData) {
-            successfullyInserted.push(singleData);
-            insertedIds.push(singleData.id);
-          } else {
-            insertionErrors.push({
-              row: _originalIndex,
-              name: singleItem.name,
-              sku: singleItem.sku,
-              reason: singleError?.message || 'Database insert failed'
-            });
+        if (!error && data) {
+          successfullyInserted.push(...data);
+          data.forEach(p => insertedIds.push(p.id));
+        } else {
+          // Fallback: If chunk insert failed, insert individually to rescue valid items
+          for (const singleItem of readyToInsert) {
+            const { _originalIndex, ...cleanSingle } = singleItem;
+            const { data: singleData, error: singleError } = await supabase
+              .from('products')
+              .insert([cleanSingle])
+              .select('id, name, slug, sku')
+              .single();
+
+            if (!singleError && singleData) {
+              successfullyInserted.push(singleData);
+              insertedIds.push(singleData.id);
+            } else {
+              insertionErrors.push({
+                row: _originalIndex,
+                name: singleItem.name,
+                sku: singleItem.sku,
+                reason: singleError?.message || 'Database insert failed'
+              });
+            }
           }
         }
       }

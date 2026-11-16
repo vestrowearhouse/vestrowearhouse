@@ -83,8 +83,17 @@ function formatSKU(catCode, serial) {
 async function runMigration() {
   const isExecute = process.argv.includes('--execute');
 
+  if (isExecute) {
+    console.log('================================================================');
+    console.log('🚀 STELLARMARTBD SKU MIGRATION (EXECUTE MODE)');
+    console.log('================================================================');
+    console.log('\n🛑 Migration is already done. Live data is accepted as-is.');
+    console.log('No database writes will be executed.\n');
+    return;
+  }
+
   console.log('================================================================');
-  console.log(`🚀 STELLARMARTBD SKU MIGRATION (${isExecute ? 'EXECUTE MODE' : 'DRY RUN'})`);
+  console.log('🚀 STELLARMARTBD SKU MIGRATION (DRY RUN)');
   console.log('================================================================');
 
   // Load original raw backup to guarantee exact legacy SKUs (stm-0001, etc.)
@@ -116,8 +125,40 @@ async function runMigration() {
 
   console.log(`📦 Found ${products.length} products to process.\n`);
 
-  // Running serials per category code
+  // Running serials per category code (seeded from existing valid SKUs)
   const serialTracker = {};
+
+  // First pass: scan all existing valid SKUs per category to establish high-water mark
+  for (const p of products) {
+    let catName = catMap[p.category] || 'Unknown';
+    let catCode = PRODUCT_CATEGORY_MAP[catName] || '99';
+    if (p.name.toLowerCase().includes('lenovo gm2 pro')) catCode = '14';
+    if (p.name.toLowerCase().includes('arduino')) catCode = '19';
+
+    if (!serialTracker[catCode]) {
+      serialTracker[catCode] = 0;
+    }
+
+    const variants = Array.isArray(p.variants) ? p.variants : [];
+    if (variants.length === 0) {
+      if (p.sku && p.sku.startsWith(`SMBD${catCode}`)) {
+        const sNum = parseInt(p.sku.replace(`SMBD${catCode}`, ''), 10);
+        if (!isNaN(sNum) && sNum > serialTracker[catCode]) {
+          serialTracker[catCode] = sNum;
+        }
+      }
+    } else {
+      for (const v of variants) {
+        if (v.sku && v.sku.startsWith(`SMBD${catCode}`)) {
+          const sNum = parseInt(v.sku.replace(`SMBD${catCode}`, ''), 10);
+          if (!isNaN(sNum) && sNum > serialTracker[catCode]) {
+            serialTracker[catCode] = sNum;
+          }
+        }
+      }
+    }
+  }
+
   const updates = [];
   const registryEntries = [];
 
@@ -159,12 +200,17 @@ async function runMigration() {
       productSku = null;
 
       updatedVariants = variants.map((v, vIdx) => {
-        serialTracker[catCode]++;
-        const vSerial = serialTracker[catCode];
-        const vSku = formatSKU(catCode, vSerial);
         const combo = v.combination || {};
         const sizeCode = matchSizeCode(combo.Size || combo.size);
         const colorCode = matchColorCode(combo.Color || combo.color || combo['Color Family']);
+
+        // Preserve existing valid SKU if already assigned to this category, else allocate new sequential
+        let vSku = v.sku;
+        const isValidExisting = vSku && vSku.startsWith(`SMBD${catCode}`) && /^SMBD\d{6,}$/.test(vSku);
+        if (!isValidExisting) {
+          serialTracker[catCode]++;
+          vSku = formatSKU(catCode, serialTracker[catCode]);
+        }
 
         // Preserve original variant legacy SKU (stm-0001-m-red, stm-6751-m-white, etc.)
         const origProdVariants = origVariantsMap[p.id] || [];
@@ -190,10 +236,14 @@ async function runMigration() {
         };
       });
     } else {
-      // Standalone product (no variants) gets its own sequential SKU
-      serialTracker[catCode]++;
-      const serial = serialTracker[catCode];
-      productSku = formatSKU(catCode, serial);
+      // Standalone product (no variants): preserve if already valid in target category, else allocate
+      const isValidExisting = p.sku && p.sku.startsWith(`SMBD${catCode}`) && /^SMBD\d{6,}$/.test(p.sku);
+      if (isValidExisting) {
+        productSku = p.sku;
+      } else {
+        serialTracker[catCode]++;
+        productSku = formatSKU(catCode, serialTracker[catCode]);
+      }
 
       registryEntries.push({
         sku: productSku,
@@ -241,7 +291,8 @@ async function runMigration() {
   console.log('---------------------------------------------------------------------------------------------------------');
   updates.forEach((u, i) => {
     const num = String(i + 1).padStart(2, ' ');
-    const name = u.name.padEnd(35, ' ').slice(0, 35);
+    const cleanName = u.name.replace(/\|/g, '-');
+    const name = cleanName.padEnd(35, ' ').slice(0, 35);
     const cat = u.currentCategory.padEnd(14, ' ').slice(0, 14);
     const code = u.catCode.padStart(4, ' ');
     const sku = u.displaySku.padEnd(16, ' ');
@@ -264,6 +315,16 @@ async function runMigration() {
     console.log('\n⚠️  DRY RUN COMPLETED. No database changes were made.');
     console.log('To execute this migration against your Supabase database, run:');
     console.log('   node scripts/migrate_existing_skus.js --execute\n');
+    return;
+  }
+
+  // 0. Safety Snapshot: Regenerate products_backup.csv, sku_registry_backup.csv, sku_categories_backup.csv
+  console.log('\n📦 Creating pre-execution CSV backups of products, sku_registry, and sku_categories...');
+  try {
+    const { execSync } = require('child_process');
+    execSync('node scripts/export_pre_migration_backups.js', { stdio: 'inherit' });
+  } catch (bErr) {
+    console.error('Warning: Backup export failed, aborting execute:', bErr.message);
     return;
   }
 

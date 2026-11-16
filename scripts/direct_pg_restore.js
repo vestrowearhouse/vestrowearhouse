@@ -3,41 +3,28 @@ const { Client } = pg;
 import fs from 'fs';
 import path from 'path';
 
-const password = process.argv[2];
+const connectionString = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
 
-if (!password) {
-  console.error('Please provide database password: node scripts/direct_pg_restore.js <DB_PASSWORD>');
+if (!connectionString) {
+  console.error('Missing required environment variable: SUPABASE_DB_URL or DATABASE_URL');
   process.exit(1);
 }
 
-// Connection configs to try (Direct or Pooler)
-const projectRef = 'gobcbixzsldiwmykgwtc';
-const connectionStrings = [
-  // Session pooler (eu-central-1)
-  `postgresql://postgres.${projectRef}:${encodeURIComponent(password)}@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`,
-  // Transaction pooler
-  `postgresql://postgres.${projectRef}:${encodeURIComponent(password)}@aws-0-eu-central-1.pooler.supabase.com:6543/postgres`,
-  // Direct
-  `postgresql://postgres:${encodeURIComponent(password)}@db.${projectRef}.supabase.co:5432/postgres`
-];
-
 async function tryConnect() {
-  for (const connStr of connectionStrings) {
-    console.log('Attempting connection to PostgreSQL...');
-    const client = new Client({
-      connectionString: connStr,
-      ssl: { rejectUnauthorized: false }
-    });
-    try {
-      await client.connect();
-      console.log('✅ Connected successfully to PostgreSQL via:', connStr.replace(/:[^:@]+@/, ':****@'));
-      return client;
-    } catch (e) {
-      console.log('❌ Connection attempt failed:', e.message);
-      await client.end().catch(() => {});
-    }
+  console.log('Attempting connection to PostgreSQL...');
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false }
+  });
+  try {
+    await client.connect();
+    console.log('✅ Connected successfully to PostgreSQL');
+    return client;
+  } catch (e) {
+    console.error('❌ Connection attempt failed:', e.message);
+    await client.end().catch(() => {});
+    return null;
   }
-  return null;
 }
 
 async function run() {

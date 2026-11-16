@@ -139,15 +139,20 @@ function updateEnvLocal(newUrl, newAnonKey, newServiceKey) {
 }
 
 async function main() {
-  const { url, serviceKey, anonKey } = parseArgs();
+  const args = parseArgs();
+  const url = args.url || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceKey = args.serviceKey || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey = args.anonKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !serviceKey) {
-    console.log(`
+    console.error(`
+Error: Missing required Supabase credentials.
+Provide them via CLI arguments or environment variables:
+  - URL: --url <URL> or SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL
+  - Service Key: --service-key <KEY> or SUPABASE_SERVICE_ROLE_KEY
+
 Usage:
   node scripts/restore_to_new_supabase.js --url <SUPABASE_URL> --service-key <SERVICE_ROLE_KEY> [--anon-key <ANON_KEY>]
-
-Example:
-  node scripts/restore_to_new_supabase.js --url https://xyz.supabase.co --service-key eyJ... --anon-key eyJ...
     `);
     process.exit(1);
   }

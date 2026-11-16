@@ -192,6 +192,107 @@ async function runTestSuite() {
   }
   assert(isStrictlySequential, 'Serials form a continuous uninterrupted sequence (0001 to ' + String(flatSkus.length).padStart(4, '0') + ')');
 
+  // ── TEST 6: REAL DATABASE CONCURRENCY & IMMUTABILITY (CATEGORY 98) ────────
+  console.log('\n▶️ TEST GROUP 6: Real Live DB Concurrency & Immutability (Reserved Category 98)');
+  const isLive = process.argv.includes('--live');
+
+  if (!isLive) {
+    console.log('  ⏩ SKIPPED: Pass --live flag to run live database tests.');
+  } else {
+    try {
+      const { Pool } = await import('pg');
+      const dotenv = await import('dotenv');
+      dotenv.config({ path: '.env.local' });
+      dotenv.config({ path: '.env' });
+
+      const connectionString = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
+      if (!connectionString) {
+        console.error('  ❌ FAIL: Live DB test requires SUPABASE_DB_URL or DATABASE_URL environment variable.');
+        failedTests++;
+      } else {
+        const pool = new Pool({
+          connectionString,
+          ssl: { rejectUnauthorized: false },
+          max: 10
+        });
+
+    // 1. Setup reserved sandbox category 98
+    await pool.query(`
+      INSERT INTO public.sku_categories (code, name, group_name, last_serial, is_active)
+      VALUES ('98', 'Automated Sandbox Test', 'Test', 0, true)
+      ON CONFLICT (code) DO UPDATE SET last_serial = 0, is_active = true;
+      DELETE FROM public.sku_registry WHERE category_code = '98';
+    `);
+
+    // 2. Concurrently call generate_next_skus 50 times in parallel
+    const parallelCalls = 50;
+    const promises = Array.from({ length: parallelCalls }, () =>
+      pool.query("SELECT public.generate_next_skus('98', 1, NULL, NULL) as result")
+    );
+    const dbResults = await Promise.all(promises);
+    const dbGeneratedSkus = dbResults.map(r => r.rows[0].result.skus[0]);
+    const dbUniqueSkus = new Set(dbGeneratedSkus);
+
+    assert(dbGeneratedSkus.length === 50, 'Real DB: 50 RPC requests completed');
+    assert(dbUniqueSkus.size === 50, 'Real DB: All 50 concurrently generated SKUs are 100% unique (Zero duplicates)');
+    assert(dbGeneratedSkus.every(s => /^SMBD98\d{4,}$/.test(s)), 'Real DB: All 50 SKUs match standard format (^SMBD98\\d{4,}$)');
+
+    // 3. Verify last_serial = 50 in sku_categories
+    const serialRes = await pool.query("SELECT last_serial FROM public.sku_categories WHERE code = '98'");
+    const currentLastSerial = serialRes.rows[0]?.last_serial;
+    assert(currentLastSerial === 50, `Real DB: last_serial for category 98 is exactly 50 (actual: ${currentLastSerial})`);
+
+    // 4. Test live trigger immutability enforcement
+    const testProdId = '00000000-0000-0000-0000-000000000098';
+    await pool.query(`
+      INSERT INTO public.products (id, name, slug, price, category_code, sku)
+      VALUES ($1, 'Sandbox Test Product', 'sandbox-test-prod', 100, '98', 'SMBD980001')
+      ON CONFLICT (id) DO UPDATE SET category_code = '98', sku = 'SMBD980001'
+    `, [testProdId]);
+
+    // Attempt 1: Modify SKU
+    let skuTamperBlocked = false;
+    let skuTamperMsg = '';
+    try {
+      await pool.query("UPDATE public.products SET sku = 'SMBD989999' WHERE id = $1", [testProdId]);
+    } catch (err) {
+      skuTamperBlocked = true;
+      skuTamperMsg = err.message;
+    }
+    assert(skuTamperBlocked && skuTamperMsg.includes('Product SKU is immutable'),
+      'Real DB: Trigger blocks altering assigned SKU (Message: ' + skuTamperMsg + ')');
+
+    // Attempt 2: Modify category_code
+    let catTamperBlocked = false;
+    let catTamperMsg = '';
+    try {
+      await pool.query("UPDATE public.products SET category_code = '99' WHERE id = $1", [testProdId]);
+    } catch (err) {
+      catTamperBlocked = true;
+      catTamperMsg = err.message;
+    }
+    assert(catTamperBlocked && catTamperMsg.includes('Product category code is locked once SKU is assigned'),
+      'Real DB: Trigger blocks altering assigned category_code (Message: ' + catTamperMsg + ')');
+
+    // 5. Clean up sandbox test data completely
+    await pool.query('DELETE FROM public.products WHERE id = $1', [testProdId]);
+    await pool.query("DELETE FROM public.sku_registry WHERE category_code = '98'");
+    await pool.query("DELETE FROM public.sku_categories WHERE code = '98'");
+
+    const cleanupRegistry = await pool.query("SELECT count(*) FROM public.sku_registry WHERE category_code = '98'");
+    const cleanupCategories = await pool.query("SELECT count(*) FROM public.sku_categories WHERE code = '98'");
+    const cleanupProduct = await pool.query('SELECT count(*) FROM public.products WHERE id = $1', [testProdId]);
+    const isClean = cleanupRegistry.rows[0].count === '0' && cleanupCategories.rows[0].count === '0' && cleanupProduct.rows[0].count === '0';
+    assert(isClean, 'Real DB: Sandbox test rows cleaned up completely (0 leftover rows in DB)');
+
+    await pool.end();
+        }
+      } catch (dbErr) {
+        console.error('  ❌ FAIL: Live DB Test Exception:', dbErr.message);
+        failedTests++;
+      }
+    }
+
   // ── SUMMARY ───────────────────────────────────────────────────────────────
   console.log('\n================================================================');
   console.log(`🏁 TEST RESULTS: ${passedTests} PASSED, ${failedTests} FAILED`);

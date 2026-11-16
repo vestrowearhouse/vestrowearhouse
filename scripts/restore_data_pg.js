@@ -3,11 +3,12 @@ const { Client } = pg;
 import fs from 'fs';
 import path from 'path';
 
-const password = 'E9YdYZx&u7!6Pqg';
-const user = 'postgres.gobcbixzsldiwmykgwtc';
-const host = 'aws-1-eu-central-1.pooler.supabase.com';
-const port = 5432;
-const database = 'postgres';
+const connectionString = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('Missing required environment variable: SUPABASE_DB_URL or DATABASE_URL');
+  process.exit(1);
+}
 
 const DATA_DIR = path.resolve('backups', 'data_json');
 
@@ -28,11 +29,7 @@ const tableOrder = [
 async function main() {
   console.log('Connecting to PostgreSQL to insert clean JSON data...');
   const client = new Client({
-    host,
-    port,
-    database,
-    user,
-    password,
+    connectionString,
     ssl: { rejectUnauthorized: false }
   });
 
