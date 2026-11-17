@@ -61,10 +61,10 @@ export default function AdminLayout({ children }) {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#083b66] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Verifying admin access...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black mx-auto"></div>
+          <p className="mt-4 text-xs font-bold uppercase tracking-widest text-neutral-500">Verifying admin access...</p>
         </div>
       </div>
     );
@@ -76,12 +76,12 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-neutral-50 flex">
       <SessionExpiredModal />
       <Sidebar />
       <div className="flex-1 ml-[280px]">
         <AdminNavbar />
-        <main className="p-8">
+        <main className="p-6 sm:p-8">
           {children}
         </main>
       </div>

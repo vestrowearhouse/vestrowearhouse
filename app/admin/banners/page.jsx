@@ -270,16 +270,16 @@ export default function AdminBannersPage() {
           <button 
             onClick={handleSyncBanners} 
             disabled={syncing}
-            className="bg-white border border-gray-200 text-gray-700 py-2.5 px-4 rounded-xl flex items-center gap-2 hover:bg-gray-50 active:scale-95 transition text-xs font-bold shadow-xs disabled:opacity-50"
+            className="bg-white border border-neutral-200 text-neutral-700 py-2.5 px-4 rounded-lg flex items-center gap-2 hover:bg-neutral-50 active:scale-95 transition text-xs font-bold shadow-2xs disabled:opacity-50 uppercase tracking-wider"
             title="Migrate external banner images to permanent storage"
           >
-            <RefreshCw size={14} className={syncing ? 'animate-spin text-blue-600' : ''} />
+            <RefreshCw size={14} className={syncing ? 'animate-spin text-black' : ''} />
             <span>{syncing ? 'Syncing...' : 'Sync Storage'}</span>
           </button>
           
           <button 
             onClick={() => handleOpenModal()} 
-            className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white py-2.5 px-5 rounded-xl flex items-center gap-2 transition font-bold text-xs shadow-md shadow-blue-500/20"
+            className="bg-black hover:bg-neutral-800 active:scale-95 text-white py-2.5 px-5 rounded-lg flex items-center gap-2 transition font-bold text-xs uppercase tracking-wider shadow-xs"
           >
             <Plus size={16} /> 
             <span>Add Banner</span>
@@ -288,11 +288,11 @@ export default function AdminBannersPage() {
       </div>
 
       {/* Banners Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xs border border-neutral-200 overflow-hidden">
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="animate-spin text-blue-600" size={32} />
-            <p className="text-xs font-semibold text-gray-500">Loading banners...</p>
+            <Loader2 className="animate-spin text-black" size={32} />
+            <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Loading banners...</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -351,7 +351,7 @@ export default function AdminBannersPage() {
                         </div>
 
                         {banner.link && (
-                          <div className="flex items-center gap-1 font-mono text-[11px] text-blue-600 truncate max-w-md">
+                          <div className="flex items-center gap-1 font-mono text-[11px] text-neutral-600 truncate max-w-md">
                             <LinkIcon size={12} className="shrink-0 text-gray-400" />
                             <span className="truncate">{banner.link}</span>
                           </div>
@@ -381,14 +381,14 @@ export default function AdminBannersPage() {
                       <div className="inline-flex items-center gap-1">
                         <button 
                           onClick={() => handleOpenModal(banner)} 
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" 
+                          className="p-2 text-neutral-700 hover:text-black hover:bg-neutral-100 rounded-lg transition-colors" 
                           title="Edit banner"
                         >
                           <Edit size={16} />
                         </button>
                         <button 
                           onClick={() => setDeleteModal({ show: true, banner })} 
-                          className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors" 
+                          className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" 
                           title="Delete banner"
                         >
                           <Trash2 size={16} />
@@ -586,7 +586,7 @@ export default function AdminBannersPage() {
                 <button 
                   type="submit" 
                   disabled={saving || !formData.image}
-                  className="px-6 py-2.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl transition shadow-md shadow-blue-500/20 flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-2.5 text-xs font-bold uppercase tracking-wider bg-black hover:bg-neutral-800 active:scale-95 text-white rounded-lg transition shadow-xs flex items-center gap-2 disabled:opacity-50"
                 >
                   {saving ? (
                     <>

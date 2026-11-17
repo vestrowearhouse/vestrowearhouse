@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
+import BrandLogo from '../components/BrandLogo';
 
 const menuSections = [
   {
@@ -57,8 +58,6 @@ const menuSections = [
     title: 'Analytics & Insights',
     items: [
       { name: 'Analytics', href: '/admin/analytics', icon: '📊' },
-      { name: 'Vercel Analytics', href: 'https://vercel.com/stellermartbd-2168s-projects/stellarmartbd/analytics', icon: '📈', external: true },
-      { name: 'Speed Insights', href: 'https://vercel.com/stellermartbd-2168s-projects/stellarmartbd/speed-insights', icon: '⚡', external: true },
       { name: 'Reports', href: '/admin/reports', icon: '📋' },
       { name: 'User Intelligence', href: '/admin/user-intelligence', icon: '🧠' },
       { name: 'Marketing Intel', href: '/admin/marketing-intel', icon: '📈' },
@@ -92,19 +91,21 @@ function MenuSection({ section, activeHref }) {
   const isActive = section.items.some(item => !item.external && item.href === activeHref);
   
   return (
-    <div className="mb-3">
+    <div className="mb-2.5">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors ${
-          isActive ? 'text-blue-700 bg-blue-50/60 border border-blue-100/80' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-transparent'
+        className={`w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] rounded-lg transition-colors ${
+          isActive 
+            ? 'text-black bg-neutral-100 font-extrabold border border-neutral-200' 
+            : 'text-neutral-400 hover:text-black hover:bg-neutral-50 border border-transparent'
         }`}
       >
         <span>{section.title}</span>
-        {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
       </button>
       
       {isOpen && (
-        <div className="space-y-1.5 mt-1.5 pl-1">
+        <div className="space-y-1 mt-1 pl-0.5">
           {section.items.map((item) => {
             const isItemActive = !item.external && item.href === activeHref;
             return item.external ? (
@@ -113,23 +114,26 @@ function MenuSection({ section, activeHref }) {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-700 font-medium border border-gray-200/70 bg-gray-50/40 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                className="flex items-center justify-between px-3.5 py-2 rounded-lg text-xs font-semibold text-neutral-600 hover:text-black hover:bg-neutral-100 border border-transparent transition-all"
               >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.name}</span>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-base">{item.icon}</span>
+                  <span>{item.name}</span>
+                </div>
+                <ExternalLink className="w-3 h-3 text-neutral-400" />
               </a>
             ) : (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
+                className={`flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                   isItemActive 
-                    ? 'bg-blue-600 text-white font-semibold border border-blue-600 shadow-md shadow-blue-500/20' 
-                    : 'text-gray-700 border border-gray-200/70 bg-gray-50/40 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200'
+                    ? 'bg-black text-white font-bold shadow-xs' 
+                    : 'text-neutral-700 hover:text-black hover:bg-neutral-100 border border-transparent'
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.name}</span>
+                <span className="text-base">{item.icon}</span>
+                <span className="truncate">{item.name}</span>
               </Link>
             );
           })}
@@ -143,9 +147,6 @@ export default function Sidebar() {
   const pathname = usePathname();
   const currentPath = pathname ? pathname.replace(/\/+$/, '') || '/' : '';
 
-  // Find the single best matching internal menu item across all sections:
-  // Sort by length descending so that more specific paths (e.g. '/admin/products/bulk')
-  // take precedence over parent paths (e.g. '/admin/products')
   const allInternalItems = menuSections
     .flatMap((section) => section.items)
     .filter((item) => !item.external);
@@ -160,15 +161,19 @@ export default function Sidebar() {
   const activeHref = activeItem ? activeItem.href : null;
 
   return (
-    <aside className="w-[280px] bg-white shadow-xl fixed h-full overflow-y-auto z-40 border-r border-gray-100 flex flex-col">
-      <div className="sticky top-0 p-6 border-b border-gray-100 bg-white/95 backdrop-blur-sm z-10">
-        <Link href="/admin/dashboard" className="text-xl font-black text-gray-900 flex items-center gap-2 tracking-tight">
-          <span className="text-amber-600">⚡</span> Vestro Wear House
-        </Link>
-        <p className="text-xs font-semibold text-gray-400 mt-1 uppercase tracking-wider">Admin Dashboard</p>
+    <aside className="w-[280px] bg-white fixed h-full overflow-y-auto z-40 border-r border-neutral-200 flex flex-col shadow-xs">
+      {/* Brand Header */}
+      <div className="sticky top-0 p-5 border-b border-neutral-200 bg-white/95 backdrop-blur-sm z-10">
+        <div className="flex items-center justify-between">
+          <BrandLogo size="sm" />
+          <span className="px-2 py-0.5 bg-black text-white text-[9px] font-bold tracking-[0.16em] uppercase rounded-sm">
+            ADMIN
+          </span>
+        </div>
       </div>
       
-      <nav className="p-4 pb-24 flex-1">
+      {/* Navigation List */}
+      <nav className="p-3 pb-24 flex-1">
         {menuSections.map((section) => (
           <MenuSection 
             key={section.title} 
@@ -178,13 +183,13 @@ export default function Sidebar() {
         ))}
       </nav>
       
-      <div className="sticky bottom-0 w-full p-4 border-t border-gray-100 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
+      {/* Bottom Sticky Action */}
+      <div className="sticky bottom-0 w-full p-4 border-t border-neutral-200 bg-white z-10">
         <Link
           href="/"
-          className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-gray-50 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-700 font-semibold text-sm transition-colors border border-gray-200 hover:border-blue-200"
+          className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-black hover:bg-neutral-800 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
         >
-          <span>🌐</span>
-          <span>View Website</span>
+          <span>View Storefront →</span>
         </Link>
       </div>
     </aside>

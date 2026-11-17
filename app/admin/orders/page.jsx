@@ -311,7 +311,7 @@ export default function OrdersPage() {
   const getStatusBadge = (status) => {
     switch(status?.toLowerCase()) {
       case 'pending': return <span className="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium flex items-center gap-1"><Clock className="w-3 h-3"/> Pending</span>;
-      case 'processing': return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium flex items-center gap-1"><RefreshCw className="w-3 h-3 animate-spin"/> Processing</span>;
+      case 'processing': return <span className="px-2.5 py-1 bg-neutral-100 text-black rounded-full text-xs font-medium flex items-center gap-1"><RefreshCw className="w-3 h-3 animate-spin"/> Processing</span>;
       case 'shipped': return <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium flex items-center gap-1"><Truck className="w-3 h-3"/> Shipped</span>;
       case 'delivered': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> Delivered</span>;
       case 'cancelled': return <span className="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium flex items-center gap-1"><XCircle className="w-3 h-3"/> Cancelled</span>;
@@ -818,7 +818,7 @@ export default function OrdersPage() {
           <h1 className="text-2xl font-bold text-gray-800">Order Management</h1>
           <p className="text-gray-500">View and update customer orders.</p>
         </div>
-        <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg border border-blue-100 font-medium text-sm">
+        <div className="flex items-center gap-2 bg-neutral-100 text-black px-4 py-2 rounded-lg border border-neutral-200 font-medium text-sm">
           <Package className="w-5 h-5" /> Total Orders: {orders.length}
         </div>
       </div>
@@ -834,7 +834,7 @@ export default function OrdersPage() {
                 placeholder="Search by Order ID, Customer Name, Phone, or TrxID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black bg-white"
               />
             </div>
             <div className="flex items-center gap-3">
@@ -862,7 +862,7 @@ export default function OrdersPage() {
                   onClick={() => setStatusFilter(tab.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-all ${
                     statusFilter === tab.id
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'bg-black text-white shadow-xs'
                       : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
@@ -877,7 +877,7 @@ export default function OrdersPage() {
               <select
                 value={paymentFilter}
                 onChange={(e) => setPaymentFilter(e.target.value)}
-                className="px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500"
+                className="px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black"
               >
                 <option value="all">All Payment</option>
                 <option value="paid">Paid</option>
@@ -891,7 +891,7 @@ export default function OrdersPage() {
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
-                className="px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500"
+                className="px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -915,14 +915,14 @@ export default function OrdersPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center p-12 text-blue-600"><Loader2 className="w-8 h-8 animate-spin" /></div>
+          <div className="flex items-center justify-center p-12 text-black"><Loader2 className="w-8 h-8 animate-spin" /></div>
         ) : filteredAndSortedOrders.length === 0 ? (
           <div className="p-12 text-center text-gray-500">
             <p className="font-medium">No orders found matching your filters.</p>
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
-                className="mt-2 text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
+                className="mt-2 text-xs text-black hover:underline inline-flex items-center gap-1"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Reset all filters
               </button>
@@ -946,7 +946,7 @@ export default function OrdersPage() {
               <tbody className="divide-y divide-gray-100">
                 {paginatedOrders.map((order) => (
                   <tr key={order.id || order._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-mono font-semibold text-blue-600">#{order.order_number}</td>
+                    <td className="px-6 py-4 font-mono font-semibold text-black">#{order.order_number}</td>
                     <td className="px-6 py-4 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-800">{order.shipping_address?.fullName || order.billing_name || 'N/A'}</div>
@@ -1003,7 +1003,7 @@ export default function OrdersPage() {
                         )}
                         <button 
                           onClick={() => handleViewOrder(order.id || order._id)}
-                          className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                          className="p-1.5 text-black bg-neutral-100 hover:bg-neutral-100 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -1046,7 +1046,7 @@ export default function OrdersPage() {
                       onClick={() => setCurrentPage(page)}
                       className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-all ${
                         currentPage === page
-                          ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20'
+                          ? 'bg-black text-white shadow-sm ring-2 ring-black/20'
                           : 'text-gray-700 hover:bg-white bg-transparent border border-transparent hover:border-gray-200'
                       }`}
                     >
@@ -1088,7 +1088,7 @@ export default function OrdersPage() {
 
             <div className="p-6">
               {!orderDetails ? (
-                <div className="flex items-center justify-center py-20 text-blue-600"><Loader2 className="w-8 h-8 animate-spin" /></div>
+                <div className="flex items-center justify-center py-20 text-black"><Loader2 className="w-8 h-8 animate-spin" /></div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   
@@ -1163,7 +1163,7 @@ export default function OrdersPage() {
                                       {hasAttrs ? (
                                         <div className="flex flex-wrap gap-1 mt-1">
                                           {Object.entries(rawAttrs).map(([k, v]) => (
-                                            <span key={k} className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                            <span key={k} className="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-neutral-100 text-black border border-neutral-200">
                                               {k}: {v}
                                             </span>
                                           ))}
@@ -1190,7 +1190,7 @@ export default function OrdersPage() {
                                         <button
                                           type="button"
                                           onClick={() => handleOpenEditItemVariant(item, index)}
-                                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 mt-1.5 transition-colors cursor-pointer"
+                                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-black hover:underline bg-neutral-100 hover:bg-neutral-100 px-2 py-0.5 rounded border border-neutral-300 mt-1.5 transition-colors cursor-pointer"
                                         >
                                           <Edit3 className="w-3 h-3" />
                                           {hasAttrs ? 'Edit Size/Color' : 'Set Size/Color'}
@@ -1199,10 +1199,10 @@ export default function OrdersPage() {
 
                                       {/* Inline Variant Selection Form */}
                                       {isEditingThisItem && (
-                                        <div className="mt-2.5 p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2 text-xs">
+                                        <div className="mt-2.5 p-3 bg-neutral-50 border border-neutral-300 rounded-xl space-y-2 text-xs">
                                           <div className="font-bold text-gray-800 flex items-center justify-between">
                                             <span>Select / Change Item Options:</span>
-                                            {loadingItemProduct && <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />}
+                                            {loadingItemProduct && <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />}
                                           </div>
 
                                           {editingProductData?.parsedAttributes && editingProductData.parsedAttributes.length > 0 ? (
@@ -1215,7 +1215,7 @@ export default function OrdersPage() {
                                                   <select
                                                     value={editingAttrs[attr.name] || ''}
                                                     onChange={(e) => setEditingAttrs({ ...editingAttrs, [attr.name]: e.target.value })}
-                                                    className="w-full p-1.5 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-800 focus:ring-1 focus:ring-blue-500"
+                                                    className="w-full p-1.5 bg-white border border-gray-300 rounded text-xs font-semibold text-gray-800 focus:ring-1 focus:ring-black/10 focus:border-black"
                                                   >
                                                     <option value="">-- Select {attr.name} --</option>
                                                     {attr.values?.map((val) => (
@@ -1252,7 +1252,7 @@ export default function OrdersPage() {
                                               type="button"
                                               onClick={() => handleSaveItemVariant(index)}
                                               disabled={isSavingItemVariant}
-                                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-[11px] inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                                              className="px-3 py-1 bg-black hover:bg-neutral-800 text-white rounded font-bold text-[11px] inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                                             >
                                               {isSavingItemVariant ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
                                               Save Size/Color
@@ -1287,7 +1287,7 @@ export default function OrdersPage() {
                           </div>
                           <div className="flex justify-between text-lg font-bold text-gray-800 pt-2 border-t border-gray-200">
                             <span>Total Amount</span>
-                            <span className="text-blue-700">৳{orderDetails.total || orderDetails.total_amount}</span>
+                            <span className="text-black">৳{orderDetails.total || orderDetails.total_amount}</span>
                           </div>
                         </div>
                       </div>
@@ -1295,15 +1295,15 @@ export default function OrdersPage() {
                   </div>
 
                   {/* Action/Status Panel */}
-                  <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 h-fit">
-                    <h3 className="font-bold text-gray-800 mb-4 border-b border-blue-200 pb-2">Update Status</h3>
+                  <div className="bg-neutral-100 p-6 rounded-xl border border-neutral-200 h-fit">
+                    <h3 className="font-bold text-gray-800 mb-4 border-b border-neutral-300 pb-2">Update Status</h3>
                     
                     <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Order Status</label>
                       <select 
                         value={updateForm.status} 
                         onChange={(e) => setUpdateForm({...updateForm, status: e.target.value})}
-                        className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black/10 focus:border-black"
                       >
                         <option value="pending">Pending</option>
                         <option value="confirmed">Confirmed</option>
@@ -1319,7 +1319,7 @@ export default function OrdersPage() {
                       <select 
                         value={updateForm.payment_status} 
                         onChange={(e) => setUpdateForm({...updateForm, payment_status: e.target.value})}
-                        className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black/10 focus:border-black"
                       >
                         <option value="pending">Pending</option>
                         <option value="unpaid">Unpaid</option>
@@ -1332,7 +1332,7 @@ export default function OrdersPage() {
                     <button 
                       onClick={handleUpdateStatus}
                       disabled={isUpdating}
-                      className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-70"
+                      className="w-full py-2.5 bg-black hover:bg-neutral-800 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-70"
                     >
                       {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                       {isUpdating ? 'Updating...' : 'Save Changes'}

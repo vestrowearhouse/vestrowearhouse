@@ -4,8 +4,6 @@ import { Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import UserLayoutWrapper from './components/UserLayoutWrapper';
 import dynamic from 'next/dynamic';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import CustomAnalytics from './components/CustomAnalytics';
 
 // Load Inter font with display:swap to prevent render blocking
@@ -136,8 +134,6 @@ export default function RootLayout({ children }) {
           <AIChatbot />
           <WhatsAppFloatingButton />
         </AuthProvider>
-        <Analytics />
-        <SpeedInsights />
         <Suspense fallback={null}>
           <CustomAnalytics />
         </Suspense>

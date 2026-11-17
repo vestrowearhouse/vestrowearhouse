@@ -56,21 +56,24 @@ export default function AdminNavbar() {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-30">
-      <div className="flex items-center justify-between px-6 py-4">
+    <nav className="bg-white/95 backdrop-blur-md border-b border-neutral-200 sticky top-0 z-30">
+      <div className="flex items-center justify-between px-6 py-3.5">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
+          <h2 className="text-sm font-black uppercase tracking-[0.18em] text-neutral-900">{title}</h2>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <SessionTimer />
-          <Link href="/" className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-            View Website
+          <Link 
+            href="/" 
+            className="px-3.5 py-1.5 bg-neutral-100 hover:bg-black hover:text-white text-neutral-800 text-xs font-bold uppercase tracking-wider rounded-md transition-all"
+          >
+            Storefront ↗
           </Link>
           <button 
             onClick={handleLogout}
-            className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 flex items-center gap-2"
+            className="px-3.5 py-1.5 border border-neutral-200 text-neutral-700 hover:bg-black hover:text-white hover:border-black text-xs font-bold uppercase tracking-wider rounded-md flex items-center gap-1.5 transition-all"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
             Logout
           </button>
         </div>

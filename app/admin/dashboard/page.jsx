@@ -382,246 +382,182 @@ export default function AdminDashboard() {
   };
 
   // Analytics Data
-
-  const COLORS = ['#2563eb', '#16a34a', '#9333ea', '#ea580c'];
+  const COLORS = ['#000000', '#404040', '#737373', '#a3a3a3'];
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] p-6">
-
+    <div className="space-y-8">
       {/* HEADER */}
-        
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-8">
-
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-black text-gray-900 tracking-tight">
-            Dashboard Overview
+          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-neutral-900">
+            DASHBOARD OVERVIEW
           </h1>
-
-          <p className="text-gray-500 mt-2">
-            Welcome back! Here’s your ecommerce analytics.
+          <p className="text-xs sm:text-sm text-neutral-500 mt-1 uppercase tracking-wider">
+            Live ecommerce performance & catalog insights
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
-
+        <div className="flex items-center gap-2 self-start sm:self-auto text-xs font-medium text-neutral-600 bg-white px-3.5 py-1.5 rounded-full border border-neutral-200 shadow-2xs">
           <RefreshCw
-            className={`w-4 h-4 text-blue-500 ${
+            className={`w-3.5 h-3.5 text-black ${
               isRefreshing ? 'animate-spin' : ''
             }`}
           />
-
-          <span className="font-medium text-gray-700">
-            Live
-          </span>
-
-          <span className="text-gray-400">
-            • {lastUpdated.toLocaleTimeString()}
-          </span>
-
+          <span className="font-bold text-neutral-900 uppercase tracking-wider">Live</span>
+          <span className="text-neutral-400">• {lastUpdated.toLocaleTimeString()}</span>
         </div>
-
       </div>
 
       {/* ERROR */}
-
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
-
-          <AlertCircle className="w-5 h-5 text-red-600" />
-
-          <p className="text-red-700">
-            {error}
-          </p>
-
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
+          <p className="text-xs sm:text-sm text-red-700 font-medium">{error}</p>
           <button
             onClick={fetchStats}
-            className="ml-auto px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+            className="ml-auto px-3.5 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition"
           >
             Retry
           </button>
-
         </div>
       )}
 
-      {/* LOADING */}
-
+      {/* LOADING OR CONTENT */}
       {loading ? (
         <DashboardSkeleton />
       ) : (
         <>
-
-          {/* STATS */}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-
+          {/* STATS TILES */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {/* USERS */}
-
             <Link
               href="/admin/users"
-              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              className="bg-white rounded-2xl p-5 sm:p-6 border border-neutral-200 hover:border-black transition-all duration-200 shadow-2xs group"
             >
-
-              <div className="flex items-center justify-between mb-6">
-
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
-                  <Users className="w-7 h-7 text-blue-600" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-11 h-11 rounded-xl bg-black text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Users className="w-5 h-5 text-white" />
                 </div>
-
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">USERS</span>
               </div>
-
-              <p className="text-gray-500 font-medium">
-                Total Users
+              <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-neutral-400">
+                Total Customers
               </p>
-
-              <h2 className="text-4xl font-black text-gray-900 mt-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-black mt-1 tracking-tight">
                 {stats.users}
               </h2>
-
             </Link>
 
             {/* PRODUCTS */}
-
             <Link
               href="/admin/products"
-              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              className="bg-white rounded-2xl p-5 sm:p-6 border border-neutral-200 hover:border-black transition-all duration-200 shadow-2xs group"
             >
-
-              <div className="flex items-center justify-between mb-6">
-
-                <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center">
-                  <ShoppingCart className="w-7 h-7 text-green-600" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-11 h-11 rounded-xl bg-black text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <ShoppingCart className="w-5 h-5 text-white" />
                 </div>
-
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">ITEMS</span>
               </div>
-
-              <p className="text-gray-500 font-medium">
-                Products
+              <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-neutral-400">
+                Live Products
               </p>
-
-              <h2 className="text-4xl font-black text-gray-900 mt-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-black mt-1 tracking-tight">
                 {stats.products}
               </h2>
-
             </Link>
 
             {/* CATEGORIES */}
-
             <Link
               href="/admin/categories"
-              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              className="bg-white rounded-2xl p-5 sm:p-6 border border-neutral-200 hover:border-black transition-all duration-200 shadow-2xs group"
             >
-
-              <div className="flex items-center justify-between mb-6">
-
-                <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center">
-                  <Package className="w-7 h-7 text-purple-600" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-11 h-11 rounded-xl bg-black text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Package className="w-5 h-5 text-white" />
                 </div>
-
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">SECTIONS</span>
               </div>
-
-              <p className="text-gray-500 font-medium">
+              <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-neutral-400">
                 Categories
               </p>
-
-              <h2 className="text-4xl font-black text-gray-900 mt-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-black mt-1 tracking-tight">
                 {stats.categories}
               </h2>
-
             </Link>
 
             {/* ORDERS */}
-
             <Link
               href="/admin/orders"
-              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              className="bg-white rounded-2xl p-5 sm:p-6 border border-neutral-200 hover:border-black transition-all duration-200 shadow-2xs group"
             >
-
-              <div className="flex items-center justify-between mb-6">
-
-                <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center">
-                  <CreditCard className="w-7 h-7 text-orange-600" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-11 h-11 rounded-xl bg-black text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <CreditCard className="w-5 h-5 text-white" />
                 </div>
-
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">SALES</span>
               </div>
-
-              <p className="text-gray-500 font-medium">
-                Orders
+              <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-neutral-400">
+                Total Orders
               </p>
-
-              <h2 className="text-4xl font-black text-gray-900 mt-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-black mt-1 tracking-tight">
                 {stats.orders}
               </h2>
-
             </Link>
-
           </div>
 
-          {/* ANALYTICS */}
-
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-
-            {/* SALES CHART */}
-
-            <div className="xl:col-span-2 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-
+          {/* ANALYTICS CHARTS */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* SALES LINE CHART */}
+            <div className="xl:col-span-2 bg-white rounded-2xl p-6 border border-neutral-200 shadow-2xs">
               <div className="flex items-center justify-between mb-6">
-
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Sales Analytics
+                  <h2 className="text-base font-black uppercase tracking-wider text-black">
+                    Sales Growth
                   </h2>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    Monthly sales growth overview
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mt-0.5">
+                    Monthly revenue trends (BDT)
                   </p>
                 </div>
-
-                <div className={`px-4 py-2 rounded-full text-sm font-bold ${Number(chartData.salesGrowth) >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                <div className="px-3 py-1 bg-black text-white rounded-full text-xs font-bold tracking-wider">
                   {Number(chartData.salesGrowth) > 0 ? '+' : ''}{chartData.salesGrowth}%
                 </div>
-
               </div>
 
-            <div className="h-[350px] rounded-lg border border-gray-100">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData.sales} margin={{ top: 20, right: 24, left: 0, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                  <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} width={64} />
-                  <Tooltip formatter={(value) => [`৳${Number(value).toLocaleString('en-BD')}`, 'Sales']} />
-                  <Line type="monotone" dataKey="sales" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="h-[300px] rounded-lg">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData.sales} margin={{ top: 15, right: 20, left: 0, bottom: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="month" tick={{ fill: '#737373', fontSize: 11 }} />
+                    <YAxis tick={{ fill: '#737373', fontSize: 11 }} width={64} />
+                    <Tooltip formatter={(value) => [`৳${Number(value).toLocaleString('en-BD')}`, 'Sales']} />
+                    <Line type="monotone" dataKey="sales" stroke="#000000" strokeWidth={2.5} dot={{ r: 3, fill: '#000000' }} activeDot={{ r: 5 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            </div>
-
-            {/* PIE CHART */}
-
-            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-
+            {/* CATEGORIES PIE CHART */}
+            <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-2xs">
               <div className="mb-6">
-
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Top Categories
+                <h2 className="text-base font-black uppercase tracking-wider text-black">
+                  Catalogue Share
                 </h2>
-
-                <p className="text-sm text-gray-500 mt-1">
-                  Highest product count by category
+                <p className="text-xs text-neutral-400 uppercase tracking-wider mt-0.5">
+                  Products count by category
                 </p>
-
               </div>
 
-              <div className="h-[280px] rounded-lg border border-gray-100">
+              <div className="h-[230px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={chartData.categories}
                       dataKey="value"
                       nameKey="name"
-                      innerRadius={54}
-                      outerRadius={96}
-                      paddingAngle={4}
+                      innerRadius={48}
+                      outerRadius={84}
+                      paddingAngle={3}
                     >
                       {chartData.categories.map((item, index) => (
                         <Cell key={item.name} fill={COLORS[index % COLORS.length]} />
@@ -632,184 +568,143 @@ export default function AdminDashboard() {
                 </ResponsiveContainer>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mt-4">
-
+              <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-neutral-100">
                 {chartData.categories.map((item, index) => (
-
-                  <div
-                    key={index}
-                    className="flex items-center gap-2 text-sm"
-                  >
-
+                  <div key={index} className="flex items-center gap-2 text-xs">
                     <div
-                      className="w-3 h-3 rounded-full"
-                      style={{
-                        backgroundColor: COLORS[index],
-                      }}
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     />
-
-                    <span className="text-gray-700 font-medium">
+                    <span className="text-neutral-700 font-semibold truncate">
                       {item.name} ({item.value})
                     </span>
-
                   </div>
-
                 ))}
-
               </div>
-
             </div>
-
           </div>
 
-          {/* BAR CHART */}
-
-          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm mb-8">
-
-            <div className="flex items-center justify-between mb-6">
-
-          <div>
-
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Orders Performance
-                </h2>
-
-                <p className="text-sm text-gray-500 mt-1">
-                  Weekly orders analytics
-                </p>
-
+          {/* BAR CHART & BANNER STATUS */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* WEEKLY ORDERS */}
+            <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-neutral-200 shadow-2xs">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-base font-black uppercase tracking-wider text-black">
+                    Weekly Orders Activity
+                  </h2>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mt-0.5">
+                    Order volume per day
+                  </p>
+                </div>
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400">
+                  REALTIME
+                </span>
               </div>
 
-              <div className="text-sm text-blue-600 font-bold">
-                Live Tracking
+              <div className="h-[260px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData.weeklyOrders} margin={{ top: 15, right: 20, left: 0, bottom: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="day" tick={{ fill: '#737373', fontSize: 11 }} />
+                    <YAxis allowDecimals={false} tick={{ fill: '#737373', fontSize: 11 }} width={36} />
+                    <Tooltip formatter={(value) => [value, 'Orders']} />
+                    <Bar dataKey="orders" fill="#000000" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-
             </div>
 
-            <div className="h-[320px] rounded-lg border border-gray-100">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData.weeklyOrders} margin={{ top: 20, right: 24, left: 0, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="day" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                  <YAxis allowDecimals={false} tick={{ fill: '#6b7280', fontSize: 12 }} width={48} />
-                  <Tooltip formatter={(value) => [value, 'Orders']} />
-                  <Bar dataKey="orders" fill="#16a34a" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-          </div>
-
-          {/* BANNER STATUS */}
-
-          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm mb-8">
-
-            <div className="flex items-center justify-between mb-4">
-
-              <h2 className="text-2xl font-bold text-gray-900">
-                Banner Status
-              </h2>
-
-              <Link
-                href="/admin/banners"
-                className="text-blue-600 hover:underline text-sm font-semibold"
-              >
-                Manage →
-              </Link>
-
-            </div>
-
-            <div className="flex items-center gap-3">
-
-              <div className="w-12 h-12 rounded-2xl bg-pink-50 flex items-center justify-center">
-                <Image className="w-6 h-6 text-pink-600" />
-              </div>
-
+            {/* BANNER STATUS */}
+            <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-2xs flex flex-col justify-between">
               <div>
-
-                <p className="text-gray-500">
-                  Active Banners
-                </p>
-
-                <h3 className="text-2xl font-black text-gray-900">
-                  {stats.banners}
-                </h3>
-
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-base font-black uppercase tracking-wider text-black">
+                    Banners
+                  </h2>
+                  <Link
+                    href="/admin/banners"
+                    className="text-xs font-bold text-neutral-900 hover:underline uppercase tracking-wider"
+                  >
+                    Manage →
+                  </Link>
+                </div>
+                <div className="flex items-center gap-4 p-4 bg-neutral-50 rounded-xl border border-neutral-200/60">
+                  <div className="w-12 h-12 rounded-xl bg-black text-white flex items-center justify-center">
+                    <Image className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-neutral-400">
+                      Active Slides
+                    </p>
+                    <h3 className="text-2xl font-black text-black">
+                      {stats.banners}
+                    </h3>
+                  </div>
+                </div>
               </div>
 
+              <div className="pt-4 border-t border-neutral-100">
+                <Link
+                  href="/admin/banners"
+                  className="w-full py-2.5 px-4 bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-wider rounded-lg flex items-center justify-center transition-colors shadow-2xs"
+                >
+                  Edit Homepage Sliders
+                </Link>
+              </div>
             </div>
-
           </div>
 
           {/* QUICK ACTIONS */}
-
-          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">
-              Quick Actions
+          <div className="bg-white rounded-2xl p-6 border border-neutral-200 shadow-2xs">
+            <h2 className="text-base font-black uppercase tracking-wider text-black mb-5">
+              Quick Management Shortcuts
             </h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               <Link
                 href="/admin/products"
-                className="p-5 bg-blue-50 rounded-2xl text-center hover:bg-blue-100 transition-all"
+                className="p-5 bg-neutral-50 hover:bg-black group border border-neutral-200 hover:border-black rounded-xl text-center transition-all duration-200"
               >
-
-                <ShoppingCart className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-
-                <span className="text-sm font-bold text-gray-900">
+                <ShoppingCart className="w-6 h-6 text-neutral-800 group-hover:text-white mx-auto mb-2.5 transition-colors" />
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-900 group-hover:text-white transition-colors block">
                   Add Product
                 </span>
-
               </Link>
 
               <Link
                 href="/admin/categories"
-                className="p-5 bg-green-50 rounded-2xl text-center hover:bg-green-100 transition-all"
+                className="p-5 bg-neutral-50 hover:bg-black group border border-neutral-200 hover:border-black rounded-xl text-center transition-all duration-200"
               >
-
-                <Package className="w-8 h-8 text-green-600 mx-auto mb-3" />
-
-                <span className="text-sm font-bold text-gray-900">
-                  Add Category
+                <Package className="w-6 h-6 text-neutral-800 group-hover:text-white mx-auto mb-2.5 transition-colors" />
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-900 group-hover:text-white transition-colors block">
+                  Categories
                 </span>
-
               </Link>
 
               <Link
                 href="/admin/banners"
-                className="p-5 bg-purple-50 rounded-2xl text-center hover:bg-purple-100 transition-all"
+                className="p-5 bg-neutral-50 hover:bg-black group border border-neutral-200 hover:border-black rounded-xl text-center transition-all duration-200"
               >
-
-                <Image className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-
-                <span className="text-sm font-bold text-gray-900">
-                  Add Banner
+                <Image className="w-6 h-6 text-neutral-800 group-hover:text-white mx-auto mb-2.5 transition-colors" />
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-900 group-hover:text-white transition-colors block">
+                  Banners
                 </span>
-
               </Link>
 
               <Link
-                href="/admin/users"
-                className="p-5 bg-orange-50 rounded-2xl text-center hover:bg-orange-100 transition-all"
+                href="/admin/orders"
+                className="p-5 bg-neutral-50 hover:bg-black group border border-neutral-200 hover:border-black rounded-xl text-center transition-all duration-200"
               >
-
-                <Users className="w-8 h-8 text-orange-600 mx-auto mb-3" />
-
-                <span className="text-sm font-bold text-gray-900">
-                  View Users
+                <Users className="w-6 h-6 text-neutral-800 group-hover:text-white mx-auto mb-2.5 transition-colors" />
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-900 group-hover:text-white transition-colors block">
+                  View Orders
                 </span>
-
               </Link>
-
             </div>
-
           </div>
-
         </>
       )}
-
     </div>
   );
 }

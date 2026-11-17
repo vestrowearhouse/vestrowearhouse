@@ -651,7 +651,7 @@ export default function ProductsPage() {
             onClick={() => setHomeFilter('all')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
               homeFilter === 'all'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-black text-white shadow-sm'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -715,7 +715,7 @@ export default function ProductsPage() {
               placeholder="Search by product name, SKU, or brand..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black text-sm"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -743,7 +743,7 @@ export default function ProductsPage() {
             </Link>
             <button 
               onClick={() => { resetForm(); setShowModal(true); }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
+              className="px-4 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 flex items-center gap-2 text-sm font-medium shadow-sm transition-colors whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               Add Product
@@ -813,7 +813,7 @@ export default function ProductsPage() {
                           {skuLookupResult.sku}
                         </span>
                         {skuLookupResult.isVariant && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-800 rounded">
+                          <span className="text-[10px] font-bold px-2 py-0.5 bg-neutral-100 text-black rounded">
                             Variant: {skuLookupResult.variantKey}
                           </span>
                         )}
@@ -866,7 +866,7 @@ export default function ProductsPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white transition-all"
             >
               <option value="all">All Categories</option>
               {categories.map((cat) => (
@@ -883,7 +883,7 @@ export default function ProductsPage() {
             <select
               value={selectedVendorFilter}
               onChange={(e) => setSelectedVendorFilter(e.target.value)}
-              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white transition-all"
             >
               <option value="all">All Stores & Vendors</option>
               <option value="official">⭐ Stellar Mart Official</option>
@@ -901,7 +901,7 @@ export default function ProductsPage() {
             <select
               value={stockFilter}
               onChange={(e) => setStockFilter(e.target.value)}
-              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white transition-all"
             >
               <option value="all">All Stock Status</option>
               <option value="in_stock">In Stock (&gt;0)</option>
@@ -916,7 +916,7 @@ export default function ProductsPage() {
             <select
               value={priceSort}
               onChange={(e) => setPriceSort(e.target.value)}
-              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white transition-all"
             >
               <option value="none">Default Order</option>
               <option value="price_asc">Price: Low to High</option>
@@ -933,7 +933,7 @@ export default function ProductsPage() {
               placeholder="Min"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
-              className="w-20 px-2 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              className="w-20 px-2 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white"
             />
             <span className="text-gray-400 text-xs">-</span>
             <input
@@ -941,7 +941,7 @@ export default function ProductsPage() {
               placeholder="Max"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              className="w-20 px-2 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              className="w-20 px-2 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white"
             />
           </div>
 
@@ -963,7 +963,7 @@ export default function ProductsPage() {
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <Loader2 className="w-8 h-8 text-black animate-spin" />
           </div>
         ) : filteredAndSortedProducts.length === 0 ? (
           <div className="text-center py-20">
@@ -972,7 +972,7 @@ export default function ProductsPage() {
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
-                className="mt-3 px-3 py-1.5 text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
+                className="mt-3 px-3 py-1.5 text-xs text-black hover:underline inline-flex items-center gap-1"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Reset all filters
               </button>
@@ -1048,7 +1048,7 @@ export default function ProductsPage() {
                           🏬 {product.store_name || vendors.find(v => v.id === product.vendor_id)?.shop_name || 'Vendor Store'}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-black bg-neutral-100 px-2 py-0.5 rounded border border-neutral-300">
                           ⭐ Stellar Mart Official
                         </span>
                       )}
@@ -1149,7 +1149,7 @@ export default function ProductsPage() {
                     <div className="flex items-center justify-end gap-1.5">
                       <button 
                         onClick={() => handleEdit(product)}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-1.5 text-black hover:bg-neutral-100 rounded-lg transition-colors"
                         title="Edit Product"
                       >
                         <Edit className="w-4 h-4" />
@@ -1200,7 +1200,7 @@ export default function ProductsPage() {
                       onClick={() => setCurrentPage(page)}
                       className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-all ${
                         currentPage === page
-                          ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20'
+                          ? 'bg-black text-white shadow-sm ring-2 ring-black/20'
                           : 'text-gray-700 hover:bg-white bg-transparent border border-transparent hover:border-gray-200'
                       }`}
                     >
@@ -1241,13 +1241,13 @@ export default function ProductsPage() {
               {/* Store / Vendor Assignment */}
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
                 <label className="block text-sm font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                  <Store className="w-4 h-4 text-blue-600" />
+                  <Store className="w-4 h-4 text-black" />
                   Store / Vendor Attribution
                 </label>
                 <select
                   value={formData.vendor_id || ''}
                   onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
-                  className="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-sm font-semibold text-slate-800"
+                  className="w-full px-3.5 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black bg-white text-sm font-semibold text-slate-800"
                 >
                   <option value="">⭐ Stellar Mart Official (Direct / In-House)</option>
                   {vendors.map((v) => (
@@ -1271,7 +1271,7 @@ export default function ProductsPage() {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                     required
                   />
                 </div>
@@ -1281,7 +1281,7 @@ export default function ProductsPage() {
                     type="text"
                     value={formData.nameBn}
                     onChange={(e) => setFormData({ ...formData, nameBn: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                   />
                 </div>
               </div>
@@ -1293,7 +1293,7 @@ export default function ProductsPage() {
                   </label>
                   <div className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-800 flex items-center justify-between">
                     <span className="font-bold tracking-wider">{formData.sku || 'Auto-generated on save'}</span>
-                    <span className="text-[11px] font-sans px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold">
+                    <span className="text-[11px] font-sans px-2 py-0.5 bg-neutral-100 text-black border border-neutral-300 rounded font-semibold">
                       Immutable
                     </span>
                   </div>
@@ -1307,7 +1307,7 @@ export default function ProductsPage() {
                     type="text"
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                   />
                 </div>
               </div>
@@ -1317,7 +1317,7 @@ export default function ProductsPage() {
                 <textarea
                   value={formData.shortDescription}
                   onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                   rows={3}
                   placeholder="Enter a short description or HTML here... e.g. <ul><li>Feature 1</li></ul>"
                 />
@@ -1339,7 +1339,7 @@ export default function ProductsPage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                   rows={3}
                 />
               </div>
@@ -1349,7 +1349,7 @@ export default function ProductsPage() {
                 <textarea
                   value={formData.descriptionBn}
                   onChange={(e) => setFormData({ ...formData, descriptionBn: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                   rows={3}
                 />
               </div>
@@ -1362,7 +1362,7 @@ export default function ProductsPage() {
                     type="number"
                     value={formData.regularPrice}
                     onChange={(e) => setFormData({ ...formData, regularPrice: parseFloat(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                     required
                   />
                 </div>
@@ -1372,7 +1372,7 @@ export default function ProductsPage() {
                     type="number"
                     value={formData.sellingPrice}
                     onChange={(e) => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                     required
                   />
                 </div>
@@ -1382,7 +1382,7 @@ export default function ProductsPage() {
                     type="number"
                     value={formData.stockQuantity}
                     onChange={(e) => setFormData({ ...formData, stockQuantity: parseInt(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                   />
                 </div>
               </div>
@@ -1411,7 +1411,7 @@ export default function ProductsPage() {
                     className={`w-full px-4 py-2 border ${
                       editingProduct?.sku && !editingProduct.sku.startsWith('stm-')
                         ? 'border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed'
-                        : isCategoryDropdownOpen ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-300'
+                        : isCategoryDropdownOpen ? 'border-blue-500 ring-2 ring-black/20' : 'border-gray-300'
                     } rounded-lg bg-white flex justify-between items-center cursor-pointer`}
                     onClick={() => {
                       if (editingProduct?.sku && !editingProduct.sku.startsWith('stm-')) return;
@@ -1441,14 +1441,14 @@ export default function ProductsPage() {
                               placeholder="Search category name..."
                               value={categorySearch}
                               onChange={(e) => setCategorySearch(e.target.value)}
-                              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
                               autoFocus
                             />
                           </div>
                         </div>
                         <div className="max-h-60 overflow-y-auto p-2 space-y-1">
                           <div
-                            className={`px-3 py-2 text-sm cursor-pointer rounded-lg transition-colors ${!formData.category ? 'bg-blue-50 text-blue-700 font-medium' : 'hover:bg-gray-100 text-gray-700'}`}
+                            className={`px-3 py-2 text-sm cursor-pointer rounded-lg transition-colors ${!formData.category ? 'bg-neutral-100 text-black font-medium' : 'hover:bg-gray-100 text-gray-700'}`}
                             onClick={() => {
                               setFormData({ ...formData, category: '' });
                               setIsCategoryDropdownOpen(false);
@@ -1465,7 +1465,7 @@ export default function ProductsPage() {
                               return (
                                 <div
                           key={catId}
-                                  className={`px-3 py-2 text-sm cursor-pointer rounded-lg transition-colors ${isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'hover:bg-gray-100 text-gray-700'}`}
+                                  className={`px-3 py-2 text-sm cursor-pointer rounded-lg transition-colors ${isSelected ? 'bg-neutral-100 text-black font-medium' : 'hover:bg-gray-100 text-gray-700'}`}
                                   onClick={() => {
                             setFormData({ ...formData, category: catId });
                                     setIsCategoryDropdownOpen(false);
@@ -1494,7 +1494,7 @@ export default function ProductsPage() {
                   return (
                     <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
                       <span className="font-semibold text-slate-700">Derived SKU Category:</span>
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-800 font-mono font-bold rounded">
+                      <span className="px-2 py-0.5 bg-neutral-100 text-black font-mono font-bold rounded">
                         Code {derivedCode}
                       </span>
                       <span>{skuCatInfo?.name || 'General'} ({skuCatInfo?.group || 'Other'})</span>
@@ -1525,7 +1525,7 @@ export default function ProductsPage() {
                     tagsInput: e.target.value,
                     tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean)
                   })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                   placeholder="e.g. smartphone, samsung, 5g, best phone"
                 />
                 <p className="text-xs text-gray-500 mt-1">These tags help your product appear in Google and website search results. Separate multiple tags with a comma.</p>
@@ -1540,7 +1540,7 @@ export default function ProductsPage() {
                     value={imageInput}
                     onChange={(e) => setImageInput(e.target.value)}
                     placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black/10 focus:border-black"
                   />
                   <button
                     type="button"
@@ -1550,7 +1550,7 @@ export default function ProductsPage() {
                     <Upload className="w-4 h-4" />
                     Add URL
                   </button>
-                  <label className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 flex items-center gap-2 cursor-pointer">
+                  <label className="px-4 py-2 bg-neutral-100 text-black rounded-lg hover:bg-neutral-200 flex items-center gap-2 cursor-pointer">
                     <Upload className="w-4 h-4" />
                     {uploading ? 'Uploading...' : 'Upload'}
                     <input
@@ -1569,7 +1569,7 @@ export default function ProductsPage() {
                         <img 
                           src={img} 
                           alt={`Product ${index + 1}`}
-                          className={`w-full h-20 object-cover rounded-lg ${formData.featuredImage === img ? 'ring-2 ring-blue-500' : ''}`}
+                          className={`w-full h-20 object-cover rounded-lg ${formData.featuredImage === img ? 'ring-2 ring-black' : ''}`}
                         />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
                           {formData.featuredImage !== img && (
@@ -1590,7 +1590,7 @@ export default function ProductsPage() {
                           </button>
                         </div>
                         {formData.featuredImage === img && (
-                          <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-blue-500 text-white text-xs rounded">Featured</span>
+                          <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-black text-white text-xs rounded">Featured</span>
                         )}
                       </div>
                     ))}
@@ -1600,9 +1600,9 @@ export default function ProductsPage() {
               </div>
 
               {/* ── Product Variants Section ── */}
-              <div className="border border-blue-200 rounded-xl overflow-hidden">
-                <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-                  <Layers className="w-4 h-4 text-blue-600" />
+              <div className="border border-neutral-300 rounded-xl overflow-hidden">
+                <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-neutral-50 to-neutral-100 border-b border-neutral-200">
+                  <Layers className="w-4 h-4 text-black" />
                   <div className="flex-1">
                     <h3 className="text-sm font-semibold text-gray-800">Product Variants</h3>
                     <p className="text-xs text-gray-500">Define sizes, colors, storage options or any custom attributes</p>
@@ -1611,7 +1611,7 @@ export default function ProductsPage() {
                     <button
                       type="button"
                       onClick={generateVariants}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded-lg text-xs font-medium hover:bg-neutral-800 transition-colors"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       Generate Variants
@@ -1649,7 +1649,7 @@ export default function ProductsPage() {
                   return (
                     <div className="mt-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
                       <span className="font-semibold text-slate-700">Derived SKU Category:</span>
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-800 font-mono font-bold rounded">
+                      <span className="px-2 py-0.5 bg-neutral-100 text-black font-mono font-bold rounded">
                         Code {derivedCode}
                       </span>
                       <span>{skuCatInfo?.name || 'General'} ({skuCatInfo?.group || 'Other'})</span>
@@ -1659,9 +1659,9 @@ export default function ProductsPage() {
               </div>
 
               {/* Homepage & Visibility Settings */}
-              <div className="bg-gradient-to-r from-blue-50/60 to-indigo-50/60 p-4 rounded-xl border border-blue-100 space-y-3">
+              <div className="bg-gradient-to-r from-neutral-50 to-neutral-100 p-4 rounded-xl border border-neutral-200 space-y-3">
                 <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Home className="w-4 h-4 text-blue-600" />
+                  <Home className="w-4 h-4 text-black" />
                   Homepage & Visibility Settings (হোম পেজ ও স্টোর সেটিংস)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1697,12 +1697,12 @@ export default function ProductsPage() {
                     </div>
                   </label>
 
-                  <label className="flex items-start gap-2.5 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-blue-400 transition-colors shadow-sm">
+                  <label className="flex items-start gap-2.5 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-black transition-colors shadow-sm">
                     <input
                       type="checkbox"
                       checked={formData.isBestSeller}
                       onChange={(e) => setFormData({ ...formData, isBestSeller: e.target.checked })}
-                      className="w-4 h-4 text-blue-600 rounded mt-0.5"
+                      className="w-4 h-4 text-black rounded mt-0.5"
                     />
                     <div>
                       <div className="text-xs font-bold text-gray-900">
@@ -1743,7 +1743,7 @@ export default function ProductsPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
+                  className="px-6 py-2 bg-black hover:bg-neutral-800 disabled:opacity-50 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
                 >
                   {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isSaving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Create Product')}

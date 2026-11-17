@@ -603,7 +603,7 @@ export default function AdminQuickChannelsPage() {
                 
                 {/* Mock Navbar */}
                 <div className="bg-white px-3 py-2 rounded-xl shadow-xs border border-gray-100 flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-black text-[#083b66] flex items-center gap-1">
+                  <span className="text-xs font-black text-black flex items-center gap-1">
                     <ShoppingBag className="w-3.5 h-3.5" /> StellarMartBD
                   </span>
                   <div className="flex gap-1">

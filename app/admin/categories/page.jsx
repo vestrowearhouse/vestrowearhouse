@@ -194,7 +194,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
               placeholder="e.g. Men's Fashion, Electronics"
               value={formData.name}
               onChange={handleNameChange}
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
               required
             />
           </div>
@@ -207,7 +207,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
                   setIsSlugCustom(false);
                   setFormData(prev => ({ ...prev, slug: generateSlug(prev.name) }));
                 }}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                className="text-xs text-black hover:underline font-medium"
               >
                 Auto-generate
               </button>
@@ -217,7 +217,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
               value={formData.slug}
               onChange={handleSlugChange}
               placeholder="e.g. electronics or smart-watch"
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-mono text-sm"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all font-mono text-sm"
               required
             />
             <p className="text-xs text-gray-500 mt-1">
@@ -229,7 +229,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
             <select
               value={formData.parent_id || 'null'}
               onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
             >
               <option value="null">None (Root Category)</option>
               {renderCategoryOptions(categories)}
@@ -248,7 +248,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
                       value={type}
                       checked={formData.iconType === type}
                       onChange={(e) => setFormData({ ...formData, iconType: e.target.value })}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      className="w-4 h-4 text-black border-gray-300 focus:ring-black/10 focus:border-black"
                     />
                     <span className="ml-2 text-sm font-medium text-gray-700 capitalize">
                       {type === 'custom' ? 'Custom Code' : type}
@@ -276,7 +276,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
                   placeholder="e.g. 📱, 💻, 👗"
                   value={formData.icon}
                   onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
                 />
                 <p className="text-xs text-gray-500 mt-1">Windows এ উইন্ডোজ বাটন + ফুলস্টপ (Win + .) চাপলে ইমোজি কীবোর্ড আসবে।</p>
               </div>
@@ -290,7 +290,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
                   placeholder="https://example.com/image.png"
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
                 />
                 <p className="text-xs text-gray-500 mt-1">Paste a link to your custom category picture.</p>
                 {formData.image && (
@@ -309,7 +309,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
                   placeholder='<div style="background: red; width: 100%; height: 100%;">...</div>'
                   value={formData.customCode}
                   onChange={(e) => setFormData({ ...formData, customCode: e.target.value })}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-mono text-sm"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all font-mono text-sm"
                 />
                 <p className="text-xs text-gray-500 mt-1">Paste your custom SVG or HTML code here.</p>
               </div>
@@ -321,7 +321,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
               id="isFeatured"
               checked={formData.isFeatured}
               onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black/10 focus:border-black"
             />
             <label htmlFor="isFeatured" className="ml-2 block text-sm text-gray-900">
               Show in "Shop by Category" on Homepage
@@ -340,7 +340,7 @@ const CategoryModal = ({ category, categories, onSave, onCancel, isSaving = fals
             <button 
               type="submit" 
               disabled={isSaving || !formData.name.trim()}
-              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-2.5 text-sm font-medium text-white bg-black hover:bg-neutral-800 shadow-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {isSaving ? (
                 <>
@@ -365,11 +365,11 @@ const CategoryRow = ({ category, level = 0, onEdit, onDelete, renderChildren = f
   const indent = level * 28;
   return (
     <>
-      <div className="flex items-center text-sm py-3.5 px-6 border-b border-gray-100 hover:bg-blue-50/40 transition-colors group">
+      <div className="flex items-center text-sm py-3.5 px-6 border-b border-gray-100 hover:bg-neutral-100/40 transition-colors group">
         <div className="w-1/2 flex items-center" style={{ paddingLeft: `${indent}px` }}>
           {level === 0 ? (
-            <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center mr-3 shrink-0 text-base">
-              {category.icon || <Folder size={16} className="text-blue-600" />}
+            <div className="w-8 h-8 rounded-lg bg-neutral-100 border border-neutral-200 flex items-center justify-center mr-3 shrink-0 text-base">
+              {category.icon || <Folder size={16} className="text-black" />}
             </div>
           ) : (
             <div className="flex items-center mr-2 text-gray-400 shrink-0">
@@ -399,7 +399,7 @@ const CategoryRow = ({ category, level = 0, onEdit, onDelete, renderChildren = f
           </span>
         </div>
         <div className="w-1/4 flex justify-end items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => onEdit(category)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" title="Edit">
+          <button onClick={() => onEdit(category)} className="p-2 text-black hover:bg-neutral-200 rounded-lg transition-colors" title="Edit">
             <Edit size={16} />
           </button>
           <button onClick={() => onDelete(category.id || category._id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" title="Delete">
@@ -464,7 +464,7 @@ const SearchableCategorySelect = ({ value, onChange, options }) => {
             {filteredOptions.length > 0 ? filteredOptions.map(opt => (
               <div 
                 key={opt.id}
-                className={`p-1.5 hover:bg-gray-50 cursor-pointer ${opt.id === value ? 'bg-blue-50 text-blue-700' : ''}`}
+                className={`p-1.5 hover:bg-gray-50 cursor-pointer ${opt.id === value ? 'bg-neutral-100 text-black' : ''}`}
                 onClick={() => { onChange(opt.id); setIsOpen(false); }}
               >
                 {'--'.repeat(opt.level)} {opt.name}
@@ -658,7 +658,7 @@ const CategoryLayoutManager = ({ categories }) => {
                           value={type}
                           checked={slotFormData.iconType === type}
                           onChange={(e) => setSlotFormData({ ...slotFormData, iconType: e.target.value })}
-                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          className="w-4 h-4 text-black border-gray-300 focus:ring-black/10 focus:border-black"
                         />
                         <span className="ml-2 text-sm font-medium text-gray-700 capitalize">
                           {type === 'custom' ? 'Custom Code' : type}
@@ -686,7 +686,7 @@ const CategoryLayoutManager = ({ categories }) => {
                       placeholder="e.g. 📱, 💻, 👗"
                       value={slotFormData.icon}
                       onChange={(e) => setSlotFormData({ ...slotFormData, icon: e.target.value })}
-                      className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
                     />
                   </div>
                 )}
@@ -699,7 +699,7 @@ const CategoryLayoutManager = ({ categories }) => {
                       placeholder="https://example.com/image.png"
                       value={slotFormData.image}
                       onChange={(e) => setSlotFormData({ ...slotFormData, image: e.target.value })}
-                      className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
                     />
                   </div>
                 )}
@@ -712,14 +712,14 @@ const CategoryLayoutManager = ({ categories }) => {
                       placeholder='<svg>...</svg>'
                       value={slotFormData.customCode}
                       onChange={(e) => setSlotFormData({ ...slotFormData, customCode: e.target.value })}
-                      className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-mono text-sm"
+                      className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all font-mono text-sm"
                     />
                   </div>
                 )}
               </div>
               <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
                 <button type="button" onClick={() => setEditingSlot(null)} className="px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
-                <button type="button" onClick={saveSlotEditor} className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm rounded-lg transition-colors flex items-center gap-2">
+                <button type="button" onClick={saveSlotEditor} className="px-6 py-2.5 text-sm font-medium text-white bg-black hover:bg-neutral-800 shadow-sm rounded-lg transition-colors flex items-center gap-2">
                   Apply Override
                 </button>
               </div>
@@ -731,7 +731,7 @@ const CategoryLayoutManager = ({ categories }) => {
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <Layout size={20} className="text-blue-600" />
+            <Layout size={20} className="text-black" />
             Homepage Category Grid Layout
           </h2>
           <p className="text-sm text-gray-500 mt-1">Configure which categories appear in the "Shop by Category" boxes.</p>
@@ -739,7 +739,7 @@ const CategoryLayoutManager = ({ categories }) => {
         <button 
           onClick={handleSave} 
           disabled={saving}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+          className="bg-black hover:bg-neutral-800 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"
         >
           {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           Save Layout
@@ -952,7 +952,7 @@ export default function CategoriesPage() {
           </Link>
           <button
             onClick={() => handleOpenModal()}
-            className="bg-blue-600 text-white font-medium py-2.5 px-5 rounded-lg shadow-sm hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
+            className="bg-black text-white font-medium py-2.5 px-5 rounded-lg shadow-sm hover:bg-neutral-800 transition-colors flex items-center gap-2 text-sm"
           >
             <Plus size={18} />
             Add New Category
@@ -972,7 +972,7 @@ export default function CategoriesPage() {
               placeholder="Search category by name or slug..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -990,7 +990,7 @@ export default function CategoriesPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -1004,7 +1004,7 @@ export default function CategoriesPage() {
             <select
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value)}
-              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white"
             >
               <option value="all">All Categories</option>
               <option value="root">Root Categories Only</option>
@@ -1018,7 +1018,7 @@ export default function CategoriesPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              className="flex-1 px-2.5 py-1.5 bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 focus:ring-2 focus:ring-black/10 focus:border-black focus:bg-white"
             >
               <option value="sort_order">Sort Order (Default)</option>
               <option value="name_asc">Name: A to Z</option>
@@ -1051,7 +1051,7 @@ export default function CategoriesPage() {
 
         {loading ? (
           <div className="flex justify-center items-center p-14">
-            <Loader2 className="animate-spin text-blue-600" size={36} />
+            <Loader2 className="animate-spin text-black" size={36} />
           </div>
         ) : filteredAndSortedCategories.length === 0 ? (
           <div className="text-center p-16 flex flex-col items-center">
@@ -1063,11 +1063,11 @@ export default function CategoriesPage() {
               {hasActiveFilters ? "Try adjusting your search or filters." : "Get started by creating your first product category."}
             </p>
             {hasActiveFilters ? (
-              <button onClick={clearAllFilters} className="text-blue-600 font-medium hover:underline flex items-center gap-1 text-sm">
+              <button onClick={clearAllFilters} className="text-black font-medium hover:underline flex items-center gap-1 text-sm">
                 <RotateCcw size={14} /> Clear all filters
               </button>
             ) : (
-              <button onClick={() => handleOpenModal()} className="text-blue-600 font-medium hover:underline flex items-center gap-1 text-sm">
+              <button onClick={() => handleOpenModal()} className="text-black font-medium hover:underline flex items-center gap-1 text-sm">
                 <Plus size={16} /> Create Category
               </button>
             )}
@@ -1116,7 +1116,7 @@ export default function CategoriesPage() {
                       onClick={() => setCurrentPage(page)}
                       className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-all ${
                         currentPage === page
-                          ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20'
+                          ? 'bg-black text-white shadow-sm ring-2 ring-black/20'
                           : 'text-gray-700 hover:bg-white bg-transparent border border-transparent hover:border-gray-200'
                       }`}
                     >

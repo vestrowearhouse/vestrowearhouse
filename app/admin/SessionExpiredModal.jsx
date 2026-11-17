@@ -75,7 +75,7 @@ export default function SessionExpiredModal() {
 
           <div className="text-center">
             <p className="text-gray-600 text-sm mb-2">Redirecting in:</p>
-            <div className="inline-block bg-blue-100 text-blue-700 font-bold text-2xl px-6 py-3 rounded-lg">
+            <div className="inline-block bg-neutral-900 text-white font-bold text-2xl px-6 py-3 rounded-lg">
               {countDown}s
             </div>
           </div>
