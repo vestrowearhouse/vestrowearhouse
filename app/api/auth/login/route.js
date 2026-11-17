@@ -56,7 +56,7 @@ export async function POST(request) {
     if (isEmail) {
       const { data: userData } = await supabase
         .from('users')
-        .select('id, name, email, password, phone, avatar, role, status, address, created_at, login_attempts, locked_until')
+        .select('id, name, email, password, phone, avatar, role, status, address, created_at')
         .eq('email', inputIdentifier)
         .maybeSingle();
       user = userData;
@@ -65,7 +65,7 @@ export async function POST(request) {
       const cleanPhone = inputIdentifier.replace(/[^0-9+]/g, '');
       const { data: userData } = await supabase
         .from('users')
-        .select('id, name, email, password, phone, avatar, role, status, address, created_at, login_attempts, locked_until')
+        .select('id, name, email, password, phone, avatar, role, status, address, created_at')
         .eq('phone', cleanPhone)
         .maybeSingle();
       user = userData;
@@ -83,7 +83,7 @@ export async function POST(request) {
         if (altPhone) {
           const { data: altUserData } = await supabase
             .from('users')
-            .select('id, name, email, password, phone, avatar, role, status, address, created_at, login_attempts, locked_until')
+            .select('id, name, email, password, phone, avatar, role, status, address, created_at')
             .eq('phone', altPhone)
             .maybeSingle();
           user = altUserData;
@@ -95,7 +95,7 @@ export async function POST(request) {
     if (!user) {
       const { data: admin } = await supabase
         .from('admins')
-        .select('id, name, email, password, role, status, login_attempts, locked_until')
+        .select('id, name, email, password, status, login_attempts, locked_until')
         .eq('email', inputIdentifier)
         .maybeSingle();
 
@@ -145,28 +145,33 @@ export async function POST(request) {
     }
 
     if (!isMatch) {
-      // Track failed attempt
-      const attempts = (user.login_attempts || 0) + 1;
-      const table = role === 'admin' ? 'admins' : 'users';
-      const updateData = { login_attempts: attempts };
+      if (role === 'admin') {
+        const attempts = (user.login_attempts || 0) + 1;
+        const updateData = { login_attempts: attempts };
 
-      if (attempts >= MAX_LOGIN_ATTEMPTS) {
-        updateData.locked_until = new Date(
-          Date.now() + LOCK_DURATION_MINUTES * 60 * 1000
-        ).toISOString();
-        await supabase.from(table).update(updateData).eq('id', user.id);
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+          updateData.locked_until = new Date(
+            Date.now() + LOCK_DURATION_MINUTES * 60 * 1000
+          ).toISOString();
+          await supabase.from('admins').update(updateData).eq('id', user.id);
+          return NextResponse.json(
+            {
+              error: `${MAX_LOGIN_ATTEMPTS}বার ভুল পাসওয়ার্ড দেওয়া হয়েছে। অ্যাকাউন্ট ${LOCK_DURATION_MINUTES} মিনিটের জন্য লক করা হয়েছে।`,
+            },
+            { status: 423 }
+          );
+        }
+
+        await supabase.from('admins').update(updateData).eq('id', user.id);
+        const remaining = MAX_LOGIN_ATTEMPTS - attempts;
         return NextResponse.json(
-          {
-            error: `${MAX_LOGIN_ATTEMPTS}বার ভুল পাসওয়ার্ড দেওয়া হয়েছে। অ্যাকাউন্ট ${LOCK_DURATION_MINUTES} মিনিটের জন্য লক করা হয়েছে।`,
-          },
-          { status: 423 }
+          { error: `ইমেইল বা পাসওয়ার্ড সঠিক নয়। আরও ${remaining}টি সুযোগ বাকি আছে।` },
+          { status: 401 }
         );
       }
 
-      await supabase.from(table).update(updateData).eq('id', user.id);
-      const remaining = MAX_LOGIN_ATTEMPTS - attempts;
       return NextResponse.json(
-        { error: `ইমেইল বা পাসওয়ার্ড সঠিক নয়। আরও ${remaining}টি সুযোগ বাকি আছে।` },
+        { error: 'ইমেইল বা পাসওয়ার্ড সঠিক নয়' },
         { status: 401 }
       );
     }
@@ -189,11 +194,17 @@ export async function POST(request) {
 
     // ── 7. Reset login attempts on success ────────────────────────────────────
     const now = new Date().toISOString();
-    const table = role === 'admin' ? 'admins' : 'users';
-    await supabase
-      .from(table)
-      .update({ last_login: now, login_attempts: 0, locked_until: null })
-      .eq('id', user.id);
+    if (role === 'admin') {
+      await supabase
+        .from('admins')
+        .update({ last_login: now, login_attempts: 0, locked_until: null })
+        .eq('id', user.id);
+    } else {
+      await supabase
+        .from('users')
+        .update({ last_login: now })
+        .eq('id', user.id);
+    }
 
     // ── 8. Send login notification email (non-blocking) ───────────────────────
     try {
