@@ -48,14 +48,14 @@ export const metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/tab-icon.png?v=white-bg-20261117', sizes: '32x32', type: 'image/png' },
-      { url: '/tab-icon.png?v=white-bg-20261117', sizes: '16x16', type: 'image/png' },
-      { url: '/tab-icon.png?v=white-bg-20261117', sizes: '192x192', type: 'image/png' },
-      { url: '/tab-icon.png?v=white-bg-20261117', sizes: '512x512', type: 'image/png' },
+      { url: '/tab-icon.png?v=circle-v1', sizes: '32x32', type: 'image/png' },
+      { url: '/tab-icon.png?v=circle-v1', sizes: '16x16', type: 'image/png' },
+      { url: '/tab-icon.png?v=circle-v1', sizes: '192x192', type: 'image/png' },
+      { url: '/tab-icon.png?v=circle-v1', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: '/tab-icon.png?v=white-bg-20261117',
+    shortcut: '/tab-icon.png?v=circle-v1',
     apple: [
-      { url: '/tab-icon.png?v=white-bg-20261117', sizes: '180x180', type: 'image/png' },
+      { url: '/tab-icon.png?v=circle-v1', sizes: '180x180', type: 'image/png' },
     ],
   },
   appleWebApp: {
@@ -114,11 +114,11 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://i.postimg.cc" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
-        {/* Force browser to fetch the new pure white bg + black V logo favicon */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/tab-icon.png?v=white-bg-20261117" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/tab-icon.png?v=white-bg-20261117" />
-        <link rel="shortcut icon" href="/tab-icon.png?v=white-bg-20261117" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/tab-icon.png?v=white-bg-20261117" />
+        {/* Force browser to fetch the new pure white circle bg + black V logo favicon */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/tab-icon.png?v=circle-v1" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/tab-icon.png?v=circle-v1" />
+        <link rel="shortcut icon" href="/tab-icon.png?v=circle-v1" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/tab-icon.png?v=circle-v1" />
         {/*
           NOTE: Do NOT manually preload the hero image here.
           Next.js automatically adds the correct /_next/image preload
