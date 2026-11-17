@@ -41,7 +41,6 @@ tile.save(os.path.join(project_dir, "public", "tab-icon.png"))
 tile.save(os.path.join(project_dir, "public", "Tab Icon.png"))
 tile.save(os.path.join(project_dir, "public", "icon.png"))
 tile.save(os.path.join(project_dir, "public", "logo.png"))
-tile.save(os.path.join(project_dir, "app", "icon.png"))
 
 # Save brand logos (transparent versions for dark/light themes)
 black_logo_img.save(os.path.join(project_dir, "public", "vestro-logo-dark.png"))
@@ -66,7 +65,6 @@ tile.resize((512, 512), Image.Resampling.LANCZOS).save(os.path.join(project_dir,
 
 # Save multi-size ICO
 tile.save(os.path.join(project_dir, "public", "favicon.ico"), format="ICO", sizes=[(16,16), (32,32), (48,48), (64,64)])
-tile.save(os.path.join(project_dir, "app", "favicon.ico"), format="ICO", sizes=[(16,16), (32,32), (48,48), (64,64)])
 
 # Generate SVG favicon (pure white background, deep black logo)
 with open(os.path.join(project_dir, "public", "tab-icon.png"), "rb") as f:
@@ -78,8 +76,6 @@ svg_content = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" 
 </svg>'''
 
 with open(os.path.join(project_dir, "public", "favicon.svg"), "w", encoding="utf-8") as f:
-    f.write(svg_content)
-with open(os.path.join(project_dir, "app", "favicon.svg"), "w", encoding="utf-8") as f:
     f.write(svg_content)
 
 print("SUCCESS: White background (sada bg) and black logo (kala logo) generated successfully!")

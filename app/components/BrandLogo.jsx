@@ -152,11 +152,11 @@ export default function BrandLogo({
   textColor = '',
   className = '',
   hideText = false,
-  logoSrc = '/tab-icon.png'
+  logoSrc = '/vestro-logo-dark.png'
 }) {
   const containerSize = size === 'sm' ? 'w-8 h-8' : size === 'lg' ? 'w-12 h-12' : 'w-10 h-10';
   const isDark = textColor && textColor.includes('white');
-  const activeLogo = isDark && (logoSrc === '/tab-icon.png' || logoSrc === '/logo.png') ? '/vestro-logo-white.png' : logoSrc;
+  const activeLogo = isDark ? '/vestro-logo-white.png' : (logoSrc || '/vestro-logo-dark.png');
 
   const content = (
     <div className={`inline-flex items-center gap-2.5 group select-none ${className}`}>
