@@ -48,16 +48,16 @@ export const metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/favicon.svg?v=9', type: 'image/svg+xml' },
-      { url: '/favicon-32x32.png?v=9', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16x16.png?v=9', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon.ico?v=9', type: 'image/x-icon' },
-      { url: '/icons/icon-192x192.png?v=9', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512x512.png?v=9', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon.svg?v=10', type: 'image/svg+xml' },
+      { url: '/favicon-32x32.png?v=10', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png?v=10', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.ico?v=10', type: 'image/x-icon' },
+      { url: '/icons/icon-192x192.png?v=10', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png?v=10', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: '/favicon.ico?v=9',
+    shortcut: '/favicon.ico?v=10',
     apple: [
-      { url: '/apple-touch-icon.png?v=9', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png?v=10', sizes: '180x180', type: 'image/png' },
     ],
   },
   appleWebApp: {
