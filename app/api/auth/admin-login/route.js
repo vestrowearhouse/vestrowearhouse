@@ -11,10 +11,10 @@
 
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/secureJwt';
 import { validate, adminLoginSchema } from '@/lib/validation';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,16 +22,7 @@ const MAX_ADMIN_ATTEMPTS = 3;
 const ADMIN_LOCK_MINUTES = 30;
 
 function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nzjspqceuthqdumvsdos.supabase.co';
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_ADMIN_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseKey) {
-    throw new Error('Missing Supabase Service Key');
-  }
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: { persistSession: false }
-  });
+  return getSupabaseAdmin();
 }
 
 

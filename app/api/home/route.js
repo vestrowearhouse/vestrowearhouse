@@ -16,7 +16,7 @@ export async function GET() {
   try {
     const supabase = getSupabaseAdmin();
 
-    const PRODUCT_FIELDS = 'id, name, nameBn, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, sku, brand, tags, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug, vendor_id';
+    const PRODUCT_FIELDS = 'id, name, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_slug, sku, brand, tags, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug';
 
     const [categoriesRes, featuredRes, arrivalsRes, bannersRes] = await Promise.all([
       supabase
@@ -31,7 +31,7 @@ export async function GET() {
         .from('products')
         .select(PRODUCT_FIELDS)
         .eq('isActive', true)
-        .or('isFeatured.eq.true,featured.eq.true')
+        .eq('isFeatured', true)
         .order('created_at', { ascending: false })
         .limit(24),
       supabase
@@ -43,7 +43,7 @@ export async function GET() {
         .limit(16),
       supabase
         .from('banners')
-        .select('*')
+        .select('id, title, subtitle, image, mobile_image, link, button_text, position, status')
         .eq('status', 'active')
         .order('position', { ascending: true })
         .limit(20),
@@ -55,48 +55,11 @@ export async function GET() {
     let featuredProducts = (featuredRes.data || []);
     let arrivalsProducts = (arrivalsRes.data || []);
 
-    const allVendorIds = [...new Set([...featuredProducts, ...arrivalsProducts].map(p => p.vendor_id).filter(Boolean))];
-    let vendorMap = {};
-    if (allVendorIds.length > 0) {
-      try {
-        const { data: vList } = await supabase
-          .from('vendors')
-          .select('id, user_id, shop_name, logo_url')
-          .or(`id.in.(${allVendorIds.join(',')}),user_id.in.(${allVendorIds.join(',')})`);
-        if (vList) {
-          for (const v of vList) {
-            if (v.id) vendorMap[v.id] = v;
-            if (v.user_id) vendorMap[v.user_id] = v;
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching vendors in api/home:', err);
-      }
-    }
-
     const enrichItem = (p) => {
       if (!p) return p;
-      if (p.vendor_id && vendorMap[p.vendor_id]) {
-        const v = vendorMap[p.vendor_id];
-        return {
-          ...p,
-          store_name: v.shop_name,
-          vendor_logo: v.logo_url,
-          is_official: false,
-          vendor: v
-        };
-      }
-      if (p.vendor_id) {
-        return {
-          ...p,
-          store_name: 'Vendor Store',
-          vendor_logo: null,
-          is_official: false
-        };
-      }
       return {
         ...p,
-        store_name: 'StellarMart Official',
+        store_name: 'Vestro Wear House',
         is_official: true
       };
     };

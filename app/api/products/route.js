@@ -114,18 +114,25 @@ export async function GET(request) {
     // OPTIMIZATION: When querying by slug for product page, include full details.
     // For listing queries (category, search, pagination), omit heavy HTML description, attributes, variants, and extra gallery images to save massive bandwidth!
     const selectFields = slug
-      ? 'id, name, nameBn, description, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, brand, tags, images, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, attributes, variants, created_at, slug, rating, review_count, sold_count'
-      : 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, variants, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug, rating, review_count, sold_count';
+      ? 'id, name, description, shortDescription, regularPrice, sellingPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, brand, tags, images, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, attributes, variants, created_at, slug, rating, review_count, sold_count'
+      : 'id, name, sellingPrice, regularPrice, price, oldPrice, stockQuantity, stock, stockStatus, category, category_code, sku, legacy_sku, variants, featuredImage, isFeatured, isNewArrival, isBestSeller, isActive, slug, rating, review_count, sold_count';
 
     let query = supabase.from('products').select(selectFields, { count: 'exact' });
     
     if (slug) query = query.eq('slug', slug);
-    if (featured === 'true') query = query.or('isFeatured.eq.true,featured.eq.true');
+    if (featured === 'true') query = query.eq('isFeatured', true);
+    
+    const isNewArrival = searchParams.get('isNewArrival') || searchParams.get('newArrival');
+    const isBestSeller = searchParams.get('isBestSeller') || searchParams.get('bestSeller');
+    if (isNewArrival === 'true') query = query.eq('isNewArrival', true);
+    if (isBestSeller === 'true') query = query.eq('isBestSeller', true);
     if (categoryParam) {
       if (matchedCategoryValues && matchedCategoryValues.length > 0) {
-        query = query.in('category', matchedCategoryValues);
+        const formatted = matchedCategoryValues.map(v => `"${v}"`).join(',');
+        query = query.or(`category.in.(${formatted}),category_slug.in.(${formatted})`);
       } else {
-        query = query.eq('category', categoryParam);
+        const safeVal = `"${categoryParam}"`;
+        query = query.or(`category.eq.${safeVal},category_slug.eq.${safeVal}`);
       }
     }
     if (minPrice && !isNaN(parseFloat(minPrice))) query = query.or(`sellingPrice.gte.${minPrice},price.gte.${minPrice}`);

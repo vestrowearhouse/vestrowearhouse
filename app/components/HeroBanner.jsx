@@ -42,11 +42,11 @@ function HeroBanner({ banners: incomingBanners = [], autoPlayInterval = 5000 }) 
         .map((b) => ({
           id: b._id || b.id,
           title: b.title || 'NEW ARRIVALS',
-          subtitle: 'VESTRO WEAR HOUSE',
-          description: b.description || 'Explore the latest trendsetting street drops and casual apparel.',
+          subtitle: b.subtitle || 'VESTRO WEAR HOUSE',
+          description: b.description || b.subtitle || 'Explore the latest trendsetting street drops and casual apparel.',
           image: b.image,
           link: b.link || '/shop',
-          ctaText: 'SHOP NOW →',
+          ctaText: b.button_text || 'SHOP NOW →',
         }))
         .filter((b) => Boolean(b.image));
     }

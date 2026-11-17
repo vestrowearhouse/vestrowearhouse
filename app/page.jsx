@@ -4,7 +4,7 @@ import HeroBanner from './components/HeroBanner';
 import Features from './components/Features';
 import ProductCard from './components/ProductCard';
 import NewAndPopularSection from './components/NewAndPopularSection';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { unstable_cache } from 'next/cache';
 
 // JSON-LD structured data for Vestro Wear House
@@ -33,10 +33,9 @@ export const revalidate = 300; // Cache homepage at the Edge for 5 minutes
 
 const getCachedSupabaseData = unstable_cache(
   async () => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabase = getSupabaseAdmin();
     
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabase) {
       return { 
         categoriesRes: null, 
         featuredRes: null, 
@@ -46,13 +45,12 @@ const getCachedSupabaseData = unstable_cache(
       };
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const PRODUCT_CARD_FIELDS = 'id, name, nameBn, sellingPrice, regularPrice, price, oldPrice, stockStatus, featuredImage, images, isFeatured, isNewArrival, isBestSeller, slug, rating, review_count, sold_count';
+    const PRODUCT_CARD_FIELDS = 'id, name, sellingPrice, regularPrice, price, oldPrice, stockStatus, featuredImage, images, isFeatured, isNewArrival, isBestSeller, slug, rating, review_count, sold_count, category';
 
     const [categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes] = await Promise.all([
       supabase
         .from('categories')
-        .select('id, name, slug, image, icon, custom_code, sort_order, isFeatured, status')
+        .select('id, name, slug, image, icon, sort_order, isFeatured, status')
         .not('slug', 'in', '("system-category-layout","system-flash-sale-config","system-quick-channels")')
         .eq('status', 'active')
         .order('sort_order', { ascending: true })
@@ -62,7 +60,7 @@ const getCachedSupabaseData = unstable_cache(
         .from('products')
         .select(PRODUCT_CARD_FIELDS)
         .neq('isActive', false)
-        .or('isFeatured.eq.true,featured.eq.true')
+        .eq('isFeatured', true)
         .order('created_at', { ascending: false })
         .limit(16),
       supabase
@@ -80,7 +78,7 @@ const getCachedSupabaseData = unstable_cache(
         .limit(24),
       supabase
         .from('banners')
-        .select('id, title, description, image, mobile_image, link, position, status')
+        .select('id, title, subtitle, image, mobile_image, link, button_text, position, status')
         .eq('status', 'active')
         .order('position', { ascending: true })
         .limit(6),
@@ -88,8 +86,8 @@ const getCachedSupabaseData = unstable_cache(
 
     return { categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes };
   },
-  ['vestro-home-data-v1'],
-  { revalidate: 300, tags: ['homepage-data'] }
+  ['vestro-home-data-v3'],
+  { revalidate: 60, tags: ['homepage-data'] }
 );
 
 async function getHomePageData() {
