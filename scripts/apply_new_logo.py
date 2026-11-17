@@ -14,37 +14,39 @@ cy = (355 + 774) // 2
 half_size = int(max(729 - 301, 774 - 355) * 0.62)
 cropped = im.crop((cx - half_size, cy - half_size, cx + half_size, cy + half_size)).resize((512, 512), Image.Resampling.LANCZOS)
 
-# Step 2: Create transparent black version
+# Step 2: Extract alpha mask
 arr = np.array(cropped).astype(float)
 gray = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
 alpha = np.clip((248 - gray) / (248 - 25) * 255, 0, 255).astype(np.uint8)
 
+# Transparent black logo
 black_logo = np.zeros((512, 512, 4), dtype=np.uint8)
 black_logo[:, :, :3] = 0
 black_logo[:, :, 3] = alpha
 black_logo_img = Image.fromarray(black_logo)
 
-# Step 3: Create transparent white version (for dark theme / footer)
+# Transparent WHITE logo
 white_logo = np.zeros((512, 512, 4), dtype=np.uint8)
 white_logo[:, :, :3] = 255
 white_logo[:, :, 3] = alpha
 white_logo_img = Image.fromarray(white_logo)
 
-# Step 4: Create Tab Icon with crisp white rounded tile
+# Step 3: Create Tab Icon - sleek solid BLACK tile with pure WHITE logo (like onfire.fashion)
 tile = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
 draw = ImageDraw.Draw(tile)
-draw.rounded_rectangle([(0, 0), (512, 512)], radius=110, fill=(255, 255, 255, 255))
-scaled_logo = black_logo_img.resize((380, 380), Image.Resampling.LANCZOS)
-tile.paste(scaled_logo, (66, 66), scaled_logo)
+# Solid black rounded rectangle
+draw.rounded_rectangle([(0, 0), (512, 512)], radius=110, fill=(0, 0, 0, 255))
+scaled_white_logo = white_logo_img.resize((380, 380), Image.Resampling.LANCZOS)
+tile.paste(scaled_white_logo, (66, 66), scaled_white_logo)
 
-# Save main tab icons
+# Save main tab icons (white logo on black tile)
 tile.save(os.path.join(project_dir, "public", "tab-icon.png"))
 tile.save(os.path.join(project_dir, "public", "Tab Icon.png"))
 tile.save(os.path.join(project_dir, "public", "icon.png"))
 tile.save(os.path.join(project_dir, "public", "logo.png"))
 tile.save(os.path.join(project_dir, "app", "icon.png"))
 
-# Save brand logos
+# Save brand logos (transparent)
 black_logo_img.save(os.path.join(project_dir, "public", "vestro-logo-dark.png"))
 white_logo_img.save(os.path.join(project_dir, "public", "vestro-logo-white.png"))
 
@@ -69,12 +71,12 @@ tile.resize((512, 512), Image.Resampling.LANCZOS).save(os.path.join(project_dir,
 tile.save(os.path.join(project_dir, "public", "favicon.ico"), format="ICO", sizes=[(16,16), (32,32), (48,48), (64,64)])
 tile.save(os.path.join(project_dir, "app", "favicon.ico"), format="ICO", sizes=[(16,16), (32,32), (48,48), (64,64)])
 
-# Generate SVG favicon
+# Generate SVG favicon with black background and white logo
 with open(os.path.join(project_dir, "public", "tab-icon.png"), "rb") as f:
     b64 = base64.b64encode(f.read()).decode("utf-8")
 
 svg_content = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" fill="#ffffff" rx="110" />
+  <rect width="512" height="512" fill="#000000" rx="110" />
   <image href="data:image/png;base64,{b64}" x="0" y="0" width="512" height="512" />
 </svg>'''
 
@@ -83,4 +85,4 @@ with open(os.path.join(project_dir, "public", "favicon.svg"), "w", encoding="utf
 with open(os.path.join(project_dir, "app", "favicon.svg"), "w", encoding="utf-8") as f:
     f.write(svg_content)
 
-print("SUCCESS: All icon and favicon files generated and updated!")
+print("SUCCESS: White logo on black background generated for all tab icons!")
