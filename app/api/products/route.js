@@ -264,7 +264,7 @@ export async function GET(request) {
     return NextResponse.json(responseData, { headers: cacheHeaders(300, 1800) });
   } catch (error) {
     console.error('Products fetch error:', error);
-    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch products', details: error.message || String(error) }, { status: 500 });
   }
 }
 
