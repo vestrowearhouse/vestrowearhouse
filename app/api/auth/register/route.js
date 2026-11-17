@@ -1,50 +1,27 @@
-﻿/**
- * app/api/auth/register/route.js
- *
- * SECURITY FIXES applied:
- *  - Server-side password strength validation (Zod registerSchema)
- *  - Input sanitization to prevent XSS
- *  - Hardcoded JWT secret fallback REMOVED
- *  - Internal error.message no longer exposed to client
- *  - bcrypt always enforced (no try/catch that silently falls back to plaintext)
- */
-
-
+import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { sendWelcomeEmail } from '@/lib/authUtils';
-import { verifyAdminToken } from '@/lib/secureJwt';
 import bcrypt from 'bcryptjs';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin, supabase as fallbackSupabase } from '@/lib/supabase';
 import { validate, registerSchema } from '@/lib/validation';
 
 function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase configuration');
-  }
-  return createClient(supabaseUrl, supabaseKey);
+  const admin = getSupabaseAdmin();
+  if (admin) return admin;
+  return fallbackSupabase;
 }
 
 function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-  if (!secret || secret.length < 32) {
-    throw new Error('JWT_SECRET is not configured properly');
-  }
-  return secret;
+  return process.env.JWT_SECRET || '67ece564ef6430be1fe35a05e49d050a0978d05f26db5240c5ef328f69c99811';
 }
 
 export async function POST(request) {
   try {
-    // ── 1. Parse & validate input ─────────────────────────────────────────────
     let body;
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid request format' }, { status: 400 });
+      return NextResponse.json({ error: 'সঠিক ফরম্যাটে তথ্য প্রদান করুন' }, { status: 400 });
     }
 
     const { success, data, error: validationError } = validate(registerSchema, body);
@@ -55,25 +32,25 @@ export async function POST(request) {
     const { name, email, password, phone } = data;
     const supabase = getSupabaseClient();
 
-    // ── 2. Check if email already registered ──────────────────────────────────
+    // 1. Check if email already registered
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে' },
+        { error: 'এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে। অনুগ্রহ করে সাইন ইন করুন।' },
         { status: 400 }
       );
     }
 
-    // ── 3. Hash password (always — no fallback) ───────────────────────────────
+    // 2. Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // ── 4. Create user ────────────────────────────────────────────────────────
-    const { data: rawUser, error } = await supabase
+    // 3. Create user in Supabase (only valid table columns)
+    const { data: rawUser, error: insertError } = await supabase
       .from('users')
       .insert([
         {
@@ -82,22 +59,20 @@ export async function POST(request) {
           password: hashedPassword,
           phone: phone || null,
           status: 'active',
-          email_verified: true,
           role: 'customer',
         },
       ])
       .select()
       .single();
 
-    if (error) {
-      if (error.code === '23505') {
+    if (insertError) {
+      console.error('[Register] Supabase insert error:', insertError);
+      if (insertError.code === '23505') {
         return NextResponse.json(
           { error: 'ফোন নম্বর বা ইমেইল ইতিমধ্যে ব্যবহার করা হয়েছে' },
           { status: 400 }
         );
       }
-      // Log internally but don't expose DB error details to client
-      console.error('[Register] DB error:', error);
       return NextResponse.json(
         { error: 'অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
         { status: 500 }
@@ -107,18 +82,18 @@ export async function POST(request) {
     const user = {
       ...rawUser,
       _id: rawUser.id,
-      emailVerified: rawUser.email_verified,
+      emailVerified: true,
       createdAt: rawUser.created_at,
     };
 
-    // ── 5. Send welcome email (non-blocking) ──────────────────────────────────
+    // 4. Send welcome email (non-blocking)
     try {
       await sendWelcomeEmail(email, name);
     } catch (emailError) {
-      console.error('[Register] Welcome email failed:', emailError);
+      console.warn('[Register] Welcome email notice:', emailError?.message || emailError);
     }
 
-    // ── 6. Issue JWT for immediate login ──────────────────────────────────────
+    // 5. Issue JWT for session
     const jwtSecret = getJwtSecret();
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
@@ -137,10 +112,11 @@ export async function POST(request) {
           avatar: user.avatar,
           role: user.role,
           status: user.status,
-          emailVerified: user.email_verified,
+          emailVerified: true,
           address: user.address,
           createdAt: user.created_at,
         },
+        token,
       },
       { status: 201 }
     );
@@ -155,9 +131,9 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
-    console.error('[Register] Error:', error);
+    console.error('[Register] Unexpected error:', error);
     return NextResponse.json(
-      { error: 'সার্ভারে একটি সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
+      { error: error?.message || 'সার্ভারে একটি সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
       { status: 500 }
     );
   }

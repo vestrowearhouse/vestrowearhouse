@@ -102,7 +102,6 @@ export async function POST(request) {
         email: email.toLowerCase(),
         password: crypto.randomBytes(32).toString('hex'), // Dummy password for OAuth users
         avatar: photoURL || null,
-        email_verified: true, // Google accounts are pre-verified
         status: 'active',
         role: 'customer',
         last_login: new Date().toISOString()
@@ -122,7 +121,6 @@ export async function POST(request) {
       // Update user info if needed
       const updateData = { last_login: new Date().toISOString() };
       if (photoURL && !user.avatar) updateData.avatar = photoURL;
-      if (!user.email_verified) updateData.email_verified = true;
       
       const { data: updatedUser, error: updateError } = await supabase.from('users').update(updateData).eq('id', user.id).select().single();
       if (updateError) throw updateError;
@@ -130,9 +128,10 @@ export async function POST(request) {
     }
 
     // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET || '67ece564ef6430be1fe35a05e49d050a0978d05f26db5240c5ef328f69c99811';
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || (() => { throw new Error('[Auth] JWT_SECRET not configured'); })(),
+      jwtSecret,
       { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
 

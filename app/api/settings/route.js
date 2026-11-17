@@ -6,17 +6,17 @@ import { getCache, setCache } from '@/lib/api-cache';
 export const revalidate = 86400; // Cache settings for 24 hours at the Edge
 
 const DEFAULT_SETTINGS = {
-  site_name: 'StellarMartBD',
-  site_tagline: 'Your trusted online shopping destination in Bangladesh.',
-  email: 'support@stellarmartbd.com',
-  phone: '+880 1345-447500',
-  bkash_number: '01606069754',
+  site_name: 'Vestro Wear House',
+  site_tagline: 'Premium Streetwear & Contemporary Apparel in Bangladesh.',
+  email: 'support@vestrowearhouse.com',
+  phone: '+880 1847-853887',
+  bkash_number: '01847853887',
   address: 'Dhaka, Bangladesh',
-  facebook_url: 'https://www.facebook.com/stellarmartbd',
-  instagram_url: '#',
+  facebook_url: 'https://www.facebook.com/vestrowearhouse',
+  instagram_url: 'https://www.instagram.com/vestrowearhouse',
   youtube_url: '#',
-  whatsapp: '+880 1345-447500',
-  whatsapp_url: 'https://wa.me/8801345447500',
+  whatsapp: '+880 1847-853887',
+  whatsapp_url: 'https://wa.me/8801847853887',
 };
 
 // Only expose these keys publicly — never expose private/admin fields

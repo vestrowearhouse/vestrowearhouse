@@ -66,7 +66,13 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        console.error('[Register] JSON parse error:', jsonErr);
+        throw new Error('সার্ভার থেকে সঠিক তথ্য পাওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
+      }
 
       if (!res.ok) {
         throw new Error(data.error || 'রেজিস্ট্রেশন ব্যর্থ হয়েছে');
@@ -82,7 +88,7 @@ export default function RegisterPage() {
         const params = new URLSearchParams(window.location.search);
         const redirect = params.get('redirect') || '/';
         window.location.href = redirect;
-      }, 1200);
+      }, 1000);
     } catch (err) {
       console.error('[Register] Error:', err);
       setError(err.message || 'রেজিস্ট্রেশন করতে সমস্যা হয়েছে');
@@ -93,17 +99,17 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-[calc(100vh-180px)] py-12 px-4 flex items-center justify-center bg-gradient-to-b from-slate-50 via-white to-blue-50/20">
-        <div className="w-full max-w-[400px]">
-          <div className="bg-white rounded-2xl border border-green-200/80 shadow-xl shadow-green-100/50 p-7 text-center animate-in zoom-in-95 duration-200">
-            <div className="w-14 h-14 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center mx-auto mb-3.5 shadow-inner">
-              <CheckCircle className="w-8 h-8" />
+      <div className="min-h-[calc(100vh-180px)] py-12 px-4 flex items-center justify-center bg-white">
+        <div className="w-full max-w-[420px]">
+          <div className="bg-white border border-neutral-200 p-8 text-center animate-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 bg-black text-white flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900 mb-1">অ্যাকাউন্ট তৈরি সম্পন্ন হয়েছে!</h2>
-            <p className="text-xs text-neutral-500 mb-3 uppercase tracking-wider font-semibold">Welcome to Vestro Wear House</p>
-            <div className="inline-flex items-center gap-2 text-xs text-blue-600 font-medium bg-blue-50/60 px-3 py-1.5 rounded-lg">
+            <h2 className="text-xl font-black uppercase tracking-wider text-neutral-900 mb-1">WELCOME TO VESTRO</h2>
+            <p className="text-xs text-neutral-500 mb-4 font-semibold uppercase tracking-wider">অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে</p>
+            <div className="inline-flex items-center gap-2 text-xs text-neutral-800 font-semibold uppercase tracking-wider bg-neutral-100 px-4 py-2">
               <Loader className="w-3.5 h-3.5 animate-spin" />
-              <span>হোমপেজে নিয়ে যাওয়া হচ্ছে...</span>
+              <span>রিডাইরেক্ট করা হচ্ছে...</span>
             </div>
           </div>
         </div>
@@ -112,73 +118,82 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-180px)] py-8 sm:py-12 px-4 flex items-center justify-center bg-gradient-to-b from-slate-50/80 via-white to-blue-50/20">
-      <div className="w-full max-w-[420px]">
-        {/* Compact Card */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xl shadow-slate-100/90 p-6 sm:p-7 transition-all">
+    <div className="min-h-[calc(100vh-180px)] py-10 sm:py-16 px-4 flex items-center justify-center bg-white">
+      <div className="w-full max-w-[440px]">
+        {/* Onfire / Minimalist Luxury Container */}
+        <div className="bg-white border border-neutral-200 p-7 sm:p-9 transition-all">
           
           {/* Header */}
-          <div className="text-center mb-5">
-            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 mb-3">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-black text-white mb-3">
               <ShoppingBag className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">নতুন অ্যাকাউন্ট</h1>
-            <p className="text-xs text-slate-500 mt-0.5">স্টেলারমার্টে কেনাকাটা করতে রেজিস্টার করুন</p>
+            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider text-neutral-900">CREATE ACCOUNT</h1>
+            <p className="text-xs text-neutral-500 mt-1 uppercase tracking-wider">Join Vestro Wear House</p>
           </div>
 
           {/* Quick Tab Switcher */}
-          <div className="flex p-1 bg-slate-100/80 rounded-xl mb-5 text-xs font-semibold">
+          <div className="flex p-1 bg-neutral-100 rounded-lg mb-6 text-xs font-bold uppercase tracking-wider">
             <Link
               href="/login"
-              className="flex-1 py-1.5 text-center rounded-lg text-slate-600 hover:text-slate-900 transition"
+              className="flex-1 py-2 text-center rounded-md text-neutral-600 hover:text-black transition"
             >
-              সাইন ইন (Sign In)
+              Sign In
             </Link>
             <button
               type="button"
-              className="flex-1 py-1.5 rounded-lg bg-white text-blue-600 shadow-sm transition"
+              className="flex-1 py-2 rounded-md bg-black text-white shadow-xs transition"
             >
-              রেজিস্ট্রেশন (Register)
+              Register
             </button>
           </div>
 
           {/* Error Banner */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200/80 rounded-xl flex items-start gap-2 text-xs text-red-700 animate-in fade-in duration-200">
-              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-              <span className="font-medium flex-1">{error}</span>
+            <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-none flex items-start gap-2.5 text-xs text-red-800 animate-in fade-in duration-200">
+              <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="font-medium flex-1">
+                <span>{error}</span>
+                {error.includes('আগেই') && (
+                  <div className="mt-1.5">
+                    <Link href="/login" className="font-bold underline text-black hover:opacity-80">
+                      লগইন করতে এখানে ক্লিক করুন →
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Full Name */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                আপনার নাম
+              <label className="block text-[11px] font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                আপনার নাম (Full Name)
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                <User className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="আপনার পুরো নাম"
+                  placeholder="e.g. Turjo"
                   disabled={loading}
                   required
-                  className="w-full pl-9 pr-3.5 py-2 text-sm bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition disabled:bg-slate-100 text-slate-800 placeholder:text-slate-400"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-neutral-50 hover:bg-white focus:bg-white border border-neutral-300 rounded-none focus:outline-none focus:border-black transition disabled:bg-neutral-100 text-neutral-900 placeholder:text-neutral-400 font-medium"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                ইমেইল ঠিকানা
+              <label className="block text-[11px] font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                ইমেইল ঠিকানা (Email)
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                <Mail className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
                 <input
                   type="email"
                   name="email"
@@ -187,18 +202,18 @@ export default function RegisterPage() {
                   placeholder="your@email.com"
                   disabled={loading}
                   required
-                  className="w-full pl-9 pr-3.5 py-2 text-sm bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition disabled:bg-slate-100 text-slate-800 placeholder:text-slate-400"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-neutral-50 hover:bg-white focus:bg-white border border-neutral-300 rounded-none focus:outline-none focus:border-black transition disabled:bg-neutral-100 text-neutral-900 placeholder:text-neutral-400 font-medium"
                 />
               </div>
             </div>
 
             {/* Phone (Optional) */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                ফোন নম্বর <span className="text-[10px] text-slate-400 lowercase font-normal">(ঐচ্ছিক)</span>
+              <label className="block text-[11px] font-bold text-neutral-700 uppercase tracking-wider mb-1">
+                ফোন নম্বর <span className="text-[10px] text-neutral-400 lowercase font-normal">(ঐচ্ছিক)</span>
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                <Phone className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
                 <input
                   type="tel"
                   name="phone"
@@ -206,20 +221,20 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="01XXXXXXXXX"
                   disabled={loading}
-                  className="w-full pl-9 pr-3.5 py-2 text-sm bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition disabled:bg-slate-100 text-slate-800 placeholder:text-slate-400"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-neutral-50 hover:bg-white focus:bg-white border border-neutral-300 rounded-none focus:outline-none focus:border-black transition disabled:bg-neutral-100 text-neutral-900 placeholder:text-neutral-400 font-medium"
                 />
               </div>
             </div>
 
-            {/* Password Fields (Side by side on sm) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {/* Password Fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Password */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-neutral-700 uppercase tracking-wider mb-1">
                   পাসওয়ার্ড
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                  <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     name="password"
@@ -228,13 +243,13 @@ export default function RegisterPage() {
                     placeholder="কমপক্ষে ৬ অক্ষর"
                     disabled={loading}
                     required
-                    className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition disabled:bg-slate-100 text-slate-800 placeholder:text-slate-400"
+                    className="w-full pl-9 pr-8 py-2.5 text-xs sm:text-sm bg-neutral-50 hover:bg-white focus:bg-white border border-neutral-300 rounded-none focus:outline-none focus:border-black transition disabled:bg-neutral-100 text-neutral-900 placeholder:text-neutral-400 font-medium"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 transition"
+                    className="absolute right-2.5 top-3 text-neutral-400 hover:text-black transition"
                   >
                     {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
@@ -243,26 +258,26 @@ export default function RegisterPage() {
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-neutral-700 uppercase tracking-wider mb-1">
                   নিশ্চিত করুন
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                  <Lock className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    placeholder="পাসওয়ার্ড পুনরায়"
+                    placeholder="পুনরায় পাসওয়ার্ড"
                     disabled={loading}
                     required
-                    className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition disabled:bg-slate-100 text-slate-800 placeholder:text-slate-400"
+                    className="w-full pl-9 pr-8 py-2.5 text-xs sm:text-sm bg-neutral-50 hover:bg-white focus:bg-white border border-neutral-300 rounded-none focus:outline-none focus:border-black transition disabled:bg-neutral-100 text-neutral-900 placeholder:text-neutral-400 font-medium"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     tabIndex={-1}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 transition"
+                    className="absolute right-2.5 top-3 text-neutral-400 hover:text-black transition"
                   >
                     {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
@@ -274,7 +289,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2 text-sm disabled:opacity-60 mt-3"
+              className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-3 px-4 rounded-none transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider disabled:opacity-60 mt-4 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -282,28 +297,28 @@ export default function RegisterPage() {
                   <span>অ্যাকাউন্ট তৈরি হচ্ছে...</span>
                 </>
               ) : (
-                <span>অ্যাকাউন্ট তৈরি করুন</span>
+                <span>অ্যাকাউন্ট তৈরি করুন (REGISTER)</span>
               )}
             </button>
           </form>
 
           {/* Terms Note */}
-          <p className="text-[11px] text-slate-500 text-center mt-3.5">
-            রেজিস্ট্রেশন করে আপনি আমাদের{' '}
-            <Link href="/terms" className="text-blue-600 hover:underline">
+          <p className="text-[11px] text-neutral-500 text-center mt-4">
+            রেজিস্ট্রেশন করার মাধ্যমে আপনি আমাদের{' '}
+            <Link href="/terms" className="text-neutral-900 underline hover:text-black font-medium">
               শর্তাবলী
             </Link>{' '}
             ও{' '}
-            <Link href="/privacy" className="text-blue-600 hover:underline">
+            <Link href="/privacy" className="text-neutral-900 underline hover:text-black font-medium">
               গোপনীয়তা নীতি
             </Link>{' '}
             মেনে নিচ্ছেন।
           </p>
 
           {/* Footer note */}
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-center gap-1.5 text-slate-400 text-[11px]">
-            <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
-            <span>১০০% নিরাপদ ও সুরক্ষিত ডেটা সুরক্ষা</span>
+          <div className="mt-5 pt-4 border-t border-neutral-100 flex items-center justify-center gap-1.5 text-neutral-400 text-[11px] uppercase tracking-wider font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5 text-neutral-900" />
+            <span>Secure 256-Bit Encrypted Data Protection</span>
           </div>
         </div>
       </div>

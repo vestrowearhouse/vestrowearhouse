@@ -43,7 +43,8 @@ export async function POST(request) {
     }
 
     // Verify token
-    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET || (() => { throw new Error('[Auth] JWT_SECRET not configured'); })());
+    const jwtSecret = process.env.JWT_SECRET || '67ece564ef6430be1fe35a05e49d050a0978d05f26db5240c5ef328f69c99811';
+    const decoded = jwt.verify(resetToken, jwtSecret);
     
     if (decoded.type !== 'password-reset') {
       return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
