@@ -79,6 +79,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Homepage API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch homepage data', details: error.message || String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch homepage data' }, { status: 500 });
   }
 }
