@@ -10,15 +10,11 @@ import dynamic from "next/dynamic";
 // Lazy-load Footer — it's below the fold and not needed for first paint
 const Footer = dynamic(() => import("./Footer"), { ssr: true });
 
-// Lazy-load CategoryMenu — it's a sidebar opened only on user interaction
-const CategoryMenu = dynamic(() => import("./CategoryMenu"), { ssr: false });
-
 export default function UserLayoutWrapper({ children }) {
   const pathname = usePathname();
   
   // Check if we're on an admin route
   const isSpecialRoute = pathname?.startsWith("/admin") || pathname?.startsWith("/admin-login");
-  
 
   return (
     <>
@@ -29,7 +25,6 @@ export default function UserLayoutWrapper({ children }) {
           <WishlistProvider>
             <CartProvider>
               <Navbar />
-              <CategoryMenu />
               {children}
               <Footer />
             </CartProvider>

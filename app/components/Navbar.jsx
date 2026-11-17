@@ -6,8 +6,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
-import { ShoppingBag, Heart, Search, User, Menu, X, LogOut, Home, ChevronRight, Layers } from "lucide-react";
-import { useCategories } from "../context/CategoryContext";
+import { ShoppingBag, Heart, Search, User, Menu, X, LogOut, Home, ChevronRight, Layers, ChevronDown } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, usePathname } from "next/navigation";
 import BrandLogo from "./BrandLogo";
@@ -19,14 +18,44 @@ export default function Navbar() {
   const { cartCount, cartTotal } = useCart();
   const { user, logout, openLoginModal } = useAuth();
   const { wishlistCount } = useWishlist();
-  const { categories, toggleSidebar } = useCategories();
   const router = useRouter();
   const pathname = usePathname();
   const isProductPage = pathname?.startsWith("/product/");
 
+  const [categories, setCategories] = useState([
+    { id: '1', name: 'T-Shirts', slug: 't-shirts' },
+    { id: '2', name: 'Hoodies & Sweats', slug: 'hoodies-sweats' },
+    { id: '3', name: 'Jackets & Outerwear', slug: 'outerwear' },
+    { id: '4', name: 'Pants & Cargo', slug: 'pants-cargo' },
+    { id: '5', name: 'Caps & Accessories', slug: 'accessories' }
+  ]);
+
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+
+  // Fetch live categories from database
+  useEffect(() => {
+    try {
+      const cached = sessionStorage.getItem('vestro_nav_categories');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) setCategories(parsed);
+      }
+    } catch (_) {}
+
+    fetch('/api/categories?nested=true')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+          setCategories(data.categories);
+          try { sessionStorage.setItem('vestro_nav_categories', JSON.stringify(data.categories)); } catch (_) {}
+        }
+      })
+      .catch(err => {
+        console.error('[Navbar] Category fetch error:', err);
+      });
+  }, []);
 
   // Live Search States
   const [searchQuery, setSearchQuery] = useState("");
@@ -121,7 +150,7 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Center Navigation (Onfire style) */}
-            <nav className="hidden lg:flex items-center justify-center gap-8 text-[13px] font-semibold tracking-wider uppercase text-neutral-800">
+            <nav className="hidden lg:flex items-center justify-center gap-6 xl:gap-8 text-[12px] xl:text-[13px] font-semibold tracking-wider uppercase text-neutral-800">
               <Link 
                 href="/new" 
                 className={`group relative pb-1 hover:text-black transition-colors ${pathname === '/new' ? 'text-black font-bold' : ''}`}
@@ -138,21 +167,41 @@ export default function Navbar() {
                 <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/shop' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
               </Link>
 
-              <Link 
-                href="/category/t-shirts" 
-                className="group relative pb-1 hover:text-black transition-colors"
-              >
-                T-Shirts
-                <span className="absolute inset-x-0 -bottom-0.5 h-[2px] bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-              </Link>
+              {/* Dynamic Categories from Supabase Database */}
+              {categories.map((cat) => {
+                const isCatActive = pathname === `/category/${cat.slug}`;
+                const hasSubs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0;
 
-              <Link 
-                href="/category/hoodies" 
-                className="group relative pb-1 hover:text-black transition-colors"
-              >
-                Hoodies & Sweats
-                <span className="absolute inset-x-0 -bottom-0.5 h-[2px] bg-black scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-              </Link>
+                return (
+                  <div key={cat.id || cat.slug} className="relative group/cat py-2">
+                    <Link 
+                      href={`/category/${cat.slug}`} 
+                      className={`group relative pb-1 flex items-center gap-1 hover:text-black transition-colors ${isCatActive ? 'text-black font-bold' : ''}`}
+                    >
+                      <span>{cat.name}</span>
+                      {hasSubs && <ChevronDown className="w-3 h-3 text-neutral-400 group-hover/cat:text-black transition-transform duration-200 group-hover/cat:rotate-180" />}
+                      <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${isCatActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+                    </Link>
+
+                    {/* Subcategories Dropdown */}
+                    {hasSubs && (
+                      <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-200 z-50">
+                        <div className="min-w-[200px] bg-white border border-neutral-200 shadow-xl py-2">
+                          {cat.subcategories.map((sub) => (
+                            <Link
+                              key={sub.id || sub.slug}
+                              href={`/category/${sub.slug}`}
+                              className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               <Link 
                 href="/about" 
