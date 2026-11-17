@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
       if (res.ok) {
         // Set session start time for the hard timeout
         sessionStorage.setItem('sessionStart', Date.now());
-        router.push('/admin/dashboard');
+        window.location.href = '/admin/dashboard';
       } else {
         setError(data.error || 'Login failed. Please try again.');
       }

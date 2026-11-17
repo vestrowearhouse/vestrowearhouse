@@ -171,6 +171,7 @@ function applyWAF(request) {
   // ── 8. Missing / forged Host header ───────────────────────────
   const host = (request.headers.get('host') || '').toLowerCase();
   const allowedHostKeywords = [
+    'vestrowearhouse',
     'stellarmartbd.com',
     'vercel.app',
     'localhost',
@@ -399,13 +400,20 @@ export async function middleware(request, event) {
     const headerToken = request.headers.get('x-csrf-token');
     
     // Check same-origin (OWASP standard defense): browsers cannot forge origin in cross-site requests
-    const origin = request.headers.get('origin') || '';
-    const host = request.headers.get('host') || '';
-    const isSameOrigin = origin && host && (
-      origin.includes(host) ||
-      origin.replace(/^https?:\/\//, '').split('/')[0] === host ||
-      origin.includes('stellarmartbd.com') ||
-      origin.includes('localhost')
+    const origin = request.headers.get('origin') || request.headers.get('referer') || '';
+    const host = (request.headers.get('host') || request.headers.get('x-forwarded-host') || '').toLowerCase();
+    const isSameOrigin = (
+      (origin && host && (
+        origin.toLowerCase().includes(host) ||
+        host.includes(origin.replace(/^https?:\/\//, '').split('/')[0].toLowerCase()) ||
+        origin.includes('vestrowearhouse') ||
+        origin.includes('vercel.app') ||
+        origin.includes('stellarmartbd.com') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')
+      )) ||
+      request.headers.get('sec-fetch-site') === 'same-origin' ||
+      !origin
     );
 
     const isValidToken = cookieToken && headerToken && cookieToken === headerToken;
