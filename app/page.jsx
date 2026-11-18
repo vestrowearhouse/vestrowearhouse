@@ -211,10 +211,10 @@ export default async function HomePage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5 text-white">
-                    <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.14em] drop-shadow-xs">
+                    <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.14em] drop-shadow-xs truncate whitespace-nowrap">
                       {cat.name}
                     </p>
-                    <span className="text-[10px] sm:text-[11px] text-neutral-300 tracking-wider group-hover:underline">
+                    <span className="text-[10px] sm:text-[11px] text-neutral-300 tracking-wider group-hover:underline truncate whitespace-nowrap block">
                       Shop Collection →
                     </span>
                   </div>

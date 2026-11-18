@@ -201,11 +201,11 @@ export default function Navbar() {
               <BrandLogo size="md" />
             </div>
 
-            {/* Desktop Center Navigation (Onfire style) */}
-            <nav className="hidden lg:flex items-center justify-center gap-6 xl:gap-8 text-[12px] xl:text-[13px] font-semibold tracking-wider uppercase text-neutral-800">
+            {/* Desktop Center Navigation (Onfire style - strictly 1 line, never wraps) */}
+            <nav className="hidden lg:flex items-center justify-center gap-4 xl:gap-7 text-[11px] xl:text-[12px] font-semibold tracking-wider uppercase text-neutral-800 whitespace-nowrap flex-nowrap shrink min-w-0">
               <Link 
                 href="/new" 
-                className={`group relative pb-1 hover:text-black transition-colors ${pathname === '/new' ? 'text-black font-bold' : ''}`}
+                className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/new' ? 'text-black font-bold' : ''}`}
               >
                 New Arrival
                 <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/new' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
@@ -213,24 +213,24 @@ export default function Navbar() {
 
               <Link 
                 href="/shop" 
-                className={`group relative pb-1 hover:text-black transition-colors ${pathname === '/shop' ? 'text-black font-bold' : ''}`}
+                className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/shop' ? 'text-black font-bold' : ''}`}
               >
                 Collections
                 <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/shop' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
               </Link>
 
-              {/* Dynamic Categories from Supabase Database */}
-              {categories.map((cat) => {
+              {/* Dynamic Categories from Supabase Database (Limit to top 5 to prevent wrapping into multiple lines) */}
+              {categories.slice(0, 5).map((cat) => {
                 const isCatActive = pathname === `/category/${cat.slug}`;
                 const hasSubs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0;
 
                 return (
-                  <div key={cat.id || cat.slug} className="relative group/cat py-2">
+                  <div key={cat.id || cat.slug} className="relative group/cat py-2 shrink-0">
                     <Link 
                       href={`/category/${cat.slug}`} 
-                      className={`group relative pb-1 flex items-center gap-1 hover:text-black transition-colors ${isCatActive ? 'text-black font-bold' : ''}`}
+                      className={`group relative pb-1 flex items-center gap-1 hover:text-black transition-colors whitespace-nowrap ${isCatActive ? 'text-black font-bold' : ''}`}
                     >
-                      <span>{cat.name}</span>
+                      <span className="whitespace-nowrap">{cat.name}</span>
                       {hasSubs && <ChevronDown className="w-3 h-3 text-neutral-400 group-hover/cat:text-black transition-transform duration-200 group-hover/cat:rotate-180" />}
                       <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${isCatActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
                     </Link>
@@ -243,7 +243,7 @@ export default function Navbar() {
                             <Link
                               key={sub.id || sub.slug}
                               href={`/category/${sub.slug}`}
-                              className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors"
+                              className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors whitespace-nowrap"
                             >
                               {sub.name}
                             </Link>
@@ -255,9 +255,35 @@ export default function Navbar() {
                 );
               })}
 
+              {/* If more than 5 categories, render a clean 'More' dropdown instead of wrapping into lines */}
+              {categories.length > 5 && (
+                <div className="relative group/more py-2 shrink-0">
+                  <button 
+                    type="button"
+                    className="group relative pb-1 flex items-center gap-1 hover:text-black transition-colors whitespace-nowrap text-neutral-700 uppercase font-semibold cursor-pointer"
+                  >
+                    <span>More</span>
+                    <ChevronDown className="w-3 h-3 text-neutral-400 group-hover/more:text-black transition-transform duration-200 group-hover/more:rotate-180" />
+                  </button>
+                  <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all duration-200 z-50">
+                    <div className="min-w-[200px] bg-white border border-neutral-200 shadow-xl py-2">
+                      {categories.slice(5).map((cat) => (
+                        <Link
+                          key={cat.id || cat.slug}
+                          href={`/category/${cat.slug}`}
+                          className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors whitespace-nowrap"
+                        >
+                          {cat.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Link 
                 href="/about" 
-                className={`group relative pb-1 hover:text-black transition-colors ${pathname === '/about' ? 'text-black font-bold' : ''}`}
+                className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/about' ? 'text-black font-bold' : ''}`}
               >
                 Our Story
                 <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/about' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>

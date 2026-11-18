@@ -125,16 +125,16 @@ function HeroBanner({ banners: incomingBanners = [], categories: incomingCategor
         </p>
       </div>
 
-      {/* 2. Onfire-Style Circular Category Quick-Icons */}
-      <div className="pt-6 pb-6 sm:pt-8 sm:pb-8 px-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4 sm:gap-8 overflow-x-auto no-scrollbar py-1">
+      {/* 2. Onfire-Style Circular Category Quick-Icons (Strictly 1 line, never wraps into multiple lines) */}
+      <div className="pt-5 pb-5 sm:pt-7 sm:pb-7 px-4 overflow-hidden">
+        <div className="max-w-4xl mx-auto flex items-center justify-start sm:justify-center gap-3.5 sm:gap-7 overflow-x-auto no-scrollbar flex-nowrap py-1">
           {categoryBubbles.map((cat, idx) => (
             <Link
               key={cat.slug || idx}
               href={`/category/${cat.slug}`}
-              className="flex flex-col items-center gap-2 group shrink-0"
+              className="flex flex-col items-center gap-1.5 sm:gap-2 group shrink-0"
             >
-              <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border border-neutral-200 group-hover:border-black group-hover:scale-105 transition-all duration-300 shadow-xs bg-neutral-100">
+              <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border border-neutral-200 group-hover:border-black group-hover:scale-105 transition-all duration-300 shadow-xs bg-neutral-100 shrink-0">
                 <Image
                   src={cat.image}
                   alt={cat.name}
@@ -143,7 +143,7 @@ function HeroBanner({ banners: incomingBanners = [], categories: incomingCategor
                   sizes="(max-width: 640px) 60px, 80px"
                 />
               </div>
-              <span className="text-[11px] sm:text-xs font-semibold text-neutral-700 group-hover:text-black tracking-wider uppercase transition-colors">
+              <span className="text-[10px] sm:text-xs font-semibold text-neutral-800 group-hover:text-black tracking-wider uppercase transition-colors whitespace-nowrap text-center max-w-[76px] sm:max-w-[96px] truncate block">
                 {cat.name}
               </span>
             </Link>
