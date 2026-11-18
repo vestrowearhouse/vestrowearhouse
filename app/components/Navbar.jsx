@@ -197,12 +197,12 @@ export default function Navbar() {
             </button>
 
             {/* Brand Logo */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 z-20">
               <BrandLogo size="md" />
             </div>
 
-            {/* Desktop Center Navigation (Onfire style - strictly 1 line, never wraps) */}
-            <nav className="hidden lg:flex items-center justify-center gap-4 xl:gap-7 text-[11px] xl:text-[12px] font-semibold tracking-wider uppercase text-neutral-800 whitespace-nowrap flex-nowrap shrink min-w-0">
+            {/* Desktop Center Navigation (Onfire style - clean, spaced, never collides with logo) */}
+            <nav className="hidden lg:flex items-center justify-center gap-6 xl:gap-8 text-[12px] xl:text-[13px] font-semibold tracking-wider uppercase text-neutral-800 whitespace-nowrap shrink-0 z-10 px-4">
               <Link 
                 href="/new" 
                 className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/new' ? 'text-black font-bold' : ''}`}
@@ -211,76 +211,50 @@ export default function Navbar() {
                 <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/new' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
               </Link>
 
-              <Link 
-                href="/shop" 
-                className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/shop' ? 'text-black font-bold' : ''}`}
-              >
-                Collections
-                <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/shop' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
-              </Link>
+              {/* Shop / Collections with Clean Dropdown */}
+              <div className="relative group/shop py-2 shrink-0">
+                <Link 
+                  href="/shop" 
+                  className={`group relative pb-1 flex items-center gap-1.5 hover:text-black transition-colors whitespace-nowrap ${pathname === '/shop' ? 'text-black font-bold' : ''}`}
+                >
+                  <span>Shop</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 group-hover/shop:text-black transition-transform duration-200 group-hover/shop:rotate-180" />
+                  <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/shop' ? 'scale-x-100' : 'scale-x-0 group-hover/shop:scale-x-100'}`}></span>
+                </Link>
 
-              {/* Dynamic Categories from Supabase Database (Limit to top 5 to prevent wrapping into multiple lines) */}
-              {categories.slice(0, 5).map((cat) => {
-                const isCatActive = pathname === `/category/${cat.slug}`;
-                const hasSubs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0;
-
-                return (
-                  <div key={cat.id || cat.slug} className="relative group/cat py-2 shrink-0">
-                    <Link 
-                      href={`/category/${cat.slug}`} 
-                      className={`group relative pb-1 flex items-center gap-1 hover:text-black transition-colors whitespace-nowrap ${isCatActive ? 'text-black font-bold' : ''}`}
+                {/* Dropdown Menu of All Categories */}
+                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover/shop:opacity-100 group-hover/shop:visible transition-all duration-200 z-50">
+                  <div className="min-w-[240px] bg-white border border-neutral-200 shadow-2xl rounded-xl py-2 overflow-hidden">
+                    <Link
+                      href="/shop"
+                      className="block px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black bg-neutral-50 hover:bg-neutral-100 transition-colors border-b border-neutral-100"
                     >
-                      <span className="whitespace-nowrap">{cat.name}</span>
-                      {hasSubs && <ChevronDown className="w-3 h-3 text-neutral-400 group-hover/cat:text-black transition-transform duration-200 group-hover/cat:rotate-180" />}
-                      <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${isCatActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+                      All Collections →
                     </Link>
-
-                    {/* Subcategories Dropdown */}
-                    {hasSubs && (
-                      <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-200 z-50">
-                        <div className="min-w-[200px] bg-white border border-neutral-200 shadow-xl py-2">
-                          {cat.subcategories.map((sub) => (
-                            <Link
-                              key={sub.id || sub.slug}
-                              href={`/category/${sub.slug}`}
-                              className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors whitespace-nowrap"
-                            >
-                              {sub.name}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* If more than 5 categories, render a clean 'More' dropdown instead of wrapping into lines */}
-              {categories.length > 5 && (
-                <div className="relative group/more py-2 shrink-0">
-                  <button 
-                    type="button"
-                    className="group relative pb-1 flex items-center gap-1 hover:text-black transition-colors whitespace-nowrap text-neutral-700 uppercase font-semibold cursor-pointer"
-                  >
-                    <span>More</span>
-                    <ChevronDown className="w-3 h-3 text-neutral-400 group-hover/more:text-black transition-transform duration-200 group-hover/more:rotate-180" />
-                  </button>
-                  <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all duration-200 z-50">
-                    <div className="min-w-[200px] bg-white border border-neutral-200 shadow-xl py-2">
-                      {categories.slice(5).map((cat) => (
-                        <Link
-                          key={cat.id || cat.slug}
-                          href={`/category/${cat.slug}`}
-                          className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors whitespace-nowrap"
-                        >
-                          {cat.name}
-                        </Link>
-                      ))}
-                    </div>
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id || cat.slug}
+                        href={`/category/${cat.slug}`}
+                        className="flex items-center justify-between px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors"
+                      >
+                        <span>{cat.name}</span>
+                        <ChevronRight className="w-3 h-3 text-neutral-400" />
+                      </Link>
+                    ))}
                   </div>
                 </div>
-              )}
+              </div>
 
+              {/* Flash Sale / Sale Link */}
+              <Link 
+                href="/flash-sale" 
+                className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/flash-sale' ? 'text-black font-bold' : ''}`}
+              >
+                Sale
+                <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/flash-sale' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+              </Link>
+
+              {/* Our Story Link */}
               <Link 
                 href="/about" 
                 className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/about' ? 'text-black font-bold' : ''}`}
@@ -291,7 +265,7 @@ export default function Navbar() {
             </nav>
 
             {/* Right Action Icons */}
-            <div className="flex items-center gap-1 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0 z-20">
               
               {/* Search Toggle Icon */}
               <button 
