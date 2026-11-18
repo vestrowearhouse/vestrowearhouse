@@ -14,6 +14,46 @@ import BrandLogo from "./BrandLogo";
 // Dynamically import CartDrawer
 const CartDrawer = dynamic(() => import("./CartDrawer"), { ssr: false });
 
+// Helper to format category names so they fit neatly in max 2 lines and NEVER 3 lines
+function formatNavCategoryLabel(name) {
+  if (!name) return null;
+  const clean = name.trim();
+
+  // If contains '&' (e.g. "Pants & Cargo", "Hoodies & Sweats", "Jackets & Outerwear", "Caps & Accessories")
+  // Line 1: "<Word> &", Line 2: "<Word>" - both with whitespace-nowrap so 3 lines is physically impossible
+  if (clean.includes('&')) {
+    const parts = clean.split(/\s*&\s*/);
+    if (parts.length >= 2) {
+      const line1 = `${parts[0]} &`;
+      const line2 = parts.slice(1).join(' & ');
+      return (
+        <span className="flex flex-col items-center justify-center text-center leading-[1.1] max-h-[2.4em] overflow-hidden">
+          <span className="whitespace-nowrap text-center">{line1}</span>
+          <span className="whitespace-nowrap text-center truncate max-w-[95px] xl:max-w-[110px]">{line2}</span>
+        </span>
+      );
+    }
+  }
+
+  // If two separate words (e.g. "New Arrival", "Our Story")
+  const words = clean.split(/\s+/);
+  if (words.length === 2) {
+    return (
+      <span className="flex flex-col items-center justify-center text-center leading-[1.1] max-h-[2.4em] overflow-hidden">
+        <span className="whitespace-nowrap text-center">{words[0]}</span>
+        <span className="whitespace-nowrap text-center">{words[1]}</span>
+      </span>
+    );
+  }
+
+  // Single word (e.g. "Collections", "T-Shirts")
+  return (
+    <span className="flex items-center justify-center text-center leading-[1.1] max-h-[2.4em] overflow-hidden whitespace-nowrap">
+      {clean}
+    </span>
+  );
+}
+
 export default function Navbar() {
   const { cartCount, cartTotal } = useCart();
   const { user, logout, openLoginModal } = useAuth();
@@ -201,66 +241,98 @@ export default function Navbar() {
               <BrandLogo size="md" />
             </div>
 
-            {/* Desktop Center Navigation (Onfire style - clean, spaced, never collides with logo) */}
-            <nav className="hidden lg:flex items-center justify-center gap-6 xl:gap-8 text-[12px] xl:text-[13px] font-semibold tracking-wider uppercase text-neutral-800 whitespace-nowrap shrink-0 z-10 px-4">
+            {/* Desktop Center Navigation (Exact style from screenshot: 2-line balanced categories, strictly never 3 lines) */}
+            <nav className="hidden lg:flex items-center justify-center gap-2.5 xl:gap-5 text-[10.5px] xl:text-[11.5px] font-bold tracking-wider uppercase text-neutral-800 shrink min-w-0 z-10 px-1">
               <Link 
                 href="/new" 
-                className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/new' ? 'text-black font-bold' : ''}`}
+                className={`group relative py-1 px-1 flex flex-col items-center justify-center text-center hover:text-black transition-colors shrink-0 ${pathname === '/new' ? 'text-black font-extrabold' : 'font-bold'}`}
               >
-                New Arrival
-                <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/new' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+                <span className="flex flex-col items-center justify-center text-center leading-[1.1] max-h-[2.4em] overflow-hidden">
+                  <span className="whitespace-nowrap">NEW</span>
+                  <span className="whitespace-nowrap">ARRIVAL</span>
+                </span>
+                <span className={`absolute inset-x-1 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/new' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
               </Link>
 
-              {/* Shop / Collections with Clean Dropdown */}
-              <div className="relative group/shop py-2 shrink-0">
-                <Link 
-                  href="/shop" 
-                  className={`group relative pb-1 flex items-center gap-1.5 hover:text-black transition-colors whitespace-nowrap ${pathname === '/shop' ? 'text-black font-bold' : ''}`}
-                >
-                  <span>Shop</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 group-hover/shop:text-black transition-transform duration-200 group-hover/shop:rotate-180" />
-                  <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/shop' ? 'scale-x-100' : 'scale-x-0 group-hover/shop:scale-x-100'}`}></span>
-                </Link>
+              <Link 
+                href="/shop" 
+                className={`group relative py-1 px-1 flex flex-col items-center justify-center text-center hover:text-black transition-colors shrink-0 ${pathname === '/shop' ? 'text-black font-extrabold' : 'font-bold'}`}
+              >
+                <span className="whitespace-nowrap leading-[1.1]">COLLECTIONS</span>
+                <span className={`absolute inset-x-1 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/shop' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+              </Link>
 
-                {/* Dropdown Menu of All Categories */}
-                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover/shop:opacity-100 group-hover/shop:visible transition-all duration-200 z-50">
-                  <div className="min-w-[240px] bg-white border border-neutral-200 shadow-2xl rounded-xl py-2 overflow-hidden">
-                    <Link
-                      href="/shop"
-                      className="block px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black bg-neutral-50 hover:bg-neutral-100 transition-colors border-b border-neutral-100"
+              {/* Dynamic Categories from Supabase Database */}
+              {categories.slice(0, 5).map((cat) => {
+                const isCatActive = pathname === `/category/${cat.slug}`;
+                const hasSubs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0;
+
+                return (
+                  <div key={cat.id || cat.slug} className="relative group/cat py-1 shrink-0">
+                    <Link 
+                      href={`/category/${cat.slug}`} 
+                      className={`group relative py-1 px-1 flex items-center justify-center gap-0.5 hover:text-black transition-colors ${isCatActive ? 'text-black font-extrabold' : 'font-bold'}`}
                     >
-                      All Collections →
+                      {formatNavCategoryLabel(cat.name)}
+                      {hasSubs && <ChevronDown className="w-3 h-3 text-neutral-400 group-hover/cat:text-black transition-transform duration-200 group-hover/cat:rotate-180 shrink-0 ml-0.5" />}
+                      <span className={`absolute inset-x-1 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${isCatActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
                     </Link>
-                    {categories.map((cat) => (
-                      <Link
-                        key={cat.id || cat.slug}
-                        href={`/category/${cat.slug}`}
-                        className="flex items-center justify-between px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors"
-                      >
-                        <span>{cat.name}</span>
-                        <ChevronRight className="w-3 h-3 text-neutral-400" />
-                      </Link>
-                    ))}
+
+                    {/* Subcategories Dropdown */}
+                    {hasSubs && (
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1 opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-200 z-50">
+                        <div className="min-w-[200px] bg-white border border-neutral-200 shadow-xl py-2 rounded-lg">
+                          {cat.subcategories.map((sub) => (
+                            <Link
+                              key={sub.id || sub.slug}
+                              href={`/category/${sub.slug}`}
+                              className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors whitespace-nowrap"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* If more than 5 categories, render a clean 'More' dropdown instead of wrapping */}
+              {categories.length > 5 && (
+                <div className="relative group/more py-1 shrink-0">
+                  <button 
+                    type="button"
+                    className="group relative py-1 px-1 flex items-center justify-center gap-0.5 hover:text-black transition-colors uppercase font-bold cursor-pointer"
+                  >
+                    <span>MORE</span>
+                    <ChevronDown className="w-3 h-3 text-neutral-400 group-hover/more:text-black transition-transform duration-200 group-hover/more:rotate-180" />
+                  </button>
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1 opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all duration-200 z-50">
+                    <div className="min-w-[200px] bg-white border border-neutral-200 shadow-xl py-2 rounded-lg">
+                      {categories.slice(5).map((cat) => (
+                        <Link
+                          key={cat.id || cat.slug}
+                          href={`/category/${cat.slug}`}
+                          className="block px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors whitespace-nowrap"
+                        >
+                          {cat.name}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Flash Sale / Sale Link */}
-              <Link 
-                href="/flash-sale" 
-                className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/flash-sale' ? 'text-black font-bold' : ''}`}
-              >
-                Sale
-                <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/flash-sale' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
-              </Link>
-
-              {/* Our Story Link */}
               <Link 
                 href="/about" 
-                className={`group relative pb-1 hover:text-black transition-colors shrink-0 whitespace-nowrap ${pathname === '/about' ? 'text-black font-bold' : ''}`}
+                className={`group relative py-1 px-1 flex flex-col items-center justify-center text-center hover:text-black transition-colors shrink-0 ${pathname === '/about' ? 'text-black font-extrabold' : 'font-bold'}`}
               >
-                Our Story
-                <span className={`absolute inset-x-0 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/about' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+                <span className="flex flex-col items-center justify-center text-center leading-[1.1] max-h-[2.4em] overflow-hidden">
+                  <span className="whitespace-nowrap">OUR</span>
+                  <span className="whitespace-nowrap">STORY</span>
+                </span>
+                <span className={`absolute inset-x-1 -bottom-0.5 h-[2px] bg-black transition-transform duration-300 ${pathname === '/about' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
               </Link>
             </nav>
 
