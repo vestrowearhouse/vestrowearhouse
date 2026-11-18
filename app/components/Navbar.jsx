@@ -34,6 +34,8 @@ export default function Navbar() {
   const [expandedCat, setExpandedCat] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Fetch live categories from database
   useEffect(() => {
@@ -87,6 +89,33 @@ export default function Navbar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [mobileDrawerOpen]);
 
+  // Smooth scroll-aware header: gently slides up on scroll down, slides down on scroll up
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (currentScrollY <= 40) {
+            setShowHeader(true);
+          } else if (currentScrollY > lastScrollY && currentScrollY > 70) {
+            setShowHeader(false);
+          } else if (currentScrollY < lastScrollY) {
+            setShowHeader(true);
+          }
+          setLastScrollY(currentScrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   // Live Search Effect
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -136,13 +165,19 @@ export default function Navbar() {
 
   return (
     <>
-      {/* 1. Top Announcement Bar (Onfire style) */}
-      <div className="bg-black text-white text-[11px] sm:text-[12px] font-medium tracking-[0.14em] uppercase py-2 px-4 text-center">
-        <span>Free Nationwide Delivery On Orders Over ৳3,000 · Cash On Delivery Available</span>
-      </div>
+      {/* 1 & 2. Main Sticky Navigation Wrapper with Smooth Hide/Show Slide on Scroll */}
+      <div 
+        className={`sticky top-0 z-40 w-full transform transition-transform duration-500 ease-in-out will-change-transform ${
+          !showHeader && !mobileDrawerOpen && !cartOpen && !searchOpen ? '-translate-y-full' : 'translate-y-0'
+        }`}
+      >
+        {/* 1. Top Announcement Bar (Onfire style) */}
+        <div className="bg-black text-white text-[11px] sm:text-[12px] font-medium tracking-[0.14em] uppercase py-2 px-4 text-center">
+          <span>Free Nationwide Delivery On Orders Over ৳3,000 · Cash On Delivery Available</span>
+        </div>
 
-      {/* 2. Main Sticky Navigation */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-100 transition-shadow">
+        {/* 2. Main Navigation Header */}
+        <header className="bg-white/95 backdrop-blur-md border-b border-neutral-100 transition-shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
             
@@ -395,17 +430,18 @@ export default function Navbar() {
           </div>
         )}
       </header>
+      </div>
 
-      {/* 4. Mobile Drawer Menu (Luxury Smooth Backdrop Fade & Cubic-Bezier Slide-in) */}
+      {/* 4. Mobile Drawer Menu (Luxury Smooth Backdrop Fade & Gentle Cubic-Bezier Slide-in) */}
       <div 
-        className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ${
+        className={`lg:hidden fixed inset-0 z-50 transition-all duration-500 ${
           mobileDrawerOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none'
         }`}
         aria-hidden={!mobileDrawerOpen}
       >
         {/* Backdrop */}
         <div 
-          className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+          className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-500 ease-in-out ${
             mobileDrawerOpen ? 'opacity-100' : 'opacity-0'
           }`}
           onClick={() => setMobileDrawerOpen(false)}
@@ -413,7 +449,7 @@ export default function Navbar() {
 
         {/* Drawer Content */}
         <div 
-          className={`relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 transform transition-transform duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${
+          className={`relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 transform transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform ${
             mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
