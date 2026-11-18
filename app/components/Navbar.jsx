@@ -37,6 +37,11 @@ export default function Navbar() {
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
+  const closeMobileDrawer = () => {
+    setMobileDrawerOpen(false);
+    setShowHeader(true);
+  };
+
   // Fetch live categories from database
   useEffect(() => {
     try {
@@ -82,7 +87,7 @@ export default function Navbar() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && mobileDrawerOpen) {
-        setMobileDrawerOpen(false);
+        closeMobileDrawer();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -165,10 +170,10 @@ export default function Navbar() {
 
   return (
     <>
-      {/* 1 & 2. Main Sticky Navigation Wrapper with Smooth Hide/Show Slide on Scroll */}
+      {/* 1 & 2. Main Sticky Navigation Wrapper with Smooth Hide/Show Slide on Scroll & Menu Open */}
       <div 
-        className={`sticky top-0 z-40 w-full transform transition-transform duration-500 ease-in-out will-change-transform ${
-          !showHeader && !mobileDrawerOpen && !cartOpen && !searchOpen ? '-translate-y-full' : 'translate-y-0'
+        className={`sticky top-0 z-[60] w-full transform transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform ${
+          mobileDrawerOpen || (!showHeader && !cartOpen && !searchOpen) ? '-translate-y-full' : 'translate-y-0'
         }`}
       >
         {/* 1. Top Announcement Bar (Onfire style) */}
@@ -434,7 +439,7 @@ export default function Navbar() {
 
       {/* 4. Mobile Drawer Menu (Luxury Smooth Backdrop Fade & Gentle Cubic-Bezier Slide-in) */}
       <div 
-        className={`lg:hidden fixed inset-0 z-50 transition-all duration-500 ${
+        className={`lg:hidden fixed inset-0 z-[70] transition-all duration-500 ${
           mobileDrawerOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none'
         }`}
         aria-hidden={!mobileDrawerOpen}
@@ -444,12 +449,12 @@ export default function Navbar() {
           className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-500 ease-in-out ${
             mobileDrawerOpen ? 'opacity-100' : 'opacity-0'
           }`}
-          onClick={() => setMobileDrawerOpen(false)}
+          onClick={closeMobileDrawer}
         />
 
         {/* Drawer Content */}
         <div 
-          className={`relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 transform transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform ${
+          className={`relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-[80] transform transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] will-change-transform ${
             mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -457,7 +462,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between p-4 border-b border-neutral-100">
             <BrandLogo size="sm" />
             <button 
-              onClick={() => setMobileDrawerOpen(false)}
+              onClick={closeMobileDrawer}
               className="p-1.5 text-neutral-400 hover:text-black rounded-full active:scale-90 transition-all duration-150"
               aria-label="Close menu"
             >
@@ -469,7 +474,7 @@ export default function Navbar() {
           <div className="flex-1 overflow-y-auto py-4 px-4 space-y-1">
             <Link 
               href="/new" 
-              onClick={() => setMobileDrawerOpen(false)}
+              onClick={closeMobileDrawer}
               className="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-100 hover:text-neutral-600 hover:translate-x-1 transition-all duration-150"
             >
               <span>New Arrival</span>
@@ -478,7 +483,7 @@ export default function Navbar() {
 
             <Link 
               href="/shop" 
-              onClick={() => setMobileDrawerOpen(false)}
+              onClick={closeMobileDrawer}
               className="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-100 hover:text-neutral-600 hover:translate-x-1 transition-all duration-150"
             >
               <span>All Collections</span>
@@ -496,7 +501,7 @@ export default function Navbar() {
                       <div className="flex items-center justify-between">
                         <Link
                           href={`/category/${c.slug}`}
-                          onClick={() => setMobileDrawerOpen(false)}
+                          onClick={closeMobileDrawer}
                           className="flex-1 py-2.5 text-xs font-semibold text-neutral-700 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
                         >
                           {c.name}
@@ -525,7 +530,7 @@ export default function Navbar() {
                             <Link
                               key={sub.id || sub.slug}
                               href={`/category/${sub.slug}`}
-                              onClick={() => setMobileDrawerOpen(false)}
+                              onClick={closeMobileDrawer}
                               className="block py-1.5 text-[11px] font-medium text-neutral-500 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
                             >
                               {sub.name}
@@ -538,10 +543,10 @@ export default function Navbar() {
                 })
               ) : (
                 <>
-                  <Link href="/category/t-shirts" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">T-Shirts</Link>
-                  <Link href="/category/hoodies" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Hoodies & Sweats</Link>
-                  <Link href="/category/pants" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Bottom Wear</Link>
-                  <Link href="/category/shoes" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Footwear</Link>
+                  <Link href="/category/t-shirts" onClick={closeMobileDrawer} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">T-Shirts</Link>
+                  <Link href="/category/hoodies" onClick={closeMobileDrawer} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Hoodies & Sweats</Link>
+                  <Link href="/category/pants" onClick={closeMobileDrawer} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Bottom Wear</Link>
+                  <Link href="/category/shoes" onClick={closeMobileDrawer} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Footwear</Link>
                 </>
               )}
             </div>
@@ -549,21 +554,21 @@ export default function Navbar() {
             <div className="pt-4 border-t border-neutral-100 space-y-1">
               <Link 
                 href="/about" 
-                onClick={() => setMobileDrawerOpen(false)}
+                onClick={closeMobileDrawer}
                 className="block py-2 text-xs font-medium text-neutral-600 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
               >
                 Our Story
               </Link>
               <Link 
                 href="/track-order" 
-                onClick={() => setMobileDrawerOpen(false)}
+                onClick={closeMobileDrawer}
                 className="block py-2 text-xs font-medium text-neutral-600 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
               >
                 Track Order
               </Link>
               <Link 
                 href="/contact" 
-                onClick={() => setMobileDrawerOpen(false)}
+                onClick={closeMobileDrawer}
                 className="block py-2 text-xs font-medium text-neutral-600 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
               >
                 Support & Contact
@@ -589,7 +594,7 @@ export default function Navbar() {
               </div>
             ) : (
               <button
-                onClick={() => { setMobileDrawerOpen(false); openLoginModal(); }}
+                onClick={() => { closeMobileDrawer(); openLoginModal(); }}
                 className="w-full py-2.5 bg-black text-white text-xs font-bold uppercase tracking-wider text-center active:scale-[0.98] transition-transform"
               >
                 Sign In / Register
