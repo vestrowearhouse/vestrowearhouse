@@ -25,28 +25,13 @@ const buildCategoryTree = (categories, parentId = null) => {
   return tree;
 };
 
-// GET - Fetch all categories
+// GET - Fetch all categories (Always fresh, no stale caching)
 export async function GET(request) {
   try {
     const supabase = getSupabaseClient();
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // Optional filter
     const nested = searchParams.get('nested') === 'true';
-    const noCache = searchParams.has('t') || searchParams.has('nocache') || request.headers.get('cache-control')?.includes('no-cache');
-    const cacheKey = `categories:${searchParams.toString() || 'all'}`;
-
-    if (!noCache) {
-      const cached = getCache(cacheKey);
-      if (cached) {
-        return NextResponse.json(
-          { categories: cached },
-          { 
-            status: 200, 
-            headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } 
-          }
-        );
-      }
-    }
 
     let query = supabase
       .from('categories')
@@ -66,18 +51,14 @@ export async function GET(request) {
 
     const result = nested ? buildCategoryTree(categories || []) : (categories || []);
 
-    if (!noCache) {
-      setCache(cacheKey, result, 3600);
-    }
-
     return NextResponse.json(
       { categories: result },
       { 
         status: 200, 
         headers: { 
-          'Cache-Control': noCache 
-            ? 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0' 
-            : 'public, s-maxage=3600, stale-while-revalidate=86400' 
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         } 
       }
     );

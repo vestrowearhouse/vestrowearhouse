@@ -29,66 +29,63 @@ const jsonLd = {
   },
 };
 
-export const revalidate = 300; // Cache homepage at the Edge for 5 minutes
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-const getCachedSupabaseData = unstable_cache(
-  async () => {
-    const supabase = getSupabaseAdmin();
-    
-    if (!supabase) {
-      return { 
-        categoriesRes: null, 
-        featuredRes: null, 
-        arrivalsRes: null, 
-        allProductsRes: null,
-        bannersRes: null, 
-      };
-    }
+async function fetchLiveSupabaseData() {
+  const supabase = getSupabaseAdmin();
+  
+  if (!supabase) {
+    return { 
+      categoriesRes: null, 
+      featuredRes: null, 
+      arrivalsRes: null, 
+      allProductsRes: null,
+      bannersRes: null, 
+    };
+  }
 
-    const PRODUCT_CARD_FIELDS = 'id, name, sellingPrice, regularPrice, price, oldPrice, stockStatus, featuredImage, images, isFeatured, isNewArrival, isBestSeller, slug, rating, review_count, sold_count, category';
+  const PRODUCT_CARD_FIELDS = 'id, name, sellingPrice, regularPrice, price, oldPrice, stockStatus, featuredImage, images, isFeatured, isNewArrival, isBestSeller, slug, rating, review_count, sold_count, category';
 
-    const [categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes] = await Promise.all([
-      supabase
-        .from('categories')
-        .select('id, name, slug, image, icon, sort_order, isFeatured, status')
-        .not('slug', 'in', '("system-category-layout","system-flash-sale-config","system-quick-channels")')
-        .eq('status', 'active')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false })
-        .limit(12),
-      supabase
-        .from('products')
-        .select(PRODUCT_CARD_FIELDS)
-        .neq('isActive', false)
-        .eq('isFeatured', true)
-        .order('created_at', { ascending: false })
-        .limit(16),
-      supabase
-        .from('products')
-        .select(PRODUCT_CARD_FIELDS)
-        .neq('isActive', false)
-        .eq('isNewArrival', true)
-        .order('created_at', { ascending: false })
-        .limit(12),
-      supabase
-        .from('products')
-        .select(PRODUCT_CARD_FIELDS)
-        .neq('isActive', false)
-        .order('created_at', { ascending: false })
-        .limit(24),
-      supabase
-        .from('banners')
-        .select('id, title, subtitle, image, mobile_image, link, button_text, position, status')
-        .eq('status', 'active')
-        .order('position', { ascending: true })
-        .limit(6),
-    ]);
+  const [categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes] = await Promise.all([
+    supabase
+      .from('categories')
+      .select('id, name, slug, image, icon, sort_order, isFeatured, status')
+      .not('slug', 'in', '("system-category-layout","system-flash-sale-config","system-quick-channels")')
+      .eq('status', 'active')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false })
+      .limit(12),
+    supabase
+      .from('products')
+      .select(PRODUCT_CARD_FIELDS)
+      .neq('isActive', false)
+      .eq('isFeatured', true)
+      .order('created_at', { ascending: false })
+      .limit(16),
+    supabase
+      .from('products')
+      .select(PRODUCT_CARD_FIELDS)
+      .neq('isActive', false)
+      .eq('isNewArrival', true)
+      .order('created_at', { ascending: false })
+      .limit(12),
+    supabase
+      .from('products')
+      .select(PRODUCT_CARD_FIELDS)
+      .neq('isActive', false)
+      .order('created_at', { ascending: false })
+      .limit(24),
+    supabase
+      .from('banners')
+      .select('id, title, subtitle, image, mobile_image, link, button_text, position, status')
+      .eq('status', 'active')
+      .order('position', { ascending: true })
+      .limit(6),
+  ]);
 
-    return { categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes };
-  },
-  ['vestro-home-data-v3'],
-  { revalidate: 60, tags: ['homepage-data'] }
-);
+  return { categoriesRes, featuredRes, arrivalsRes, allProductsRes, bannersRes };
+}
 
 async function getHomePageData() {
   try {
@@ -98,7 +95,7 @@ async function getHomePageData() {
       arrivalsRes, 
       allProductsRes,
       bannersRes, 
-    } = await getCachedSupabaseData();
+    } = await fetchLiveSupabaseData();
     
     return {
       categories: categoriesRes?.data || [],

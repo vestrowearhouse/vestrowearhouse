@@ -892,6 +892,9 @@ export default function CategoriesPage() {
       } else {
         await api.createCategory(data);
       }
+      try {
+        localStorage.setItem('vestro_categories_updated', Date.now().toString());
+      } catch (_) {}
       handleCloseModal();
       await loadCategories();
     } catch (error) {
@@ -917,6 +920,9 @@ export default function CategoriesPage() {
       setCategories(prev => removeCategoryRecursively(prev, id));
       try {
         await api.deleteCategory(id);
+        try {
+          localStorage.setItem('vestro_categories_updated', Date.now().toString());
+        } catch (_) {}
       } catch (error) {
         console.error(error.message);
         alert(`Error: ${error.message}`);

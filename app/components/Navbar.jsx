@@ -64,10 +64,10 @@ export default function Navbar() {
 
   const [categories, setCategories] = useState([
     { id: '1', name: 'T-Shirts', slug: 't-shirts' },
-    { id: '2', name: 'Hoodies & Sweats', slug: 'hoodies-sweats' },
-    { id: '3', name: 'Jackets & Outerwear', slug: 'outerwear' },
-    { id: '4', name: 'Pants & Cargo', slug: 'pants-cargo' },
-    { id: '5', name: 'Caps & Accessories', slug: 'accessories' }
+    { id: '2', name: 'Hoodies', slug: 'hoodies-sweats' },
+    { id: '3', name: 'Jackets', slug: 'outerwear' },
+    { id: '4', name: 'Pants', slug: 'pants-cargo' },
+    { id: '5', name: 'Caps', slug: 'accessories' }
   ]);
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -82,27 +82,33 @@ export default function Navbar() {
     setShowHeader(true);
   };
 
-  // Fetch live categories from database
+  // Fetch live categories from database (Always fresh, zero stale caching)
   useEffect(() => {
-    try {
-      const cached = sessionStorage.getItem('vestro_nav_categories');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) setCategories(parsed);
-      }
-    } catch (_) {}
+    try { sessionStorage.removeItem('vestro_nav_categories'); } catch (_) {}
 
-    fetch('/api/categories?nested=true')
-      .then(res => res.json())
-      .then(data => {
-        if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
-          setCategories(data.categories);
-          try { sessionStorage.setItem('vestro_nav_categories', JSON.stringify(data.categories)); } catch (_) {}
-        }
-      })
-      .catch(err => {
-        console.error('[Navbar] Category fetch error:', err);
-      });
+    const loadLiveCategories = () => {
+      fetch(`/api/categories?nested=true&_t=${Date.now()}`, { cache: 'no-store' })
+        .then(res => res.json())
+        .then(data => {
+          if (data?.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+            setCategories(data.categories);
+          }
+        })
+        .catch(err => {
+          console.error('[Navbar] Live category fetch error:', err);
+        });
+    };
+
+    loadLiveCategories();
+
+    // Re-fetch when admin updates categories in another tab
+    const handleStorageChange = (e) => {
+      if (e.key === 'vestro_categories_updated') {
+        loadLiveCategories();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Live Search States

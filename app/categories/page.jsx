@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import CategoriesClient from './CategoriesClient';
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'Categories | Vestro Wear House',
