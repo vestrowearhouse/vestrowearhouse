@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { sendWelcomeEmail } from '@/lib/authUtils';
 import bcrypt from 'bcryptjs';
 import { getSupabaseAdmin, supabase as fallbackSupabase } from '@/lib/supabase';
 import { validate, registerSchema } from '@/lib/validation';
@@ -32,12 +31,28 @@ export async function POST(request) {
     const { name, email, password, phone } = data;
     const supabase = getSupabaseClient();
 
+    if (!supabase) {
+      console.error('[Register] Supabase client is null');
+      return NextResponse.json(
+        { error: 'সার্ভার কনফিগারেশনে সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
+        { status: 500 }
+      );
+    }
+
     // 1. Check if email already registered
-    const { data: existingUser } = await supabase
+    const { data: existingUser, error: lookupError } = await supabase
       .from('users')
       .select('id')
       .eq('email', email)
       .maybeSingle();
+
+    if (lookupError) {
+      console.error('[Register] Email lookup error:', lookupError);
+      return NextResponse.json(
+        { error: 'সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
+        { status: 500 }
+      );
+    }
 
     if (existingUser) {
       return NextResponse.json(
@@ -46,10 +61,10 @@ export async function POST(request) {
       );
     }
 
-    // 2. Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // 2. Hash password (10 rounds — fast on serverless, still secure)
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Create user in Supabase (only valid table columns)
+    // 3. Create user in Supabase
     const { data: rawUser, error: insertError } = await supabase
       .from('users')
       .insert([
@@ -74,47 +89,49 @@ export async function POST(request) {
         );
       }
       return NextResponse.json(
-        { error: 'অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
+        { error: insertError.message || 'অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
         { status: 500 }
       );
     }
 
-    const user = {
-      ...rawUser,
-      _id: rawUser.id,
-      emailVerified: true,
-      createdAt: rawUser.created_at,
-    };
-
-    // 4. Send welcome email (non-blocking)
-    try {
-      await sendWelcomeEmail(email, name);
-    } catch (emailError) {
-      console.warn('[Register] Welcome email notice:', emailError?.message || emailError);
+    if (!rawUser) {
+      console.error('[Register] Insert succeeded but no user data returned');
+      return NextResponse.json(
+        { error: 'অ্যাকাউন্ট তৈরি হয়েছে কিন্তু তথ্য পাওয়া যায়নি। অনুগ্রহ করে লগইন করুন।' },
+        { status: 500 }
+      );
     }
 
-    // 5. Issue JWT for session
+    // 4. Issue JWT for session
     const jwtSecret = getJwtSecret();
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: rawUser.id, email: rawUser.email, role: rawUser.role },
       jwtSecret,
       { expiresIn: '7d' }
     );
+
+    // 5. Send welcome email (fire-and-forget — do NOT await)
+    import('@/lib/authUtils')
+      .then(({ sendWelcomeEmail }) => sendWelcomeEmail(email, name))
+      .catch((emailError) => {
+        console.warn('[Register] Welcome email notice:', emailError?.message || emailError);
+      });
 
     const response = NextResponse.json(
       {
         message: 'আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!',
         user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          avatar: user.avatar,
-          role: user.role,
-          status: user.status,
+          id: rawUser.id,
+          _id: rawUser.id,
+          name: rawUser.name,
+          email: rawUser.email,
+          phone: rawUser.phone,
+          avatar: rawUser.avatar,
+          role: rawUser.role,
+          status: rawUser.status,
           emailVerified: true,
-          address: user.address,
-          createdAt: user.created_at,
+          address: rawUser.address,
+          createdAt: rawUser.created_at,
         },
         token,
       },
@@ -133,7 +150,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('[Register] Unexpected error:', error);
     return NextResponse.json(
-      { error: error?.message || 'সার্ভারে একটি সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
+      { error: 'সার্ভারে একটি সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' },
       { status: 500 }
     );
   }

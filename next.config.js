@@ -159,10 +159,14 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
           },
-          // 🔒 CORS: Restrict to stellarmartbd.com only — override Vercel default '*'
+          // 🔒 CORS: Allow known domains
           {
             key: 'Access-Control-Allow-Origin',
             value: 'https://www.stellarmartbd.com',
+          },
+          {
+            key: 'Vary',
+            value: 'Origin',
           },
           {
             key: 'Access-Control-Allow-Methods',
