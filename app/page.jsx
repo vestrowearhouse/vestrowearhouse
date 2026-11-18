@@ -173,8 +173,8 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* 1. Hero Banner Slider (Onfire Fashion Style) */}
-      <HeroBanner banners={banners} />
+      {/* 1. Split Hero Banner with Circular Categories & Trust Strip (Onfire Style) */}
+      <HeroBanner banners={banners} categories={displayCategories} />
 
       {/* 2. Trust & Features Strip */}
       <Features />
