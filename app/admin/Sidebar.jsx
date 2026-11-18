@@ -18,10 +18,7 @@ const menuSections = [
     title: 'Catalog Management',
     items: [
       { name: 'Products', href: '/admin/products', icon: '🛍️' },
-      { name: 'Bulk Add Products', href: '/admin/products/bulk', icon: '📥' },
-      { name: 'SKU Codes & Master', href: '/admin/sku-management', icon: '🏷️' },
       { name: 'Categories', href: '/admin/categories', icon: '📁' },
-      { name: 'Bulk Add Categories', href: '/admin/categories/bulk', icon: '📑' },
       { name: 'Banners', href: '/admin/banners', icon: '🖼️' },
       { name: 'Flash Sale', href: '/admin/flash-sale', icon: '⚡' },
       { name: 'Home Quick Icons', href: '/admin/quick-channels', icon: '📱' },
@@ -43,8 +40,6 @@ const menuSections = [
       { name: 'Users', href: '/admin/users', icon: '👥' },
       { name: 'Reviews & Q&A', href: '/admin/reviews', icon: '⭐' },
       { name: 'Contact Messages', href: '/admin/contact', icon: '✉️' },
-      { name: 'Open Webmail', href: 'https://mail.zoho.com', icon: '📧', external: true },
-      { name: 'Webmail (Inbox & Send)', href: '/admin/webmail', icon: '📬' },
     ]
   },
   {
