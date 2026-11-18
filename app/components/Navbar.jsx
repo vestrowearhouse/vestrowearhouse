@@ -31,6 +31,7 @@ export default function Navbar() {
   ]);
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [expandedCat, setExpandedCat] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
 
@@ -74,6 +75,17 @@ export default function Navbar() {
       document.body.style.overflow = "unset";
     };
   }, [mobileDrawerOpen, cartOpen]);
+
+  // Close mobile drawer on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && mobileDrawerOpen) {
+        setMobileDrawerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileDrawerOpen]);
 
   // Live Search Effect
   useEffect(() => {
@@ -138,7 +150,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
-              className="lg:hidden p-2 -ml-2 text-neutral-800 hover:text-black transition-colors"
+              className="lg:hidden p-2 -ml-2 text-neutral-800 hover:text-black active:scale-90 transition-all duration-150"
               aria-label="Open menu"
             >
               <Menu className="w-6 h-6" />
@@ -384,125 +396,172 @@ export default function Navbar() {
         )}
       </header>
 
-      {/* 4. Mobile Drawer Menu (Onfire Style Slide-in) */}
-      {mobileDrawerOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-            onClick={() => setMobileDrawerOpen(false)}
-          ></div>
+      {/* 4. Mobile Drawer Menu (Luxury Smooth Backdrop Fade & Cubic-Bezier Slide-in) */}
+      <div 
+        className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ${
+          mobileDrawerOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none'
+        }`}
+        aria-hidden={!mobileDrawerOpen}
+      >
+        {/* Backdrop */}
+        <div 
+          className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+            mobileDrawerOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={() => setMobileDrawerOpen(false)}
+        />
 
-          {/* Drawer Content */}
-          <div className="relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 animate-slideRight">
-            {/* Drawer Header */}
-            <div className="flex items-center justify-between p-4 border-b border-neutral-100">
-              <BrandLogo size="sm" />
-              <button 
-                onClick={() => setMobileDrawerOpen(false)}
-                className="p-1.5 text-neutral-400 hover:text-black rounded-full"
-                aria-label="Close menu"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        {/* Drawer Content */}
+        <div 
+          className={`relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 transform transition-transform duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${
+            mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {/* Drawer Header */}
+          <div className="flex items-center justify-between p-4 border-b border-neutral-100">
+            <BrandLogo size="sm" />
+            <button 
+              onClick={() => setMobileDrawerOpen(false)}
+              className="p-1.5 text-neutral-400 hover:text-black rounded-full active:scale-90 transition-all duration-150"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-            {/* Drawer Navigation Links */}
-            <div className="flex-1 overflow-y-auto py-4 px-4 space-y-1">
-              <Link 
-                href="/new" 
-                onClick={() => setMobileDrawerOpen(false)}
-                className="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-100"
-              >
-                <span>New Arrival</span>
-                <ChevronRight className="w-4 h-4 text-neutral-400" />
-              </Link>
+          {/* Drawer Navigation Links */}
+          <div className="flex-1 overflow-y-auto py-4 px-4 space-y-1">
+            <Link 
+              href="/new" 
+              onClick={() => setMobileDrawerOpen(false)}
+              className="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-100 hover:text-neutral-600 hover:translate-x-1 transition-all duration-150"
+            >
+              <span>New Arrival</span>
+              <ChevronRight className="w-4 h-4 text-neutral-400" />
+            </Link>
 
-              <Link 
-                href="/shop" 
-                onClick={() => setMobileDrawerOpen(false)}
-                className="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-100"
-              >
-                <span>All Collections</span>
-                <ChevronRight className="w-4 h-4 text-neutral-400" />
-              </Link>
+            <Link 
+              href="/shop" 
+              onClick={() => setMobileDrawerOpen(false)}
+              className="flex items-center justify-between py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-100 hover:text-neutral-600 hover:translate-x-1 transition-all duration-150"
+            >
+              <span>All Collections</span>
+              <ChevronRight className="w-4 h-4 text-neutral-400" />
+            </Link>
 
-              <div className="pt-2 pb-1">
-                <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-neutral-400 mb-2">Categories</p>
-                {categories && categories.length > 0 ? (
-                  categories.slice(0, 8).map(c => (
-                    <Link
-                      key={c.id || c.slug}
-                      href={`/category/${c.slug}`}
-                      onClick={() => setMobileDrawerOpen(false)}
-                      className="block py-2 text-xs font-medium text-neutral-700 hover:text-black"
-                    >
-                      {c.name}
-                    </Link>
-                  ))
-                ) : (
-                  <>
-                    <Link href="/category/t-shirts" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700">T-Shirts</Link>
-                    <Link href="/category/hoodies" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700">Hoodies & Sweats</Link>
-                    <Link href="/category/pants" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700">Bottom Wear</Link>
-                    <Link href="/category/shoes" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700">Footwear</Link>
-                  </>
-                )}
-              </div>
-
-              <div className="pt-4 border-t border-neutral-100 space-y-2">
-                <Link 
-                  href="/about" 
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="block py-2 text-xs font-medium text-neutral-600 hover:text-black uppercase tracking-wider"
-                >
-                  Our Story
-                </Link>
-                <Link 
-                  href="/track-order" 
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="block py-2 text-xs font-medium text-neutral-600 hover:text-black uppercase tracking-wider"
-                >
-                  Track Order
-                </Link>
-                <Link 
-                  href="/contact" 
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="block py-2 text-xs font-medium text-neutral-600 hover:text-black uppercase tracking-wider"
-                >
-                  Support & Contact
-                </Link>
-              </div>
-            </div>
-
-            {/* Drawer Footer */}
-            <div className="p-4 border-t border-neutral-100 bg-neutral-50">
-              {user ? (
-                <div className="flex items-center justify-between">
-                  <div className="truncate">
-                    <p className="text-xs font-bold text-neutral-900">{user.name || "Member"}</p>
-                    <p className="text-[11px] text-neutral-500 truncate">{user.email}</p>
-                  </div>
-                  <button 
-                    onClick={handleLogout}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
-                    aria-label="Logout"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
+            <div className="pt-3 pb-1">
+              <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-neutral-400 mb-2">Categories</p>
+              {categories && categories.length > 0 ? (
+                categories.map((c) => {
+                  const hasSubs = Array.isArray(c.subcategories) && c.subcategories.length > 0;
+                  const isExpanded = expandedCat === (c.id || c.slug);
+                  return (
+                    <div key={c.id || c.slug} className="border-b border-neutral-50 last:border-0">
+                      <div className="flex items-center justify-between">
+                        <Link
+                          href={`/category/${c.slug}`}
+                          onClick={() => setMobileDrawerOpen(false)}
+                          className="flex-1 py-2.5 text-xs font-semibold text-neutral-700 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
+                        >
+                          {c.name}
+                        </Link>
+                        {hasSubs && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedCat(prev => prev === (c.id || c.slug) ? null : (c.id || c.slug));
+                            }}
+                            className="p-1.5 text-neutral-400 hover:text-black transition-colors"
+                            aria-label="Toggle subcategories"
+                          >
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-black' : ''}`} />
+                          </button>
+                        )}
+                      </div>
+                      {hasSubs && (
+                        <div
+                          className={`overflow-hidden transition-all duration-300 ease-in-out pl-3 space-y-1 ${
+                            isExpanded ? 'max-h-60 pb-2 opacity-100' : 'max-h-0 opacity-0'
+                          }`}
+                        >
+                          {c.subcategories.map((sub) => (
+                            <Link
+                              key={sub.id || sub.slug}
+                              href={`/category/${sub.slug}`}
+                              onClick={() => setMobileDrawerOpen(false)}
+                              className="block py-1.5 text-[11px] font-medium text-neutral-500 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               ) : (
-                <button
-                  onClick={() => { setMobileDrawerOpen(false); openLoginModal(); }}
-                  className="w-full py-2.5 bg-black text-white text-xs font-bold uppercase tracking-wider text-center"
-                >
-                  Sign In / Register
-                </button>
+                <>
+                  <Link href="/category/t-shirts" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">T-Shirts</Link>
+                  <Link href="/category/hoodies" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Hoodies & Sweats</Link>
+                  <Link href="/category/pants" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Bottom Wear</Link>
+                  <Link href="/category/shoes" onClick={() => setMobileDrawerOpen(false)} className="block py-2 text-xs font-medium text-neutral-700 hover:text-black">Footwear</Link>
+                </>
               )}
             </div>
+
+            <div className="pt-4 border-t border-neutral-100 space-y-1">
+              <Link 
+                href="/about" 
+                onClick={() => setMobileDrawerOpen(false)}
+                className="block py-2 text-xs font-medium text-neutral-600 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
+              >
+                Our Story
+              </Link>
+              <Link 
+                href="/track-order" 
+                onClick={() => setMobileDrawerOpen(false)}
+                className="block py-2 text-xs font-medium text-neutral-600 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
+              >
+                Track Order
+              </Link>
+              <Link 
+                href="/contact" 
+                onClick={() => setMobileDrawerOpen(false)}
+                className="block py-2 text-xs font-medium text-neutral-600 hover:text-black hover:translate-x-1 transition-all duration-150 uppercase tracking-wider"
+              >
+                Support & Contact
+              </Link>
+            </div>
+          </div>
+
+          {/* Drawer Footer */}
+          <div className="p-4 border-t border-neutral-100 bg-neutral-50">
+            {user ? (
+              <div className="flex items-center justify-between">
+                <div className="truncate">
+                  <p className="text-xs font-bold text-neutral-900">{user.name || "Member"}</p>
+                  <p className="text-[11px] text-neutral-500 truncate">{user.email}</p>
+                </div>
+                <button 
+                  onClick={handleLogout}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded"
+                  aria-label="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { setMobileDrawerOpen(false); openLoginModal(); }}
+                className="w-full py-2.5 bg-black text-white text-xs font-bold uppercase tracking-wider text-center active:scale-[0.98] transition-transform"
+              >
+                Sign In / Register
+              </button>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* 5. Mobile Sticky Bottom Navigation (Onfire style) */}
       {!isProductPage && (
