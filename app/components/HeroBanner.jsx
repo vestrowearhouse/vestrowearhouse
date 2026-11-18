@@ -1,266 +1,246 @@
 'use client';
 
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
 const defaultFashionBanners = [
   {
     id: 'vestro-hero-1',
-    title: 'VESTRO',
-    subtitle: 'WEAR HOUSE',
-    description: 'Streetwear and clothing. One flagship shop.',
-    image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop',
+    badge: 'NEW DROP 2026 // DHAKA FLAGSHIP',
+    title: 'RAW STREET SILHOUETTES',
+    subtitle: 'OVERSIZED ESSENTIALS & APPAREL',
+    description: 'Crafted with heavyweight 380-420 GSM French terry, boxy fits, and relaxed streetwear cuts.',
+    image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1920&auto=format&fit=crop',
     link: '/shop',
-    ctaText: 'Shop all',
+    primaryCta: 'EXPLORE COLLECTION',
+    secondaryCta: 'NEW ARRIVALS',
+    secondaryLink: '/new',
   },
   {
     id: 'vestro-hero-2',
-    title: 'THE OVERSIZED DROP',
-    subtitle: 'HEAVYWEIGHT ESSENTIALS',
-    description: 'Crafted with 280-420 GSM French terry & combed cotton.',
-    image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop',
+    badge: 'LIMITED EDITION // AUTUMN / WINTER',
+    title: 'THE OVERSIZED HOODIE',
+    subtitle: 'PREMIUM STREET LAYERS',
+    description: 'Uncompromised comfort engineered with dense cotton fleece and clean minimal branding.',
+    image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1920&auto=format&fit=crop',
     link: '/category/hoodies-sweats',
-    ctaText: 'Shop hoodies',
+    primaryCta: 'SHOP HOODIES',
+    secondaryCta: 'VIEW ALL',
+    secondaryLink: '/shop',
   },
   {
     id: 'vestro-hero-3',
-    title: 'RAW STREET SILHOUETTES',
-    subtitle: 'NEW ARRIVALS 2026',
-    description: 'Boxy fits, dropped shoulders, and urban durability.',
-    image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop',
-    link: '/new',
-    ctaText: 'Explore new',
+    badge: 'VESTRO ARCHIVE // URBAN WEAR',
+    title: 'CONTEMPORARY UTILITY',
+    subtitle: 'CARGOS, TEES & JACKETS',
+    description: 'Minimal aesthetic built for daily rotation. Designed in Bangladesh for global streetwear culture.',
+    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1920&auto=format&fit=crop',
+    link: '/category/t-shirts',
+    primaryCta: 'SHOP TEES',
+    secondaryCta: 'ALL COLLECTIONS',
+    secondaryLink: '/shop',
   },
 ];
 
-const defaultQuickCategories = [
-  {
-    name: 'T-Shirt',
-    slug: 't-shirts',
-    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&auto=format&fit=crop&q=80',
-  },
-  {
-    name: 'Sweatshirt',
-    slug: 'hoodies-sweats',
-    image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=400&auto=format&fit=crop&q=80',
-  },
-  {
-    name: 'Outerwear',
-    slug: 'outerwear',
-    image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&auto=format&fit=crop&q=80',
-  },
-  {
-    name: 'Pants',
-    slug: 'pants-cargo',
-    image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&auto=format&fit=crop&q=80',
-  },
-  {
-    name: 'Caps',
-    slug: 'accessories',
-    image: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&auto=format&fit=crop&q=80',
-  },
-];
-
-function HeroBanner({ banners: incomingBanners = [], categories: incomingCategories = [], autoPlayInterval = 6000 }) {
+function HeroBanner({ banners: incomingBanners = [], autoPlayInterval = 6000 }) {
   const banners = useMemo(() => {
     if (Array.isArray(incomingBanners) && incomingBanners.length > 0) {
       return incomingBanners
         .map((b) => ({
           id: b._id || b.id,
-          title: b.title || 'VESTRO',
-          subtitle: b.subtitle || 'WEAR HOUSE',
-          description: b.description || 'Streetwear and clothing. One flagship shop.',
+          badge: b.badge || 'VESTRO WEAR HOUSE // DHAKA',
+          title: b.title || 'RAW STREET SILHOUETTES',
+          subtitle: b.subtitle || 'OVERSIZED ESSENTIALS',
+          description: b.description || 'Discover modern streetwear, relaxed fits, and crafted fabric essentials.',
           image: b.image,
           link: b.link || '/shop',
-          ctaText: b.button_text || 'Shop all',
+          primaryCta: b.button_text || 'EXPLORE COLLECTION',
+          secondaryCta: 'NEW ARRIVALS',
+          secondaryLink: '/new',
         }))
         .filter((b) => Boolean(b.image));
     }
     return defaultFashionBanners;
   }, [incomingBanners]);
 
-  const categoryBubbles = useMemo(() => {
-    if (Array.isArray(incomingCategories) && incomingCategories.length > 0) {
-      return incomingCategories.slice(0, 5).map((c) => ({
-        name: c.name.split('&')[0].trim(),
-        slug: c.slug,
-        image: c.image || defaultQuickCategories[0].image,
-      }));
-    }
-    return defaultQuickCategories;
-  }, [incomingCategories]);
-
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const touchStartXRef = useRef(null);
 
   useEffect(() => {
-    if (banners.length <= 1) return;
+    if (banners.length <= 1 || isPaused) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % banners.length);
     }, autoPlayInterval);
     return () => clearInterval(timer);
-  }, [banners.length, autoPlayInterval]);
+  }, [banners.length, autoPlayInterval, isPaused]);
 
   const goToPrev = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
   };
 
   const goToNext = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setCurrentSlide((prev) => (prev + 1) % banners.length);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartXRef.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartXRef.current - touchEndX;
+    if (diff > 50) {
+      goToNext();
+    } else if (diff < -50) {
+      goToPrev();
+    }
+    touchStartXRef.current = null;
   };
 
   const activeBanner = banners[currentSlide] || banners[0];
 
   return (
-    <section className="w-full bg-white">
-      {/* 1. Onfire-Style Trust Micro-Strip */}
-      <div className="py-2.5 px-4 text-center border-b border-neutral-100 bg-white">
-        <p className="text-[10px] sm:text-[11px] font-semibold tracking-[0.24em] text-neutral-500 uppercase">
-          SECURE CHECKOUT · DHAKA DISPATCH · EASY RETURNS
-        </p>
-      </div>
-
-      {/* 2. Onfire-Style Circular Category Quick-Icons (Strictly 1 line, never wraps into multiple lines) */}
-      <div className="pt-5 pb-5 sm:pt-7 sm:pb-7 px-4 overflow-hidden">
-        <div className="max-w-4xl mx-auto flex items-center justify-start sm:justify-center gap-3.5 sm:gap-7 overflow-x-auto no-scrollbar flex-nowrap py-1">
-          {categoryBubbles.map((cat, idx) => (
-            <Link
-              key={cat.slug || idx}
-              href={`/category/${cat.slug}`}
-              className="flex flex-col items-center gap-1.5 sm:gap-2 group shrink-0"
-            >
-              <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border border-neutral-200 group-hover:border-black group-hover:scale-105 transition-all duration-300 shadow-xs bg-neutral-100 shrink-0">
+    <section className="w-full bg-white pt-2 sm:pt-4 pb-6 sm:pb-10">
+      <div className="max-w-[1480px] mx-auto px-3 sm:px-6 lg:px-8">
+        <div 
+          className="relative w-full h-[520px] sm:h-[580px] lg:h-[640px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-neutral-900/10 bg-neutral-950 group"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Background Images with Cross-Fade */}
+          {banners.map((banner, idx) => {
+            const isActive = idx === currentSlide;
+            return (
+              <div
+                key={banner.id || idx}
+                className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                  isActive ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 pointer-events-none z-0'
+                }`}
+              >
                 <Image
-                  src={cat.image}
-                  alt={cat.name}
+                  src={banner.image}
+                  alt={banner.title || 'Vestro Streetwear Banner'}
                   fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 60px, 80px"
+                  priority={idx === 0}
+                  className="object-cover object-center"
+                  sizes="(max-width: 1480px) 100vw, 1480px"
                 />
-              </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-neutral-800 group-hover:text-black tracking-wider uppercase transition-colors whitespace-nowrap text-center max-w-[76px] sm:max-w-[96px] truncate block">
-                {cat.name}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </div>
 
-      {/* 3. The Onfire Split Hero Banner Card */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-8 sm:pb-14">
-        <div className="relative rounded-2xl md:rounded-3xl overflow-hidden bg-[#161616] shadow-2xl border border-neutral-800">
-          <div className="grid grid-cols-1 md:grid-cols-2 items-stretch min-h-[460px] lg:min-h-[520px]">
+                {/* Multi-layered Cinematic Gradients for Ultra-Crisp Typography Readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent sm:w-3/4" />
+                <div className="absolute inset-0 bg-radial-gradient from-transparent to-black/40 pointer-events-none" />
+              </div>
+            );
+          })}
+
+          {/* Foreground Hero Content */}
+          <div className="relative z-20 h-full w-full flex flex-col justify-end p-6 sm:p-10 md:p-14 lg:p-16 max-w-3xl text-white">
             
-            {/* Left Side: Brand Identity & CTAs */}
-            <div className="relative bg-[#161616] p-8 sm:p-12 md:p-14 lg:p-16 flex flex-col justify-center text-white overflow-hidden">
-              {/* Subtle V-mark background watermark */}
-              <div className="absolute right-[-15%] bottom-[-15%] w-[320px] h-[320px] pointer-events-none opacity-[0.04] select-none text-white">
-                <svg viewBox="0 0 100 100" fill="currentColor" className="w-full h-full">
-                  <path d="M15 15 L50 90 L85 15 L65 15 L50 60 L35 15 Z" />
-                </svg>
-              </div>
+            {/* Top Micro Kicker Badge */}
+            <div className="inline-flex items-center gap-2 mb-3 sm:mb-4">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.28em] text-neutral-300 uppercase">
+                {activeBanner.badge || 'VESTRO WEAR HOUSE // BANGLADESH'}
+              </span>
+            </div>
 
-              {/* Tagline */}
-              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.28em] text-neutral-400 uppercase mb-2 sm:mb-3 block">
-                BANGLADESH
+            {/* Massive Bold Headline */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[1.05] drop-shadow-md mb-2 sm:mb-3">
+              {activeBanner.title}
+            </h1>
+
+            {/* Subtitle / Drop Label */}
+            {activeBanner.subtitle && (
+              <p className="text-xs sm:text-sm font-bold tracking-[0.24em] uppercase text-neutral-300 mb-3 sm:mb-4">
+                {activeBanner.subtitle}
+              </p>
+            )}
+
+            {/* Description */}
+            <p className="text-xs sm:text-sm md:text-base text-neutral-300 max-w-xl font-normal leading-relaxed mb-6 sm:mb-8 line-clamp-2 sm:line-clamp-3">
+              {activeBanner.description}
+            </p>
+
+            {/* Dual CTAs */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+              <Link
+                href={activeBanner.link || '/shop'}
+                className="px-6 sm:px-8 py-3.5 rounded-full bg-white text-black hover:bg-neutral-200 active:scale-95 text-xs sm:text-sm font-bold uppercase tracking-wider transition-all shadow-lg flex items-center gap-2 cursor-pointer group/btn"
+              >
+                <span>{activeBanner.primaryCta || 'EXPLORE COLLECTION'}</span>
+                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+              </Link>
+
+              <Link
+                href={activeBanner.secondaryLink || '/new'}
+                className="px-6 sm:px-7 py-3.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/40 hover:border-white text-white active:scale-95 text-xs sm:text-sm font-semibold uppercase tracking-wider backdrop-blur-md transition-all text-center cursor-pointer"
+              >
+                {activeBanner.secondaryCta || 'NEW ARRIVALS'}
+              </Link>
+            </div>
+          </div>
+
+          {/* Left / Right Arrow Controls */}
+          {banners.length > 1 && (
+            <>
+              <button
+                onClick={goToPrev}
+                aria-label="Previous slide"
+                className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/80 border border-white/20 text-white backdrop-blur-md flex items-center justify-center transition-all opacity-80 sm:opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90 cursor-pointer shadow-lg"
+              >
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+
+              <button
+                onClick={goToNext}
+                aria-label="Next slide"
+                className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/80 border border-white/20 text-white backdrop-blur-md flex items-center justify-center transition-all opacity-80 sm:opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90 cursor-pointer shadow-lg"
+              >
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+            </>
+          )}
+
+          {/* Sleek Bottom Bar with Modern Dash Indicators & Slide Counter */}
+          {banners.length > 1 && (
+            <div className="absolute bottom-5 sm:bottom-8 right-5 sm:right-10 z-30 flex items-center gap-3 bg-black/40 backdrop-blur-md px-3.5 py-2 rounded-full border border-white/15">
+              <span className="text-[11px] font-mono font-bold text-white tracking-widest pl-1">
+                {String(currentSlide + 1).padStart(2, '0')} / {String(banners.length).padStart(2, '0')}
               </span>
 
-              {/* Main Brand Title */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-none">
-                VESTRO
-              </h1>
+              <div className="h-3 w-px bg-white/20 mx-1" />
 
-              {/* Sub-label */}
-              <p className="text-xs sm:text-sm font-bold tracking-[0.32em] uppercase text-neutral-400 mt-1 mb-4 sm:mb-5">
-                WEAR HOUSE
-              </p>
-
-              {/* Tagline / Subtitle */}
-              <p className="text-xs sm:text-sm text-neutral-300 max-w-sm mb-6 sm:mb-8 leading-relaxed font-normal">
-                {activeBanner.description || 'Shoes and clothing. One shop.'}
-              </p>
-
-              {/* Dual Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-3.5 z-10">
-                <Link
-                  href="/shop"
-                  className="px-6 sm:px-7 py-3 rounded-full bg-white text-black text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-neutral-200 active:scale-95 transition-all text-center shadow-md cursor-pointer"
-                >
-                  Shop all
-                </Link>
-                <Link
-                  href="/new"
-                  className="px-6 sm:px-7 py-3 rounded-full border border-neutral-600 hover:border-white text-white text-xs sm:text-sm font-semibold uppercase tracking-wider hover:bg-white/10 active:scale-95 transition-all text-center cursor-pointer"
-                >
-                  New arrival
-                </Link>
+              <div className="flex items-center gap-1.5">
+                {banners.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentSlide(i)}
+                    aria-label={`Go to slide ${i + 1}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      i === currentSlide 
+                        ? 'w-6 sm:w-8 bg-white' 
+                        : 'w-2 bg-white/40 hover:bg-white/70'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
-
-            {/* Right Side: Streetwear Model Photograph */}
-            <div className="relative min-h-[380px] md:min-h-full w-full overflow-hidden bg-neutral-900">
-              {banners.map((b, idx) => {
-                const isActive = idx === currentSlide;
-                return (
-                  <div
-                    key={b.id || idx}
-                    className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                      isActive ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
-                    }`}
-                  >
-                    <Image
-                      src={b.image}
-                      alt={b.title || 'Vestro Streetwear Apparel'}
-                      fill
-                      priority={idx === 0}
-                      className="object-cover object-top md:object-center"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                  </div>
-                );
-              })}
-
-              {/* Sleek Carousel Indicators & Controls */}
-              {banners.length > 1 && (
-                <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15">
-                  <button
-                    onClick={goToPrev}
-                    aria-label="Previous slide"
-                    className="text-white/70 hover:text-white transition-colors p-0.5 cursor-pointer"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-
-                  <div className="flex items-center gap-1.5 px-1">
-                    {banners.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentSlide(i)}
-                        aria-label={`Slide ${i + 1}`}
-                        className={`block rounded-full transition-all cursor-pointer ${
-                          i === currentSlide ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={goToNext}
-                    aria-label="Next slide"
-                    className="text-white/70 hover:text-white transition-colors p-0.5 cursor-pointer"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-          </div>
+          )}
         </div>
       </div>
     </section>
