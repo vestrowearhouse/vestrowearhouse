@@ -143,7 +143,6 @@ export async function POST(request) {
       sort_order: Number(data.sort_order) || 0,
       icon: data.icon || '📦',
       icon_type: data.iconType || data.icon_type || 'emoji',
-      custom_code: data.customCode || data.custom_code || null,
       isFeatured: Boolean(data.isFeatured)
     };
 

@@ -104,7 +104,6 @@ export async function POST(request) {
         sort_order: !isNaN(parseInt(item.sort_order || item.sortOrder)) ? parseInt(item.sort_order || item.sortOrder) : 0,
         icon: item.icon ? String(item.icon).trim() : '📦',
         icon_type: item.icon_type || item.iconType || 'emoji',
-        custom_code: item.custom_code || item.customCode || null,
         isFeatured: Boolean(item.isFeatured || item.featured)
       });
     }

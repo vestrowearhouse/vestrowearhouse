@@ -70,7 +70,6 @@ export async function PUT(request, { params }) {
       sort_order: data.sort_order !== undefined ? Number(data.sort_order) || 0 : 0,
       icon: data.icon !== undefined ? data.icon : '📦',
       icon_type: data.iconType || data.icon_type || 'emoji',
-      custom_code: data.customCode || data.custom_code || null,
       isFeatured: data.isFeatured !== undefined ? Boolean(data.isFeatured) : false,
       updated_at: new Date().toISOString(),
     };
